@@ -24,11 +24,12 @@ export function generateStaticParams() {
   return ASSETS.map((a) => ({ symbol: a.symbol }));
 }
 
-export function generateMetadata({
-  params,
-}: {
-  params: { symbol: string };
-}): Metadata {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ symbol: string }>;
+  }
+): Promise<Metadata> {
+  const params = await props.params;
   const asset = getAsset(params.symbol);
   if (!asset) return { title: "Not found" };
   return {
@@ -43,40 +44,37 @@ const CLASS_LABEL: Record<string, string> = {
   crypto: "Crypto",
 };
 
-export default function AssetPage({ params }: { params: { symbol: string } }) {
+export default async function AssetPage(props: { params: Promise<{ symbol: string }> }) {
+  const params = await props.params;
   const asset = getAsset(params.symbol);
   if (!asset) notFound();
 
   const cat = getCategory(asset.category);
-  const accent = asset.accent ?? cat?.accent ?? "#598bff";
+  const accent = "#348361";
   const related = getRelated(asset).map(toCardData);
   const overall = avgScore(asset.scores);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
+    <div className="site-container research-page">
       {/* breadcrumb */}
-      <div className="mb-6 flex items-center gap-2 text-sm text-white/45">
-        <Link href="/" className="hover:text-white">
+      <div className="mb-6 flex items-center gap-2 text-sm text-muted">
+        <Link href="/" className="hover:text-ink-950">
           Home
         </Link>
         <span>/</span>
         {cat && (
           <>
-            <Link href={`/category/${cat.slug}`} className="hover:text-white">
+            <Link href={`/category/${cat.slug}`} className="hover:text-ink-950">
               {cat.name}
             </Link>
             <span>/</span>
           </>
         )}
-        <span className="text-white/70">{asset.symbol}</span>
+        <span className="text-muted">{asset.symbol}</span>
       </div>
 
       {/* header */}
-      <div className="relative overflow-hidden rounded-3xl border border-white/8 bg-ink-850/50 p-6 sm:p-8">
-        <div
-          className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full opacity-20 blur-3xl"
-          style={{ background: accent }}
-        />
+      <div className="surface p-6 sm:p-8">
         <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-start">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
@@ -87,16 +85,16 @@ export default function AssetPage({ params }: { params: { symbol: string } }) {
                 {CLASS_LABEL[asset.assetClass]}
               </span>
               {asset.tierLabel && (
-                <span className="rounded-lg border border-white/10 px-2 py-0.5 text-xs text-white/60">
+                <span className="rounded-lg border border-line px-2 py-0.5 text-xs text-muted">
                   {asset.tierLabel}
                 </span>
               )}
             </div>
-            <h1 className="mt-3 flex flex-wrap items-baseline gap-x-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            <h1 className="mt-3 flex flex-wrap items-baseline gap-x-3 text-3xl font-bold tracking-tight text-ink-950 sm:text-4xl">
               {asset.name}
-              <span className="font-mono text-xl text-white/45">{asset.symbol}</span>
+              <span className="font-mono text-xl text-muted">{asset.symbol}</span>
             </h1>
-            <p className="mt-2 max-w-xl text-base leading-relaxed text-white/60">
+            <p className="mt-2 max-w-xl text-base leading-relaxed text-muted">
               {asset.theme} — {asset.tagline}
             </p>
           </div>
@@ -108,16 +106,16 @@ export default function AssetPage({ params }: { params: { symbol: string } }) {
       </div>
 
       {/* chart */}
-      <div className="mt-6 rounded-3xl border border-white/8 bg-ink-850/50 p-5 sm:p-6">
-        <LiveChart symbol={asset.symbol} accent={accent} />
+      <div className="mt-6 rounded-3xl border border-line bg-white p-5 sm:p-6">
+        <LiveChart key={asset.symbol} symbol={asset.symbol} accent={accent} />
       </div>
 
       {/* body grid */}
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         {/* article */}
         <div className="lg:col-span-2">
-          <div className="rounded-3xl border border-white/8 bg-ink-850/50 p-6 sm:p-8">
-            <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-brand-400">
+          <div className="rounded-3xl border border-line bg-white p-6 sm:p-8">
+            <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-pine">
               <Waypoints size={14} />
               Investment thesis
             </div>
@@ -128,17 +126,17 @@ export default function AssetPage({ params }: { params: { symbol: string } }) {
         {/* sidebar */}
         <div className="space-y-6">
           {/* scores */}
-          <div className="rounded-3xl border border-white/8 bg-ink-850/50 p-6">
+          <div className="rounded-3xl border border-line bg-white p-6">
             <div className="mb-4 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm font-semibold text-white">
-                <Gauge size={16} className="text-brand-400" />
+              <div className="flex items-center gap-2 text-sm font-semibold text-ink-950">
+                <Gauge size={16} className="text-pine" />
                 Score
               </div>
               <div className="flex items-baseline gap-1">
-                <span className="font-mono text-2xl font-bold text-white">
+                <span className="font-mono text-2xl font-bold text-ink-950">
                   {overall.toFixed(1)}
                 </span>
-                <span className="text-xs text-white/40">/10</span>
+                <span className="text-xs text-muted">/10</span>
               </div>
             </div>
             <ScoreBars scores={asset.scores} />
@@ -154,8 +152,8 @@ export default function AssetPage({ params }: { params: { symbol: string } }) {
             </div>
             <ul className="space-y-2">
               {asset.valuationNotes.map((n, i) => (
-                <li key={i} className="flex gap-2 text-sm leading-relaxed text-white/60">
-                  <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-white/40" />
+                <li key={i} className="flex gap-2 text-sm leading-relaxed text-muted">
+                  <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-muted" />
                   {n}
                 </li>
               ))}
@@ -166,7 +164,7 @@ export default function AssetPage({ params }: { params: { symbol: string } }) {
           <SidebarCard icon={<Check size={16} />} title="Why it wins">
             <ul className="space-y-2.5">
               {asset.whyItWins.map((w, i) => (
-                <li key={i} className="flex gap-2.5 text-sm leading-relaxed text-white/70">
+                <li key={i} className="flex gap-2.5 text-sm leading-relaxed text-muted">
                   <Check size={15} className="mt-0.5 shrink-0 text-gain" />
                   {w}
                 </li>
@@ -176,14 +174,14 @@ export default function AssetPage({ params }: { params: { symbol: string } }) {
 
           {/* stage */}
           <SidebarCard icon={<Target size={16} />} title="Stage of the cycle">
-            <p className="text-sm leading-relaxed text-white/70">{asset.stage}</p>
+            <p className="text-sm leading-relaxed text-muted">{asset.stage}</p>
           </SidebarCard>
 
           {/* risks */}
           <SidebarCard icon={<AlertTriangle size={16} />} title="Key risks">
             <ul className="space-y-2.5">
               {asset.risks.map((r, i) => (
-                <li key={i} className="flex gap-2.5 text-sm leading-relaxed text-white/70">
+                <li key={i} className="flex gap-2.5 text-sm leading-relaxed text-muted">
                   <AlertTriangle size={15} className="mt-0.5 shrink-0 text-gold" />
                   {r}
                 </li>
@@ -196,14 +194,14 @@ export default function AssetPage({ params }: { params: { symbol: string } }) {
       {/* related */}
       {related.length > 0 && (
         <section className="mt-14">
-          <div className="mb-5 flex items-center justify-between">
-            <h2 className="text-xl font-bold tracking-tight text-white">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-xl font-bold tracking-tight text-ink-950">
               Related in {cat?.name}
             </h2>
             {cat && (
               <Link
                 href={`/category/${cat.slug}`}
-                className="flex items-center gap-1 text-sm text-brand-400 hover:text-brand-300"
+                className="flex items-center gap-1 text-sm text-pine hover:text-pine"
               >
                 <ArrowLeft size={14} /> Back to {cat.name}
               </Link>
@@ -230,9 +228,9 @@ function SidebarCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-3xl border border-white/8 bg-ink-850/50 p-6">
-      <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-white">
-        <span className="text-brand-400">{icon}</span>
+    <div className="rounded-3xl border border-line bg-white p-6">
+      <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-ink-950">
+        <span className="text-pine">{icon}</span>
         {title}
       </div>
       {children}

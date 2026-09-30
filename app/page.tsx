@@ -1,121 +1,46 @@
 import Link from "next/link";
-import { ArrowRight, Gauge, LineChart, ShieldCheck } from "lucide-react";
+import { ArrowUpRight, MoveUpRight } from "lucide-react";
 import { ASSETS, getAsset, getAssetsByCategory } from "@/lib/assets";
 import { CATEGORIES } from "@/lib/categories";
 import { toCardData } from "@/lib/card";
 import { Hero } from "@/components/Hero";
 import { MarketPulse } from "@/components/MarketPulse";
 import { CategoryGrid } from "@/components/CategoryGrid";
-import { AssetCard } from "@/components/AssetCard";
+import { AssetExplorer } from "@/components/AssetExplorer";
+import { TickerTape } from "@/components/TickerTape";
 
-const FEATURED = ["CEG", "NVDA", "MSFT", "BTC", "GOOGL", "VST", "AVGO", "SOL"];
+const FEATURED = ["NVDA", "CEG", "MSFT", "BTC", "GOOGL", "VST", "AVGO", "SOL"];
 
 export default function HomePage() {
-  const counts: Record<string, number> = {};
-  for (const c of CATEGORIES) counts[c.slug] = getAssetsByCategory(c.slug).length;
-
-  const featured = FEATURED.map((s) => getAsset(s))
-    .filter(Boolean)
-    .map((a) => toCardData(a!));
+  const counts = Object.fromEntries(CATEGORIES.map((category) => [category.slug, getAssetsByCategory(category.slug).length]));
+  const assets = [...ASSETS].sort((a, b) => {
+    const first = FEATURED.indexOf(a.symbol);
+    const second = FEATURED.indexOf(b.symbol);
+    return (first < 0 ? FEATURED.length : first) - (second < 0 ? FEATURED.length : second);
+  }).map(toCardData);
+  const spotlight = ["NVDA", "CEG", "BTC"].map((symbol) => toCardData(getAsset(symbol)!));
 
   return (
     <>
-      <Hero assetCount={ASSETS.length} categoryCount={CATEGORIES.length} />
-
-      <section className="mx-auto max-w-7xl px-4 sm:px-6">
-        <MarketPulse />
-      </section>
-
-      <section className="mx-auto mt-20 max-w-7xl px-4 sm:px-6">
-        <div className="mb-6 flex items-end justify-between">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight text-white">
-              Explore by category
-            </h2>
-            <p className="mt-1 text-sm text-white/55">
-              Five lenses on the same megatrend — from the power grid to the chips to
-              the tokens.
-            </p>
-          </div>
-        </div>
+      <Hero assetCount={ASSETS.length} categoryCount={CATEGORIES.length} spotlight={spotlight} />
+      <TickerTape />
+      <AssetExplorer assets={assets} />
+      <section className="site-container section-space themes-section">
+        <div className="section-heading"><div><p className="eyebrow">CONNECT THE DOTS</p><h2>Five angles. One changing world.</h2><p>Follow the value chain, from energy to intelligence.</p></div><MoveUpRight size={34} strokeWidth={1} className="section-arrow" /></div>
         <CategoryGrid counts={counts} />
       </section>
-
-      <section className="mx-auto mt-20 max-w-7xl px-4 sm:px-6">
-        <div className="mb-6 flex items-end justify-between">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight text-white">
-              Editor&apos;s picks
-            </h2>
-            <p className="mt-1 text-sm text-white/55">
-              High-conviction theses across the board. Tap any card for the full
-              breakdown.
-            </p>
-          </div>
-          <Link
-            href="/category/ai-utilities"
-            className="hidden items-center gap-1 text-sm font-medium text-brand-400 hover:text-brand-300 sm:flex"
-          >
-            View all <ArrowRight size={15} />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {featured.map((c) => (
-            <AssetCard key={c.symbol} data={c} />
-          ))}
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section className="mx-auto mt-20 max-w-7xl px-4 sm:px-6">
-        <div className="ring-glow overflow-hidden rounded-3xl border border-white/8 bg-ink-850/40 p-8 sm:p-10">
-          <h2 className="text-2xl font-bold tracking-tight text-white">
-            A consistent way to compare very different assets
-          </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/55">
-            Every asset — whether a regulated utility or a volatile token — is scored
-            on the same three factors, so you can weigh opportunities like-for-like.
-          </p>
-
-          <div className="mt-8 grid gap-5 sm:grid-cols-3">
-            {[
-              {
-                icon: Gauge,
-                title: "Upside",
-                accent: "#22d39a",
-                body: "Return potential if the thesis plays out — the size of the prize.",
-              },
-              {
-                icon: ShieldCheck,
-                title: "Safety",
-                accent: "#f5b945",
-                body: "Resilience to drawdowns: balance sheet, business model and volatility.",
-              },
-              {
-                icon: LineChart,
-                title: "AI exposure",
-                accent: "#598bff",
-                body: "How structurally tied the asset is to the AI build-out.",
-              },
-            ].map((f) => (
-              <div
-                key={f.title}
-                className="rounded-2xl border border-white/8 bg-ink-900/40 p-5"
-              >
-                <span
-                  className="flex h-10 w-10 items-center justify-center rounded-xl"
-                  style={{ background: `${f.accent}1a`, color: f.accent }}
-                >
-                  <f.icon size={18} />
-                </span>
-                <h3 className="mt-3 font-semibold text-white">{f.title}</h3>
-                <p className="mt-1 text-sm leading-relaxed text-white/55">{f.body}</p>
-              </div>
+      <section id="approach" className="site-container section-space">
+        <div className="approach-panel">
+          <div className="approach-copy"><p className="eyebrow">A FRAMEWORK, NOT A FORECAST</p><h2>Less noise.<br />More perspective.</h2><p>A good thesis asks hard questions. We put every asset through the same three lenses, so you can see the opportunity and what could go wrong.</p><Link href="/asset/NVDA" className="text-link">See the framework in action <ArrowUpRight size={16} /></Link><span className="approach-watermark" aria-hidden="true">3</span></div>
+          <div className="approach-factors">
+            {[{ number: "01", title: "The upside", detail: "What could go right?", body: "The return potential if the thesis plays out — and the catalysts that could get it there." }, { number: "02", title: "The safety", detail: "What could go wrong?", body: "The balance sheet, business model, and resilience when the market changes its mind." }, { number: "03", title: "The AI exposure", detail: "How deep is the connection?", body: "A clear view of how structurally tied the asset is to the build-out of artificial intelligence." }].map((factor) => (
+              <div className="approach-factor" key={factor.number}><span>{factor.number}</span><div><h3>{factor.title}<small>{factor.detail}</small></h3><p>{factor.body}</p></div><ArrowUpRight size={18} /></div>
             ))}
           </div>
         </div>
       </section>
+      <section className="site-container section-space"><MarketPulse /></section>
+      <section className="site-container closing-section"><div><p className="eyebrow">CONVICTION STARTS WITH CURIOSITY</p><h2>Understand the shift.<br />Find your place in it.</h2></div><Link href="#markets" className="button button-dark">Explore the research <ArrowUpRight size={18} /></Link></section>
     </>
   );
 }

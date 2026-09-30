@@ -4,7 +4,7 @@ import { Fragment, type ReactNode } from "react";
 function inline(text: string): ReactNode[] {
   return text.split("**").map((part, i) =>
     i % 2 === 1 ? (
-      <strong key={i} className="font-semibold text-white">
+      <strong key={i} className="font-semibold text-ink-950">
         {part}
       </strong>
     ) : (
@@ -26,8 +26,8 @@ export function ArticleBody({ markdown }: { markdown: string }) {
       list.ordered ? (
         <ol key={key++} className="my-4 space-y-2 pl-1">
           {items.map((it, i) => (
-            <li key={i} className="flex gap-3 text-[15px] leading-relaxed text-white/70">
-              <span className="mt-0.5 font-mono text-sm font-semibold text-brand-400">
+            <li key={i} className="flex gap-3 text-[15px] leading-relaxed text-muted">
+              <span className="mt-0.5 font-mono text-sm font-semibold text-pine">
                 {i + 1}.
               </span>
               <span>{inline(it)}</span>
@@ -37,8 +37,8 @@ export function ArticleBody({ markdown }: { markdown: string }) {
       ) : (
         <ul key={key++} className="my-4 space-y-2">
           {items.map((it, i) => (
-            <li key={i} className="flex gap-3 text-[15px] leading-relaxed text-white/70">
-              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-400/80" />
+            <li key={i} className="flex gap-3 text-[15px] leading-relaxed text-muted">
+              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-pine" />
               <span>{inline(it)}</span>
             </li>
           ))}
@@ -59,7 +59,7 @@ export function ArticleBody({ markdown }: { markdown: string }) {
       blocks.push(
         <h2
           key={key++}
-          className="mt-8 text-lg font-semibold tracking-tight text-white first:mt-0"
+          className="mt-8 text-lg font-semibold tracking-tight text-ink-950 first:mt-0"
         >
           {inline(line.slice(3))}
         </h2>
@@ -85,7 +85,7 @@ export function ArticleBody({ markdown }: { markdown: string }) {
     }
     flush();
     blocks.push(
-      <p key={key++} className="my-4 text-[15px] leading-relaxed text-white/70">
+      <p key={key++} className="my-4 text-[15px] leading-relaxed text-muted">
         {inline(line)}
       </p>
     );

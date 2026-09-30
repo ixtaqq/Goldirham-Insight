@@ -1,3 +1,11 @@
+import type { Quote } from "./types";
+
+export function sourceLabel(source: Quote["source"]): string {
+  if (source === "coingecko") return "CoinGecko";
+  if (source === "finnhub") return "Finnhub";
+  return "Simulated";
+}
+
 export function cn(...classes: (string | false | null | undefined)[]): string {
   return classes.filter(Boolean).join(" ");
 }

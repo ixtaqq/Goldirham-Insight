@@ -1,8 +1,8 @@
 # Goldirham
 
-**AI-era investment research, live.**
+**AI-era investment research with source-labeled market data.**
 
-Goldirham is an educational research and demonstration platform that tracks the companies and assets powering the AI build-out. It combines deep-dive theses, a consistent 3-factor scoring model, and real-time charts and prices across five categories.
+Goldirham is an educational research and demonstration platform that tracks the companies and assets powering the AI build-out. It combines deep-dive theses, a consistent 3-factor scoring model, and market or simulated prices across five categories. Each quote and chart identifies its source.
 
 🔗 **Live site:** https://goldirham.vercel.app/
 
@@ -16,7 +16,7 @@ Every asset — from a regulated utility to a volatile token — is scored on th
 - **Safety** — resilience to drawdowns (balance sheet, business model, volatility)
 - **AI exposure** — how structurally tied the asset is to the AI build-out
 
-Each asset also gets a full written thesis, a tier rating, live prices, and a real-time chart.
+Each asset also gets a full written thesis, a tier rating, a price quote, and a historical chart.
 
 ## Categories
 
@@ -28,7 +28,7 @@ Each asset also gets a full written thesis, a tier rating, live prices, and a re
 | **AI & Growth ETFs** | 4 | One-ticket thematic exposure without single-stock risk |
 | **Crypto** | 5 | Bitcoin, Ethereum, and decentralised-compute tokens |
 
-**26 researched assets · 5 categories · real-time data · 3-factor scoring model**
+**26 researched assets · 5 categories · source-labeled data · 3-factor scoring model**
 
 ## Data sources
 
@@ -36,9 +36,29 @@ Each asset also gets a full written thesis, a tier rating, live prices, and a re
 - **Stocks:** Finnhub (simulated where live feeds are unavailable)
 - **Charts:** TradingView Lightweight Charts
 
+Stock and ETF chart history, card sparklines, and fallback quotes are simulated
+illustrations, not actual market history. Crypto chart history comes from CoinGecko
+when available. Historical charts keep their own source data; current quotes do not
+overwrite past chart points.
+
+External data requests time out after five seconds and use the existing simulated
+fallback. Quote polling waits six seconds after each completed request. If the
+quote endpoint fails, the UI marks retained prices as stale and retries
+automatically. Chart failures and empty results show an explicit retry action.
+
 ## Tech
 
 Deployed on Vercel.
+
+The interface uses a light mineral palette, mint accents, and Manrope typography.
+Manrope and JetBrains Mono are bundled locally in `app/fonts/` with their licenses,
+so builds do not depend on Google Fonts being reachable.
+The research library supports company/ticker search, category filters (including
+cross-listed assets), and sorting by editorial score or name. Header search opens
+asset research directly; type a name or ticker and press Enter, or select a result.
+Charts use the existing open-source
+[TradingView Lightweight Charts](https://github.com/tradingview/lightweight-charts)
+dependency. The redesign adds no new runtime dependencies.
 
 ## Disclaimer
 

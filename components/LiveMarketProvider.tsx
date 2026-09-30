@@ -15,6 +15,7 @@ type QuoteMap = Record<string, Quote>;
 interface MarketState {
   quotes: QuoteMap;
   ready: boolean;
+  error: boolean;
   /** last tick direction per symbol, for flash animations */
   dir: Record<string, "up" | "down" | "flat">;
 }
@@ -22,6 +23,7 @@ interface MarketState {
 const MarketContext = createContext<MarketState>({
   quotes: {},
   ready: false,
+  error: false,
   dir: {},
 });
 
@@ -31,16 +33,35 @@ export function LiveMarketProvider({ children }: { children: ReactNode }) {
   const [quotes, setQuotes] = useState<QuoteMap>({});
   const [dir, setDir] = useState<Record<string, "up" | "down" | "flat">>({});
   const [ready, setReady] = useState(false);
+  const [error, setError] = useState(false);
   const prev = useRef<QuoteMap>({});
 
   useEffect(() => {
     let active = true;
+    let timer: ReturnType<typeof setTimeout>;
+    let controller: AbortController;
 
     const load = async () => {
+      controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15_000);
       try {
-        const res = await fetch("/api/quotes", { cache: "no-store" });
-        if (!res.ok) return;
+        const res = await fetch("/api/quotes", {
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error(`Quote request failed: ${res.status}`);
         const json = (await res.json()) as { quotes: Quote[] };
+        if (!Array.isArray(json.quotes) || json.quotes.length === 0) {
+          throw new Error("No quotes available");
+        }
+        if (json.quotes.some((q) =>
+          !q || typeof q.symbol !== "string" || !q.symbol ||
+          !Number.isFinite(q.price) || q.price <= 0 ||
+          !Number.isFinite(q.change) || !Number.isFinite(q.changePct) ||
+          !["coingecko", "finnhub", "simulated"].includes(q.source)
+        )) {
+          throw new Error("Invalid quote response");
+        }
         if (!active) return;
 
         const map: QuoteMap = {};
@@ -59,21 +80,25 @@ export function LiveMarketProvider({ children }: { children: ReactNode }) {
         setQuotes(map);
         setDir(nextDir);
         setReady(true);
+        setError(false);
       } catch {
-        /* keep last good data */
+        if (active) setError(true);
+      } finally {
+        clearTimeout(timeout);
+        if (active) timer = setTimeout(load, POLL_MS);
       }
     };
 
     load();
-    const id = setInterval(load, POLL_MS);
     return () => {
       active = false;
-      clearInterval(id);
+      clearTimeout(timer);
+      controller.abort();
     };
   }, []);
 
   return (
-    <MarketContext.Provider value={{ quotes, ready, dir }}>
+    <MarketContext.Provider value={{ quotes, ready, error, dir }}>
       {children}
     </MarketContext.Provider>
   );

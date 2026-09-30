@@ -13,6 +13,7 @@ import { RANGE_CONFIG, round } from "./market";
 const CG_BASE = "https://api.coingecko.com/api/v3";
 const CG_KEY = process.env.COINGECKO_API_KEY;
 const FINNHUB_KEY = process.env.FINNHUB_API_KEY;
+const REQUEST_TIMEOUT_MS = 5000;
 
 type CacheEntry = { at: number; data: unknown };
 const cache = new Map<string, CacheEntry>();
@@ -46,7 +47,11 @@ export async function fetchCryptoQuotes(
       const url = `${CG_BASE}/simple/price?ids=${ids.join(
         ","
       )}&vs_currencies=usd&include_24hr_change=true&include_market_cap=true`;
-      const res = await fetch(url, { headers: cgHeaders(), cache: "no-store" });
+      const res = await fetch(url, {
+        headers: cgHeaders(),
+        cache: "no-store",
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      });
       if (!res.ok) throw new Error(`coingecko ${res.status}`);
       const json = (await res.json()) as Record<
         string,
@@ -77,7 +82,11 @@ export async function fetchCryptoChart(
   try {
     return await cached(key, 30_000, async () => {
       const url = `${CG_BASE}/coins/${id}/market_chart?vs_currency=usd&days=${cgDays}`;
-      const res = await fetch(url, { headers: cgHeaders(), cache: "no-store" });
+      const res = await fetch(url, {
+        headers: cgHeaders(),
+        cache: "no-store",
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      });
       if (!res.ok) throw new Error(`coingecko ${res.status}`);
       const json = (await res.json()) as { prices: [number, number][] };
       const prices = json.prices ?? [];
@@ -116,7 +125,10 @@ export async function fetchStockQuote(symbol: string): Promise<StockQuote | null
   try {
     return await cached(key, 10_000, async () => {
       const url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_KEY}`;
-      const res = await fetch(url, { cache: "no-store" });
+      const res = await fetch(url, {
+        cache: "no-store",
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      });
       if (!res.ok) throw new Error(`finnhub ${res.status}`);
       const j = (await res.json()) as { c: number; d: number; dp: number };
       if (!j.c) throw new Error("no price");

@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
-import { cn, formatCompact, formatPct, formatPrice } from "@/lib/utils";
-import { useQuote } from "./LiveMarketProvider";
+import { cn, formatCompact, formatPct, formatPrice, sourceLabel } from "@/lib/utils";
+import { useMarket, useQuote } from "./LiveMarketProvider";
 
 export function LivePrice({
   symbol,
@@ -13,6 +13,7 @@ export function LivePrice({
   basePrice: number;
 }) {
   const quote = useQuote(symbol);
+  const { error } = useMarket();
   const [flash, setFlash] = useState<"up" | "down" | null>(null);
   const prevPrice = useRef<number | null>(null);
 
@@ -43,47 +44,48 @@ export function LivePrice({
               ? "text-gain"
               : flash === "down"
                 ? "text-loss"
-                : "text-white"
+                : "text-ink-950"
           )}
         >
           {formatPrice(price)}
         </span>
-        <span
-          className={cn(
-            "flex items-center gap-1 rounded-lg px-2.5 py-1 text-sm font-semibold tabular-nums",
-            up ? "bg-gain/12 text-gain" : "bg-loss/12 text-loss"
-          )}
-        >
-          {up ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
-          {formatPrice(Math.abs(change))} ({formatPct(changePct)})
-        </span>
+        {quote && (
+          <span
+            className={cn(
+              "flex items-center gap-1 rounded-lg px-2.5 py-1 text-sm font-semibold tabular-nums",
+              up ? "bg-gain/12 text-gain" : "bg-loss/12 text-loss"
+            )}
+          >
+            {up ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
+            {formatPrice(Math.abs(change))} ({formatPct(changePct)})
+          </span>
+        )}
       </div>
 
-      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/45">
-        <span className="flex items-center gap-1.5">
+      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
+        <span className="flex items-center gap-1.5" role="status">
           <span
             className={cn(
               "inline-block h-1.5 w-1.5 rounded-full",
-              quote ? "animate-pulse-dot bg-gain" : "bg-white/30"
+              quote?.source === "simulated" || error ? "bg-gold" : "bg-line"
             )}
           />
-          {quote ? "Live" : "Connecting…"}
-          {quote?.source ? ` · ${sourceLabel(quote.source)}` : ""}
+          {quote
+            ? `${sourceLabel(quote.source)}${error ? " · Updates unavailable" : ""}`
+            : "Illustrative base price"}
         </span>
         {quote?.marketCap ? (
           <span>
             Mkt cap{" "}
-            <span className="text-white/70">${formatCompact(quote.marketCap)}</span>
+            <span className="text-muted">${formatCompact(quote.marketCap)}</span>
           </span>
         ) : null}
-        <span>24h change</span>
+        {quote ? (
+          <span>{quote.source === "finnhub" ? "Change vs previous close" : "24h change"}</span>
+        ) : (
+          <span>{error ? "Quotes unavailable · Retrying…" : "Loading quote…"}</span>
+        )}
       </div>
     </div>
   );
-}
-
-function sourceLabel(s: string): string {
-  if (s === "coingecko") return "CoinGecko";
-  if (s === "finnhub") return "Finnhub";
-  return "Simulated";
 }

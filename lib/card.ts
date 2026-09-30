@@ -10,6 +10,7 @@ export interface CardData {
   name: string;
   assetClass: AssetClass;
   category: CategorySlug;
+  alsoIn?: CategorySlug[];
   tier?: 1 | 2 | 3;
   tierLabel?: string;
   theme: string;
@@ -26,6 +27,7 @@ export function toCardData(a: Asset): CardData {
     name: a.name,
     assetClass: a.assetClass,
     category: a.category,
+    alsoIn: a.alsoIn,
     tier: a.tier,
     tierLabel: a.tierLabel,
     theme: a.theme,

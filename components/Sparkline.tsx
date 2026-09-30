@@ -1,3 +1,7 @@
+"use client";
+
+import { useId } from "react";
+
 interface SparklineProps {
   data: number[];
   up?: boolean;
@@ -7,8 +11,6 @@ interface SparklineProps {
   strokeWidth?: number;
 }
 
-let idSeq = 0;
-
 export function Sparkline({
   data,
   up = true,
@@ -17,6 +19,7 @@ export function Sparkline({
   className,
   strokeWidth = 2,
 }: SparklineProps) {
+  const gid = useId();
   if (!data || data.length < 2) return null;
 
   const min = Math.min(...data);
@@ -31,7 +34,6 @@ export function Sparkline({
   const line = data.map((v, i) => `${x(i).toFixed(2)},${y(v).toFixed(2)}`).join(" ");
   const area = `${line} ${width},${height} 0,${height}`;
   const color = up ? "var(--gain)" : "var(--loss)";
-  const gid = `spark-${idSeq++}`;
 
   return (
     <svg

@@ -31,13 +31,13 @@ export function ScoreBars({
           <div key={key} className="flex items-center gap-3">
             <span
               className={cn(
-                "shrink-0 text-white/55",
+                "shrink-0 text-muted",
                 compact ? "w-16 text-[11px]" : "w-24 text-xs"
               )}
             >
               {label}
             </span>
-            <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-white/8">
+            <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-line">
               <div
                 className={cn(
                   "absolute inset-y-0 left-0 rounded-full bg-gradient-to-r",
