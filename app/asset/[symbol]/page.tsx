@@ -19,6 +19,7 @@ import { LiveChart } from "@/components/LiveChart";
 import { ScoreBars } from "@/components/ScoreBars";
 import { ArticleBody } from "@/components/ArticleBody";
 import { AssetCard } from "@/components/AssetCard";
+import { AssetMark } from "@/components/AssetMark";
 
 export function generateStaticParams() {
   return ASSETS.map((a) => ({ symbol: a.symbol }));
@@ -50,7 +51,7 @@ export default async function AssetPage(props: { params: Promise<{ symbol: strin
   if (!asset) notFound();
 
   const cat = getCategory(asset.category);
-  const accent = "#348361";
+  const accent = "#008138";
   const related = getRelated(asset).map(toCardData);
   const overall = avgScore(asset.scores);
 
@@ -90,10 +91,13 @@ export default async function AssetPage(props: { params: Promise<{ symbol: strin
                 </span>
               )}
             </div>
-            <h1 className="mt-3 flex flex-wrap items-baseline gap-x-3 text-3xl font-bold tracking-tight text-ink-950 sm:text-4xl">
-              {asset.name}
-              <span className="font-mono text-xl text-muted">{asset.symbol}</span>
-            </h1>
+            <div className="asset-heading">
+              <AssetMark symbol={asset.symbol} className="asset-mark-large" />
+              <h1 className="min-w-0 flex flex-wrap items-baseline gap-x-3 text-3xl font-bold tracking-tight text-ink-950 sm:text-4xl">
+                {asset.name}
+                <span className="font-mono text-xl text-muted">{asset.symbol}</span>
+              </h1>
+            </div>
             <p className="mt-2 max-w-xl text-base leading-relaxed text-muted">
               {asset.theme} — {asset.tagline}
             </p>

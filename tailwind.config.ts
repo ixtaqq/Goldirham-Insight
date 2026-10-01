@@ -9,14 +9,14 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        canvas: "#f7f9f6",
+        canvas: "#f6f7f9",
         surface: "#ffffff",
-        line: "#e1e7e1",
-        muted: "#68746d",
-        mint: "#d9f3e4",
-        pine: "#2e664a",
+        line: "#e6e8ec",
+        muted: "#4b5160",
+        mint: "#dcfce7",
+        pine: "#008138",
         ink: {
-          950: "#18251f",
+          950: "#0b0c10",
           900: "#0a0e1a",
           850: "#0e1424",
           800: "#121a2e",
@@ -35,9 +35,9 @@ const config: Config = {
           800: "#1828b6",
           900: "#1a298f",
         },
-        gain: "#187553",
-        loss: "#bf4d54",
-        gold: "#966b23",
+        gain: "#008138",
+        loss: "#bf000f",
+        gold: "#b75000",
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],

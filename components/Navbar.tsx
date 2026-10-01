@@ -15,10 +15,10 @@ export function Navbar({ assets }: { assets: SearchAsset[] }) {
 
   const links = [
     { href: "/", label: "Overview" },
-    { href: "/#markets", label: "Explore" },
-    { href: "/category/ai-utilities", label: "AI Utilities" },
-    { href: "/category/crypto", label: "Crypto" },
-    { href: "/#approach", label: "Our approach" },
+    { href: "/#live", label: "Live desk" },
+    { href: "/#markets", label: "Research" },
+    { href: "/#approach", label: "Framework" },
+    { href: "/#why", label: "Why Goldirham" },
   ];
 
   return (

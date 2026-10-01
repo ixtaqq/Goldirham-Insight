@@ -1,56 +1,44 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowDown, Search, SlidersHorizontal, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Search } from "lucide-react";
 import type { CardData } from "@/lib/card";
 import { CATEGORIES } from "@/lib/categories";
-import { avgScore, cn } from "@/lib/utils";
 import { AssetCard } from "./AssetCard";
+
+const FILTERS = ["All", "Top upside", "Safest", "Top AI exposure", "Tier 1", "Crypto"];
 
 export function AssetExplorer({ assets }: { assets: CardData[] }) {
   const [category, setCategory] = useState("all");
   const [query, setQuery] = useState("");
-  const [sort, setSort] = useState("featured");
-  const [limit, setLimit] = useState(8);
+  const [filter, setFilter] = useState("All");
+  const [showAll, setShowAll] = useState(false);
   const term = query.trim().toLowerCase();
   const filtered = assets.filter((asset) =>
     (category === "all" || asset.category === category || asset.alsoIn?.includes(category as CardData["category"])) &&
-    `${asset.name} ${asset.symbol} ${asset.theme}`.toLowerCase().includes(term)
+    (filter !== "Tier 1" || asset.tier === 1) &&
+    (filter !== "Crypto" || asset.assetClass === "crypto") &&
+    (asset.name + " " + asset.symbol + " " + asset.theme).toLowerCase().includes(term)
   );
-  if (sort === "score") filtered.sort((a, b) => avgScore(b.scores) - avgScore(a.scores));
-  if (sort === "name") filtered.sort((a, b) => a.name.localeCompare(b.name));
-
-  function reset() {
-    setCategory("all");
-    setQuery("");
-    setSort("featured");
-    setLimit(8);
-  }
+  if (filter === "Top upside") filtered.sort((a, b) => b.scores.upside - a.scores.upside);
+  if (filter === "Safest") filtered.sort((a, b) => b.scores.safety - a.scores.safety);
+  if (filter === "Top AI exposure") filtered.sort((a, b) => b.scores.aiExposure - a.scores.aiExposure);
 
   return (
-    <section id="markets" className="site-container section-space" aria-labelledby="research-heading">
-      <div className="section-heading">
-        <div><p className="eyebrow">THE RESEARCH DESK</p><h2 id="research-heading">Find your next conviction.</h2><p>Real businesses. Clear theses. The risks included.</p></div>
-        <span className="library-count">{assets.length} assets. One wider perspective.</span>
-      </div>
-      <div className="explorer-toolbar">
-        <div className="category-tabs" role="group" aria-label="Filter by category">
-          {[{ slug: "all", name: "All assets" }, ...CATEGORIES].map((item) => (
-            <button key={item.slug} onClick={() => { setCategory(item.slug); setLimit(8); }} aria-pressed={category === item.slug} className={cn("category-tab", category === item.slug && "is-active")}>{item.name}</button>
-          ))}
+    <section id="markets" className="design-section research-section" aria-labelledby="research-heading">
+      <div className="container-x">
+        <div className="sec-head">
+          <div><p className="eyebrow">The research desk</p><h2 id="research-heading" className="display">Find your next conviction.</h2><p className="sec-sub">Real businesses. Clear theses. The risks included. Prices identify their source — scores are editorial.</p></div>
+          <div className="desk-search"><label htmlFor="library-search" className="label">Filter the desk</label><div className="desk-input"><Search size={16} aria-hidden="true" /><input id="library-search" className="input" type="search" placeholder="Company or ticker…" value={query} onChange={(event) => { setQuery(event.target.value); setShowAll(false); }} /></div></div>
         </div>
-        <div className="explorer-controls">
-          <div className="catalog-search"><Search size={16} /><input type="search" aria-label="Search research library" placeholder="Company or ticker" value={query} onChange={(event) => { setQuery(event.target.value); setLimit(8); }} />{query && <button aria-label="Clear library search" onClick={() => setQuery("")}><X size={14} /></button>}</div>
-          <label className="catalog-sort"><SlidersHorizontal size={15} /><span className="sr-only">Sort assets</span><select value={sort} onChange={(event) => setSort(event.target.value)}><option value="featured">Featured first</option><option value="score">Highest score</option><option value="name">Name A–Z</option></select></label>
+        <div className="toolbar">
+          <div className="segmented research-segments" role="group" aria-label="Rank research">{FILTERS.map((item) => <button key={item} data-active={filter === item} aria-pressed={filter === item} onClick={() => { setFilter(item); setShowAll(false); }}>{item}</button>)}</div>
+          <div className="chips" role="group" aria-label="Filter by theme">{CATEGORIES.map((item) => <button key={item.slug} className="chip" data-on={category === item.slug} aria-pressed={category === item.slug} onClick={() => { setCategory(category === item.slug ? "all" : item.slug); setShowAll(false); }}>{item.name}<span className="n">{assets.filter((asset) => asset.category === item.slug || asset.alsoIn?.includes(item.slug)).length}</span></button>)}</div>
         </div>
+        <p className="desk-results" role="status">{filtered.length} {filtered.length === 1 ? "asset" : "assets"}{term ? " matching “" + query.trim() + "”" : " to explore"}</p>
+        {filtered.length ? <div className="asset-grid">{filtered.slice(0, showAll ? filtered.length : 9).map((asset) => <AssetCard key={asset.symbol} data={asset} />)}</div> : <div className="card catalog-empty"><Search size={28} /><h3>No matching research.</h3><p>Try another company, ticker, or theme.</p><button className="btn btn-primary" onClick={() => { setCategory("all"); setQuery(""); setFilter("All"); setShowAll(false); }}>Clear filters</button></div>}
+        {filtered.length > 9 && <div className="center"><button className="btn btn-secondary" onClick={() => setShowAll(!showAll)} aria-expanded={showAll}>{showAll ? "Show fewer" : "Explore all " + filtered.length + " assets"}{showAll ? <ArrowUp size={16} /> : <ArrowDown size={16} />}</button></div>}
       </div>
-      <p className="results-count" role="status">{filtered.length} {filtered.length === 1 ? "asset" : "assets"}{category !== "all" ? ` in ${CATEGORIES.find((item) => item.slug === category)?.name}` : " to explore"}{term ? ` matching “${query.trim()}”` : ""}<span>Prices identify their source. Scores are editorial.</span></p>
-      {filtered.length ? (
-        <div className="research-grid">{filtered.slice(0, limit).map((asset) => <AssetCard key={asset.symbol} data={asset} />)}</div>
-      ) : (
-        <div className="catalog-empty"><Search size={28} /><h3>No matching research.</h3><p>Try a company name, ticker, or a different category.</p><button className="button button-dark" onClick={reset}>Clear filters</button></div>
-      )}
-      {filtered.length > limit && <div className="explorer-more"><button className="button button-white" onClick={() => setLimit(filtered.length)}>Explore all {filtered.length} assets <ArrowDown size={16} /></button></div>}
     </section>
   );
 }

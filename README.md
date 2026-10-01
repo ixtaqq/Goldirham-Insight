@@ -50,15 +50,22 @@ automatically. Chart failures and empty results show an explicit retry action.
 
 Deployed on Vercel.
 
-The interface uses a light mineral palette, mint accents, and Manrope typography.
-Manrope and JetBrains Mono are bundled locally in `app/fonts/` with their licenses,
+The interface follows the supplied research-desk design: a cool gray canvas,
+green accents, interactive research radar, and dark framework panels.
+Inter and JetBrains Mono are bundled locally in `app/fonts/` with their licenses,
 so builds do not depend on Google Fonts being reachable.
 The research library supports company/ticker search, category filters (including
-cross-listed assets), and sorting by editorial score or name. Header search opens
+cross-listed assets), and ranking by upside, safety, or AI exposure, plus Tier 1 and crypto filters.
+The radar and framework scorecard switch between researched assets. The desk feed
+uses source-labeled quotes, and the market ticker includes a pause control. Header search opens
 asset research directly; type a name or ticker and press Enter, or select a result.
 Charts use the existing open-source
 [TradingView Lightweight Charts](https://github.com/tradingview/lightweight-charts)
 dependency. The redesign adds no new runtime dependencies.
+
+All 26 assets have local brand logos in `public/logos/`, reused across cards,
+search, the ticker, radar, scorecards, and research headers. Logo provenance is
+recorded in `public/logos/README.md` and `public/logos/sources.json`.
 
 ## Disclaimer
 

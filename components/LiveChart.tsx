@@ -38,7 +38,7 @@ function dedupe(points: LinePoint[]): LinePoint[] {
 
 export function LiveChart({
   symbol,
-  accent = "#348361",
+  accent = "#008138",
 }: {
   symbol: string;
   accent?: string;
@@ -66,23 +66,23 @@ export function LiveChart({
       autoSize: true,
       layout: {
         background: { type: ColorType.Solid, color: "transparent" },
-        textColor: "#68746d",
+        textColor: "#626979",
         fontFamily: "var(--font-sans), system-ui, sans-serif",
         fontSize: 11,
       },
       grid: {
-        vertLines: { color: "#f1f4ef" },
-        horzLines: { color: "#edf1e9" },
+        vertLines: { color: "#f3f4f7" },
+        horzLines: { color: "#e6e8ec" },
       },
-      rightPriceScale: { borderColor: "#dfe7db" },
+      rightPriceScale: { borderColor: "#e6e8ec" },
       timeScale: {
-        borderColor: "#dfe7db",
+        borderColor: "#e6e8ec",
         secondsVisible: false,
       },
       crosshair: {
         mode: 1,
-        vertLine: { color: "#97b49e", labelBackgroundColor: "#294f37" },
-        horzLine: { color: "#97b49e", labelBackgroundColor: "#294f37" },
+        vertLine: { color: "#8a8f9c", labelBackgroundColor: "#0b0c10" },
+        horzLine: { color: "#8a8f9c", labelBackgroundColor: "#0b0c10" },
       },
       handleScale: { mouseWheel: false },
     });

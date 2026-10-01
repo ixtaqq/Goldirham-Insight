@@ -4,6 +4,7 @@ import { useId, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowUpRight, Search, X } from "lucide-react";
+import { AssetMark } from "./AssetMark";
 
 export type SearchAsset = { symbol: string; name: string };
 
@@ -49,7 +50,7 @@ export function AssetSearch({ assets, onNavigate }: { assets: SearchAsset[]; onN
           <p className="search-results-label" role="status">{matches.length ? "Research library" : "No matching assets"}</p>
           {matches.map((asset) => (
             <Link key={asset.symbol} href={`/asset/${asset.symbol}`} onClick={dismiss}>
-              <span><strong>{asset.symbol}</strong><small>{asset.name}</small></span>
+              <span className="search-identity"><AssetMark symbol={asset.symbol} className="asset-mark-small" /><span><strong>{asset.symbol}</strong><small>{asset.name}</small></span></span>
               <ArrowUpRight size={16} />
             </Link>
           ))}

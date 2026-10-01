@@ -1,5 +1,8 @@
 # Bundled fonts
 
+Inter variable is sourced from `https://github.com/google/fonts/tree/main/ofl/inter`
+and licensed under the SIL Open Font License in `OFL-Inter.txt`.
+
 These unmodified Latin variable WOFF2 files were downloaded by `next/font/google`
 and are bundled locally so development and production builds do not require access
 to Google Fonts. Both are distributed under the SIL Open Font License 1.1; their
