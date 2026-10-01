@@ -1,8 +1,8 @@
-# Goldirham Lens
+# Goldirham Insight
 
 **AI-era investment research with source-labeled market data.**
 
-Goldirham Lens is an educational research and demonstration platform that tracks the companies and assets powering the AI build-out. It combines deep-dive theses, a consistent 3-factor scoring model, and market or simulated prices across five categories. Each quote and chart identifies its source.
+Goldirham Insight is an educational research and demonstration platform that tracks the companies and assets powering the AI build-out. It combines deep-dive theses, a consistent 3-factor scoring model, and market or simulated prices across five categories. Each quote and chart identifies its source.
 
 🔗 **Live site:** https://goldirham-lens.vercel.app/
 
@@ -69,6 +69,6 @@ recorded in `public/logos/README.md` and `public/logos/sources.json`.
 
 ## Disclaimer
 
-Goldirham Lens is an educational research and demonstration project. **Nothing here is financial advice**, a recommendation, or an offer to buy or sell any security or digital asset. Scores and theses are editorial opinions for illustration. Prices may be simulated where live feeds are unavailable. Always do your own research and consult a licensed advisor before investing.
+Goldirham Insight is an educational research and demonstration project. **Nothing here is financial advice**, a recommendation, or an offer to buy or sell any security or digital asset. Scores and theses are editorial opinions for illustration. Prices may be simulated where live feeds are unavailable. Always do your own research and consult a licensed advisor before investing.
 
-© 2026 Goldirham Lens
+© 2026 Goldirham Insight

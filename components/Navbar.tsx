@@ -24,9 +24,9 @@ export function Navbar({ assets }: { assets: SearchAsset[] }) {
   return (
     <header className="site-header">
       <nav className="site-container nav-inner" aria-label="Main navigation">
-        <Link href="/" className="brand" aria-label="Goldirham Lens home" onClick={() => setOpen(false)}>
+        <Link href="/" className="brand" aria-label="Goldirham Insight home" onClick={() => setOpen(false)}>
           <BrandMark className="brand-mark" />
-          <span>Goldirham Lens<span className="brand-period">.</span></span>
+          <span>Goldirham Insight<span className="brand-period">.</span></span>
         </Link>
 
         <div className="nav-links">

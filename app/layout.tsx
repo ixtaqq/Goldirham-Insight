@@ -23,8 +23,8 @@ const mono = localFont({
 
 export const metadata: Metadata = {
   title: {
-    default: "Goldirham Lens — AI-era investment research",
-    template: "%s · Goldirham Lens",
+    default: "Goldirham Insight — AI-era investment research",
+    template: "%s · Goldirham Insight",
   },
   description:
     "Deep-dive research, 3-factor scores and source-labeled market or simulated data across AI utilities, mega stocks, semiconductors, ETFs and crypto.",
