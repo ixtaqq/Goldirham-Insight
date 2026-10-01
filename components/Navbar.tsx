@@ -18,15 +18,15 @@ export function Navbar({ assets }: { assets: SearchAsset[] }) {
     { href: "/#live", label: "Live desk" },
     { href: "/#markets", label: "Research" },
     { href: "/#approach", label: "Framework" },
-    { href: "/#why", label: "Why Goldirham" },
+    { href: "/#why", label: "About" },
   ];
 
   return (
     <header className="site-header">
       <nav className="site-container nav-inner" aria-label="Main navigation">
-        <Link href="/" className="brand" aria-label="Goldirham home" onClick={() => setOpen(false)}>
+        <Link href="/" className="brand" aria-label="Goldirham Lens home" onClick={() => setOpen(false)}>
           <BrandMark className="brand-mark" />
-          <span>Goldirham<span className="brand-period">.</span></span>
+          <span>Goldirham Lens<span className="brand-period">.</span></span>
         </Link>
 
         <div className="nav-links">
