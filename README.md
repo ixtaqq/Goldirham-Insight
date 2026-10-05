@@ -67,6 +67,65 @@ All 26 assets have local brand logos in `public/logos/`, reused across cards,
 search, the ticker, radar, scorecards, and research headers. Logo provenance is
 recorded in `public/logos/README.md` and `public/logos/sources.json`.
 
+## Local development and verification
+
+Use Node.js 22. On this Windows workspace, enable it with
+`& 'E:\workspace\Projects\Use-Node22.ps1'`, then run:
+
+```powershell
+npm.cmd ci
+npm.cmd run dev
+```
+
+No API keys are required. Optional server-only keys are documented in `.env.example`;
+put your own values in `.env.local`. `COINGECKO_API_KEY` supports a Demo key only.
+Do not use a Pro key with the public API host. Never expose these keys through
+`NEXT_PUBLIC_` variables.
+
+```powershell
+npm.cmd run lint
+npm.cmd run typecheck
+npm.cmd test
+npm.cmd run build
+npm.cmd run test:smoke
+npm.cmd start
+```
+
+The Node test suite runs the actual TypeScript market adapters and route handlers
+with mocked provider responses. It adds no test dependencies, uses no real API keys,
+and covers malformed data, simulation fallbacks, cache concurrency and expiry,
+duplicate symbols, quote timestamps, credential transport, and chart responses.
+TypeScript checking remains a separate step because the test loader only transpiles.
+The smoke test starts and stops its own production server on a temporary loopback
+port. It checks all content routes, review disclosures and simulated market routes
+without provider keys or external market-data calls. Build before running it.
+Exercise search, filters, navigation, and chart ranges in the browser after UI changes.
+
+The GitHub Actions workflow in `.github/workflows/ci.yml` runs lint, regression tests,
+build, typecheck and smoke tests. A separate dependency-audit job remains visibly
+failing while the known development-tool advisory is open; it preserves the audit
+JSON as an artifact. Adding this file does not activate required branch checks or
+run GitHub Actions until the changes are pushed.
+
+Market adapters validate provider values before caching them. Quote `updatedAt`
+is the provider timestamp in milliseconds; the response `ts` is the API response time.
+Cache misses share an in-flight request within one server process. Failures use
+the same short TTL (quotes: 10–12 seconds; charts: 30 seconds), then retry. This can
+delay recovery briefly and does not enforce an account-wide provider quota across
+multiple server instances. Source labels continue to distinguish market and simulated data.
+
+Asset pages show quote observation times in UTC. Simulated quotes display their
+generation time and an explicit illustration label. Provider delays and closed
+markets are not inferred from quote age alone.
+
+Every thesis has a research record. Catalog entries without recorded review
+metadata display **Not reviewed**; no authors, dates or citations are fabricated.
+The optional `Asset.research` field holds a reviewer, actual review date, supporting
+HTTPS sources and the reasoning behind all three scores. Catalog tests check that
+recorded reviews are complete. See [the quality and provenance guide](docs/quality-and-provenance.md)
+for editing and operational instructions, and [the open dependency advisory](docs/security/dependency-advisory.md)
+for the remaining security limitation.
+
 ## Disclaimer
 
 Goldirham Insight is an educational research and demonstration project. **Nothing here is financial advice**, a recommendation, or an offer to buy or sell any security or digital asset. Scores and theses are editorial opinions for illustration. Prices may be simulated where live feeds are unavailable. Always do your own research and consult a licensed advisor before investing.

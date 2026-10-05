@@ -1,0 +1,308 @@
+diff --git a/.env.example b/.env.example
+index 2c543c1..6be265f 100644
+--- a/.env.example
++++ b/.env.example
+@@ -1,12 +1,13 @@
+ # ─────────────────────────────────────────────────────────────
+-#  Invest Market — environment variables
++#  Goldirham Insight — environment variables
+ # ─────────────────────────────────────────────────────────────
+ # All data sources have a working fallback, so the app runs with
+ # ZERO configuration. Add keys below to upgrade specific feeds to
+ # fully live data.
+ 
+ # Crypto prices & charts use CoinGecko's free public API (no key
+-# required). Add a Demo/Pro key here only if you hit rate limits.
++# required). This integration supports a Demo key only.
++# Pro keys require a different API host and header, not configured here.
+ # COINGECKO_API_KEY=
+ 
+ # Stock & ETF quotes: get a free key at https://finnhub.io
+diff --git a/AGENTS.md b/AGENTS.md
+index 36d0bf7..2adee05 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -24,7 +24,8 @@ npm.cmd run lint
+ & '.\node_modules\.bin\tsc.cmd' --noEmit --incremental false
+ ```
+ 
+-Both checks passed during setup. No automated test script is configured.
++Both checks passed during setup. Run `npm.cmd test` for the mocked market-data
++regression suite, and `npm.cmd run build` for the production build.
+ For UI changes, also exercise the affected page and interactions; lint and
+ TypeScript checks do not establish that the UI works.
+ 
+diff --git a/README.md b/README.md
+index 56954f7..ce66f5f 100644
+--- a/README.md
++++ b/README.md
+@@ -67,6 +67,43 @@ All 26 assets have local brand logos in `public/logos/`, reused across cards,
+ search, the ticker, radar, scorecards, and research headers. Logo provenance is
+ recorded in `public/logos/README.md` and `public/logos/sources.json`.
+ 
++## Local development and verification
++
++Use Node.js 22. On this Windows workspace, enable it with
++`& 'E:\workspace\Projects\Use-Node22.ps1'`, then run:
++
++```powershell
++npm.cmd ci
++npm.cmd run dev
++```
++
++No API keys are required. Optional server-only keys are documented in `.env.example`;
++put your own values in `.env.local`. `COINGECKO_API_KEY` supports a Demo key only.
++Do not use a Pro key with the public API host. Never expose these keys through
++`NEXT_PUBLIC_` variables.
++
++```powershell
++npm.cmd run lint
++npm.cmd run typecheck
++npm.cmd test
++npm.cmd run build
++npm.cmd start
++```
++
++The Node test suite runs the actual TypeScript market adapters and route handlers
++with mocked provider responses. It adds no test dependencies, uses no real API keys,
++and covers malformed data, simulation fallbacks, cache concurrency and expiry,
++duplicate symbols, quote timestamps, credential transport, and chart responses.
++TypeScript checking remains a separate step because the test loader only transpiles.
++Exercise search, filters, navigation, and chart ranges in the browser after UI changes.
++
++Market adapters validate provider values before caching them. Quote `updatedAt`
++is the provider timestamp in milliseconds; the response `ts` is the API response time.
++Cache misses share an in-flight request within one server process. Failures use
++the same short TTL (quotes: 10–12 seconds; charts: 30 seconds), then retry. This can
++delay recovery briefly and does not enforce an account-wide provider quota across
++multiple server instances. Source labels continue to distinguish market and simulated data.
++
+ ## Disclaimer
+ 
+ Goldirham Insight is an educational research and demonstration project. **Nothing here is financial advice**, a recommendation, or an offer to buy or sell any security or digital asset. Scores and theses are editorial opinions for illustration. Prices may be simulated where live feeds are unavailable. Always do your own research and consult a licensed advisor before investing.
+diff --git a/app/api/quotes/route.ts b/app/api/quotes/route.ts
+index 806d0fb..eace68e 100644
+--- a/app/api/quotes/route.ts
++++ b/app/api/quotes/route.ts
+@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
+     ? param.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean)
+     : ASSETS.map((a) => a.symbol);
+ 
+-  const assets = requested
++  const assets = [...new Set(requested)]
+     .map((s) => getAsset(s))
+     .filter((a): a is Asset => Boolean(a));
+ 
+@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
+           source: "coingecko",
+           currency: "USD",
+           marketCap: c.marketCap,
+-          updatedAt: Date.now(),
++          updatedAt: c.updatedAt,
+         };
+       }
+       // Real stock from Finnhub (only if a key is configured)
+@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
+             changePct: fh.changePct,
+             source: "finnhub",
+             currency: "USD",
+-            updatedAt: Date.now(),
++            updatedAt: fh.updatedAt,
+           };
+         }
+       }
+diff --git a/components/ArticleBody.tsx b/components/ArticleBody.tsx
+index d866ef0..99f7c22 100644
+--- a/components/ArticleBody.tsx
++++ b/components/ArticleBody.tsx
+@@ -1,12 +1,14 @@
+ import { Fragment, type ReactNode } from "react";
+ 
+-/** Inline parser: **bold** segments → <strong>. Content is trusted (our data). */
++/** Inline parser: **bold** and *emphasis*. Content is trusted (our data). */
+ function inline(text: string): ReactNode[] {
+-  return text.split("**").map((part, i) =>
+-    i % 2 === 1 ? (
++  return text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g).map((part, i) =>
++    part.startsWith("**") && part.endsWith("**") ? (
+       <strong key={i} className="font-semibold text-ink-950">
+-        {part}
++        {part.slice(2, -2)}
+       </strong>
++    ) : part.startsWith("*") && part.endsWith("*") && part.length > 2 ? (
++      <em key={i}>{part.slice(1, -1)}</em>
+     ) : (
+       <Fragment key={i}>{part}</Fragment>
+     )
+diff --git a/eslint.config.mjs b/eslint.config.mjs
+index fb614c8..51ee889 100644
+--- a/eslint.config.mjs
++++ b/eslint.config.mjs
+@@ -2,4 +2,11 @@ import { defineConfig } from "eslint/config";
+ import nextVitals from "eslint-config-next/core-web-vitals";
+ import nextTs from "eslint-config-next/typescript";
+ 
+-export default defineConfig([...nextVitals, ...nextTs]);
++export default defineConfig([
++  ...nextVitals,
++  ...nextTs,
++  {
++    files: ["tests/**/*.cjs"],
++    rules: { "@typescript-eslint/no-require-imports": "off" },
++  },
++]);
+diff --git a/lib/sources.ts b/lib/sources.ts
+index b2c4d8e..ed46f2e 100644
+--- a/lib/sources.ts
++++ b/lib/sources.ts
+@@ -6,8 +6,8 @@ import { RANGE_CONFIG, round } from "./market";
+  *  • Crypto  → CoinGecko public API (no key needed; key optional)
+  *  • Stocks  → Finnhub quotes (only if FINNHUB_API_KEY is set)
+  * Every function returns null on failure so callers can fall back to the
+- * deterministic simulator in market.ts. A small in-memory TTL cache keeps us
+- * well under free-tier rate limits.
++ * deterministic simulator in market.ts. A per-process TTL cache shares pending
++ * requests and briefly caches failures to reduce repeated provider calls.
+  */
+ 
+ const CG_BASE = "https://api.coingecko.com/api/v3";
+@@ -17,13 +17,22 @@ const REQUEST_TIMEOUT_MS = 5000;
+ 
+ type CacheEntry = { at: number; data: unknown };
+ const cache = new Map<string, CacheEntry>();
++const pending = new Map<string, Promise<unknown>>();
+ 
+-async function cached<T>(key: string, ttlMs: number, fn: () => Promise<T>): Promise<T> {
++async function cached<T>(key: string, ttlMs: number, fn: () => Promise<T>): Promise<T | null> {
+   const hit = cache.get(key);
+-  if (hit && Date.now() - hit.at < ttlMs) return hit.data as T;
+-  const data = await fn();
+-  cache.set(key, { at: Date.now(), data });
+-  return data;
++  if (hit && Date.now() - hit.at < ttlMs) return hit.data as T | null;
++  const inFlight = pending.get(key);
++  if (inFlight) return inFlight as Promise<T | null>;
++  const request = fn()
++    .catch(() => null)
++    .then((data) => {
++      cache.set(key, { at: Date.now(), data });
++      return data;
++    })
++    .finally(() => pending.delete(key));
++  pending.set(key, request);
++  return request;
+ }
+ 
+ function cgHeaders(): HeadersInit | undefined {
+@@ -34,6 +43,7 @@ export interface CryptoQuote {
+   price: number;
+   changePct: number;
+   marketCap?: number;
++  updatedAt: number;
+ }
+ 
+ /** Batch crypto quotes via /simple/price. Returns map keyed by coingecko id. */
+@@ -41,12 +51,13 @@ export async function fetchCryptoQuotes(
+   ids: string[]
+ ): Promise<Record<string, CryptoQuote> | null> {
+   if (ids.length === 0) return {};
+-  const key = `cgq:${ids.sort().join(",")}`;
++  const uniqueIds = [...new Set(ids)].sort();
++  const key = `cgq:${uniqueIds.join(",")}`;
+   try {
+     return await cached(key, 12_000, async () => {
+-      const url = `${CG_BASE}/simple/price?ids=${ids.join(
++      const url = `${CG_BASE}/simple/price?ids=${uniqueIds.join(
+         ","
+-      )}&vs_currencies=usd&include_24hr_change=true&include_market_cap=true`;
++      )}&vs_currencies=usd&include_24hr_change=true&include_market_cap=true&include_last_updated_at=true`;
+       const res = await fetch(url, {
+         headers: cgHeaders(),
+         cache: "no-store",
+@@ -55,14 +66,21 @@ export async function fetchCryptoQuotes(
+       if (!res.ok) throw new Error(`coingecko ${res.status}`);
+       const json = (await res.json()) as Record<
+         string,
+-        { usd: number; usd_24h_change?: number; usd_market_cap?: number }
++        { usd: number; usd_24h_change: number; usd_market_cap?: number; last_updated_at: number }
+       >;
+       const out: Record<string, CryptoQuote> = {};
+       for (const [id, v] of Object.entries(json)) {
++        if (
++          !v || !Number.isFinite(v.usd) || round(v.usd) <= 0 ||
++          !Number.isFinite(v.usd_24h_change) || v.usd_24h_change <= -100 ||
++          !Number.isFinite(v.usd / (1 + v.usd_24h_change / 100)) ||
++          !Number.isSafeInteger(v.last_updated_at) || v.last_updated_at <= 0
++        ) continue;
+         out[id] = {
+           price: v.usd,
+-          changePct: round(v.usd_24h_change ?? 0, 2),
+-          marketCap: v.usd_market_cap,
++          changePct: v.usd_24h_change,
++          marketCap: Number.isFinite(v.usd_market_cap) && v.usd_market_cap! >= 0 ? v.usd_market_cap : undefined,
++          updatedAt: v.last_updated_at * 1000,
+         };
+       }
+       return out;
+@@ -90,7 +108,12 @@ export async function fetchCryptoChart(
+       if (!res.ok) throw new Error(`coingecko ${res.status}`);
+       const json = (await res.json()) as { prices: [number, number][] };
+       const prices = json.prices ?? [];
+-      if (prices.length === 0) throw new Error("empty");
++      if (
++        !Array.isArray(prices) || prices.length < 2 ||
++        prices.some((p) => !Array.isArray(p) ||
++          !Number.isSafeInteger(p[0]) || p[0] <= 0 ||
++          !Number.isFinite(p[1]) || round(p[1]) <= 0)
++      ) throw new Error("Invalid chart history");
+       // downsample evenly to ~points
+       const stepN = Math.max(1, Math.floor(prices.length / points));
+       const out: LinePoint[] = [];
+@@ -116,6 +139,7 @@ export interface StockQuote {
+   price: number;
+   change: number;
+   changePct: number;
++  updatedAt: number;
+ }
+ 
+ /** Live stock quote via Finnhub — only when a key is configured. */
+@@ -124,15 +148,20 @@ export async function fetchStockQuote(symbol: string): Promise<StockQuote | null
+   const key = `fh:${symbol}`;
+   try {
+     return await cached(key, 10_000, async () => {
+-      const url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_KEY}`;
++      const url = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}`;
+       const res = await fetch(url, {
++        headers: { "X-Finnhub-Token": FINNHUB_KEY },
+         cache: "no-store",
+         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+       });
+       if (!res.ok) throw new Error(`finnhub ${res.status}`);
+-      const j = (await res.json()) as { c: number; d: number; dp: number };
+-      if (!j.c) throw new Error("no price");
+-      return { price: j.c, change: j.d, changePct: round(j.dp, 2) };
++      const j = (await res.json()) as { c: number; d: number; dp: number; t: number };
++      if (
++        !j || !Number.isFinite(j.c) || round(j.c) <= 0 ||
++        !Number.isFinite(j.d) || !Number.isFinite(j.dp) ||
++        !Number.isSafeInteger(j.t) || j.t <= 0
++      ) throw new Error("Invalid stock quote");
++      return { price: j.c, change: j.d, changePct: round(j.dp, 2), updatedAt: j.t * 1000 };
+     });
+   } catch {
+     return null;
+diff --git a/package.json b/package.json
+index 4d5ba43..16239f8 100644
+--- a/package.json
++++ b/package.json
+@@ -7,7 +7,9 @@
+     "dev": "next dev",
+     "build": "next build",
+     "start": "next start",
+-    "lint": "eslint ."
++    "lint": "eslint .",
++    "test": "node --test tests/*.test.cjs",
++    "typecheck": "tsc --noEmit --incremental false"
+   },
+   "dependencies": {
+     "lightweight-charts": "^4.2.1",

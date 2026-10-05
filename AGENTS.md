@@ -24,9 +24,20 @@ npm.cmd run lint
 & '.\node_modules\.bin\tsc.cmd' --noEmit --incremental false
 ```
 
-Both checks passed during setup. No automated test script is configured.
+Both checks passed during setup. Run `npm.cmd test` for the mocked market-data
+regression suite, and `npm.cmd run build` for the production build.
+After building, run `npm.cmd run test:smoke` for production routes and disclosures.
 For UI changes, also exercise the affected page and interactions; lint and
 TypeScript checks do not establish that the UI works.
+
+## Research and diagnostics
+
+- Omit `Asset.research` until the reviewer, actual review date, supporting sources,
+  and all three score rationales are known. Missing metadata must remain visibly
+  unreviewed; never invent editorial attribution or citations.
+- Market failure logs must contain only structured provider/operation/reason/status
+  fields and rejected-record counts. Do not log raw errors, request URLs, credentials,
+  or response bodies. See `docs/quality-and-provenance.md`.
 
 ## Shared agent workflow
 

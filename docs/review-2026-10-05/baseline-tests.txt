@@ -1,0 +1,273 @@
+TAP version 13
+# Subtest: one malformed crypto quote falls back without poisoning valid quotes
+not ok 1 - one malformed crypto quote falls back without poisoning valid quotes
+  ---
+  duration_ms: 93.2655
+  type: 'test'
+  location: 'E:\\workspace\\Projects\\Goldirham\\tests\\market.test.cjs:12:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'coingecko'
+    - 'simulated'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'simulated'
+  actual: 'coingecko'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (E:\workspace\Projects\Goldirham\tests\market.test.cjs:17:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: stale or impossible crypto changes use simulation
+not ok 2 - stale or impossible crypto changes use simulation
+  ---
+  duration_ms: 37.8781
+  type: 'test'
+  location: 'E:\\workspace\\Projects\\Goldirham\\tests\\market.test.cjs:22:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    change: null
+    + actual - expected
+    
+    + 'coingecko'
+    - 'simulated'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'simulated'
+  actual: 'coingecko'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (E:\workspace\Projects\Goldirham\tests\market.test.cjs:28:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: invalid stock fields use simulation
+not ok 3 - invalid stock fields use simulation
+  ---
+  duration_ms: 24.2823
+  type: 'test'
+  location: 'E:\\workspace\\Projects\\Goldirham\\tests\\market.test.cjs:32:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'finnhub'
+    - 'simulated'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'simulated'
+  actual: 'finnhub'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (E:\workspace\Projects\Goldirham\tests\market.test.cjs:38:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: malformed chart history uses the labeled simulation fallback
+not ok 4 - malformed chart history uses the labeled simulation fallback
+  ---
+  duration_ms: 21.4648
+  type: 'test'
+  location: 'E:\\workspace\\Projects\\Goldirham\\tests\\market.test.cjs:41:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'coingecko'
+    - 'simulated'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'simulated'
+  actual: 'coingecko'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (E:\workspace\Projects\Goldirham\tests\market.test.cjs:46:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: duplicate symbols produce one quote and one provider request
+not ok 5 - duplicate symbols produce one quote and one provider request
+  ---
+  duration_ms: 17.2463
+  type: 'test'
+  location: 'E:\\workspace\\Projects\\Goldirham\\tests\\market.test.cjs:51:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    3 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 3
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (E:\workspace\Projects\Goldirham\tests\market.test.cjs:58:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: concurrent cache misses share a single provider request
+not ok 6 - concurrent cache misses share a single provider request
+  ---
+  duration_ms: 9.0587
+  type: 'test'
+  location: 'E:\\workspace\\Projects\\Goldirham\\tests\\market.test.cjs:62:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    2 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 2
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (E:\workspace\Projects\Goldirham\tests\market.test.cjs:69:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: provider failures are cached briefly, then retried after expiry
+not ok 7 - provider failures are cached briefly, then retried after expiry
+  ---
+  duration_ms: 6.7908
+  type: 'test'
+  location: 'E:\\workspace\\Projects\\Goldirham\\tests\\market.test.cjs:72:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + {
+    +   bitcoin: {
+    +     changePct: 2,
+    +     marketCap: undefined,
+    +     price: 100
+    +   }
+    + }
+    - null
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: ~
+  actual:
+    bitcoin:
+      price: 100
+      changePct: 2
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (E:\workspace\Projects\Goldirham\tests\market.test.cjs:81:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: equivalent crypto ID sets share a cache entry without mutating the input
+not ok 8 - equivalent crypto ID sets share a cache entry without mutating the input
+  ---
+  duration_ms: 7.4443
+  type: 'test'
+  location: 'E:\\workspace\\Projects\\Goldirham\\tests\\market.test.cjs:88:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+      [
+    -   'ethereum',
+        'bitcoin',
+        'bitcoin',
+    +   'ethereum'
+      ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'ethereum'
+    1: 'bitcoin'
+    2: 'bitcoin'
+  actual:
+    0: 'bitcoin'
+    1: 'bitcoin'
+    2: 'ethereum'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (E:\workspace\Projects\Goldirham\tests\market.test.cjs:96:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: quotes retain provider timestamps across API reads
+not ok 9 - quotes retain provider timestamps across API reads
+  ---
+  duration_ms: 19.8477
+  type: 'test'
+  location: 'E:\\workspace\\Projects\\Goldirham\\tests\\market.test.cjs:100:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok(quotes.every((quote) => quote.updatedAt === timestamp * 1000))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (E:\workspace\Projects\Goldirham\tests\market.test.cjs:107:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Finnhub credentials use a header instead of a request URL
+not ok 10 - Finnhub credentials use a header instead of a request URL
+  ---
+  duration_ms: 6.7193
+  type: 'test'
+  location: 'E:\\workspace\\Projects\\Goldirham\\tests\\market.test.cjs:111:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (E:\workspace\Projects\Goldirham\tests\market.test.cjs:118:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: valid chart history retains the latest provider point
+ok 11 - valid chart history retains the latest provider point
+  ---
+  duration_ms: 16.6591
+  type: 'test'
+  ...
+# Subtest: unknown chart symbols return 404 without an external request
+ok 12 - unknown chart symbols return 404 without an external request
+  ---
+  duration_ms: 13.7898
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 2
+# fail 10
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 488.0469

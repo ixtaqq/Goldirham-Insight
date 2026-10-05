@@ -16,6 +16,14 @@ export interface Scores {
   aiExposure: number;
 }
 
+export interface ResearchReview {
+  reviewedBy: string;
+  /** Date of the actual editorial review, YYYY-MM-DD. */
+  reviewedAt: string;
+  sources: [{ title: string; url: string }, ...{ title: string; url: string }[]];
+  scoreRationale: Record<keyof Scores, string>;
+}
+
 export interface Asset {
   /** Ticker or coin symbol, e.g. "CEG", "BTC" */
   symbol: string;
@@ -43,6 +51,8 @@ export interface Asset {
   scores: Scores;
   /** Long-form research article (markdown-ish, rendered by ArticleBody) */
   article: string;
+  /** Omit until a review and its supporting evidence have been recorded. */
+  research?: ResearchReview;
   /** Base price used to seed the live-simulated feed (USD) */
   basePrice: number;
   /** Rough realised vol used by the simulator (annualised, e.g. 0.45) */

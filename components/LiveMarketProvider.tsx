@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import type { Quote } from "@/lib/types";
+import { isQuoteTimestamp } from "@/lib/quote-time";
 
 type QuoteMap = Record<string, Quote>;
 
@@ -58,6 +59,7 @@ export function LiveMarketProvider({ children }: { children: ReactNode }) {
           !q || typeof q.symbol !== "string" || !q.symbol ||
           !Number.isFinite(q.price) || q.price <= 0 ||
           !Number.isFinite(q.change) || !Number.isFinite(q.changePct) ||
+          !isQuoteTimestamp(q.updatedAt) ||
           !["coingecko", "finnhub", "simulated"].includes(q.source)
         )) {
           throw new Error("Invalid quote response");

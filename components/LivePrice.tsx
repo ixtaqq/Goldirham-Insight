@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { cn, formatCompact, formatPct, formatPrice, sourceLabel } from "@/lib/utils";
 import { useMarket, useQuote } from "./LiveMarketProvider";
+import { QuoteFreshness } from "./QuoteFreshness";
 
 export function LivePrice({
   symbol,
@@ -86,6 +87,7 @@ export function LivePrice({
           <span>{error ? "Quotes unavailable · Retrying…" : "Loading quote…"}</span>
         )}
       </div>
+      {quote && <QuoteFreshness quote={quote} />}
     </div>
   );
 }

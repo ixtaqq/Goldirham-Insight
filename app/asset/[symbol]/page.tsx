@@ -20,6 +20,7 @@ import { ScoreBars } from "@/components/ScoreBars";
 import { ArticleBody } from "@/components/ArticleBody";
 import { AssetCard } from "@/components/AssetCard";
 import { AssetMark } from "@/components/AssetMark";
+import { ResearchRecord } from "@/components/ResearchRecord";
 
 export function generateStaticParams() {
   return ASSETS.map((a) => ({ symbol: a.symbol }));
@@ -119,6 +120,7 @@ export default async function AssetPage(props: { params: Promise<{ symbol: strin
         {/* article */}
         <div className="lg:col-span-2">
           <div className="rounded-3xl border border-line bg-white p-6 sm:p-8">
+            <ResearchRecord review={asset.research} />
             <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-pine">
               <Waypoints size={14} />
               Investment thesis

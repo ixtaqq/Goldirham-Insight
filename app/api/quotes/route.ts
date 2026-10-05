@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     ? param.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean)
     : ASSETS.map((a) => a.symbol);
 
-  const assets = requested
+  const assets = [...new Set(requested)]
     .map((s) => getAsset(s))
     .filter((a): a is Asset => Boolean(a));
 
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
           source: "coingecko",
           currency: "USD",
           marketCap: c.marketCap,
-          updatedAt: Date.now(),
+          updatedAt: c.updatedAt,
         };
       }
       // Real stock from Finnhub (only if a key is configured)
@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
             changePct: fh.changePct,
             source: "finnhub",
             currency: "USD",
-            updatedAt: Date.now(),
+            updatedAt: fh.updatedAt,
           };
         }
       }

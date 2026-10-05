@@ -1,12 +1,14 @@
 import { Fragment, type ReactNode } from "react";
 
-/** Inline parser: **bold** segments → <strong>. Content is trusted (our data). */
+/** Inline parser: **bold** and *emphasis*. Content is trusted (our data). */
 function inline(text: string): ReactNode[] {
-  return text.split("**").map((part, i) =>
-    i % 2 === 1 ? (
+  return text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g).map((part, i) =>
+    part.startsWith("**") && part.endsWith("**") ? (
       <strong key={i} className="font-semibold text-ink-950">
-        {part}
+        {part.slice(2, -2)}
       </strong>
+    ) : part.startsWith("*") && part.endsWith("*") && part.length > 2 ? (
+      <em key={i}>{part.slice(1, -1)}</em>
     ) : (
       <Fragment key={i}>{part}</Fragment>
     )

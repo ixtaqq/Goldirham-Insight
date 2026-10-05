@@ -1,0 +1,86 @@
+
+> goldirham@1.0.0 test
+> node --test tests/*.test.cjs
+
+TAP version 13
+# Subtest: one malformed crypto quote falls back without poisoning valid quotes
+ok 1 - one malformed crypto quote falls back without poisoning valid quotes
+  ---
+  duration_ms: 97.8858
+  type: 'test'
+  ...
+# Subtest: stale or impossible crypto changes use simulation
+ok 2 - stale or impossible crypto changes use simulation
+  ---
+  duration_ms: 121.5092
+  type: 'test'
+  ...
+# Subtest: invalid stock fields use simulation
+ok 3 - invalid stock fields use simulation
+  ---
+  duration_ms: 18.9987
+  type: 'test'
+  ...
+# Subtest: malformed chart history uses the labeled simulation fallback
+ok 4 - malformed chart history uses the labeled simulation fallback
+  ---
+  duration_ms: 14.7955
+  type: 'test'
+  ...
+# Subtest: duplicate symbols produce one quote and one provider request
+ok 5 - duplicate symbols produce one quote and one provider request
+  ---
+  duration_ms: 20.1734
+  type: 'test'
+  ...
+# Subtest: concurrent cache misses share a single provider request
+ok 6 - concurrent cache misses share a single provider request
+  ---
+  duration_ms: 6.8607
+  type: 'test'
+  ...
+# Subtest: provider failures are cached briefly, then retried after expiry
+ok 7 - provider failures are cached briefly, then retried after expiry
+  ---
+  duration_ms: 8.7188
+  type: 'test'
+  ...
+# Subtest: equivalent crypto ID sets share a cache entry without mutating the input
+ok 8 - equivalent crypto ID sets share a cache entry without mutating the input
+  ---
+  duration_ms: 8.4798
+  type: 'test'
+  ...
+# Subtest: quotes retain provider timestamps across API reads
+ok 9 - quotes retain provider timestamps across API reads
+  ---
+  duration_ms: 14.1465
+  type: 'test'
+  ...
+# Subtest: Finnhub credentials use a header instead of a request URL
+ok 10 - Finnhub credentials use a header instead of a request URL
+  ---
+  duration_ms: 9.217
+  type: 'test'
+  ...
+# Subtest: valid chart history retains the latest provider point
+ok 11 - valid chart history retains the latest provider point
+  ---
+  duration_ms: 13.1441
+  type: 'test'
+  ...
+# Subtest: unknown chart symbols return 404 without an external request
+ok 12 - unknown chart symbols return 404 without an external request
+  ---
+  duration_ms: 15.428
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 559.4096
