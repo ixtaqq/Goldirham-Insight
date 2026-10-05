@@ -1,0 +1,122 @@
+[
+  {
+    "width": 1280,
+    "path": "/",
+    "state": {
+      "background": "rgb(246, 247, 249)",
+      "bodyFont": "sans, \"sans Fallback\"",
+      "heading": [
+        {
+          "font": "68px",
+          "height": 138.69317626953125,
+          "text": "Big ideas.Clear conviction.",
+          "top": 291.9034118652344
+        }
+      ],
+      "overflow": false,
+      "record": []
+    }
+  },
+  {
+    "width": 1280,
+    "path": "/asset/NVDA",
+    "state": {
+      "background": "rgb(246, 247, 249)",
+      "bodyFont": "sans, \"sans Fallback\"",
+      "heading": [
+        {
+          "font": "36px",
+          "height": 40.72443008422851,
+          "text": "NVIDIANVDA",
+          "top": 187.2301025390625
+        }
+      ],
+      "overflow": false,
+      "record": [
+        {
+          "border": "rgb(230, 232, 236)",
+          "height": 66.42045593261719,
+          "padding": "0px"
+        }
+      ]
+    }
+  },
+  {
+    "width": 1280,
+    "path": "/category/ai-companies",
+    "state": {
+      "background": "rgb(246, 247, 249)",
+      "bodyFont": "sans, \"sans Fallback\"",
+      "heading": [
+        {
+          "font": "46.5455px",
+          "height": 51.19318008422851,
+          "text": "AI Companies",
+          "top": 235.8664703369141
+        }
+      ],
+      "overflow": false,
+      "record": []
+    }
+  },
+  {
+    "width": 375,
+    "path": "/",
+    "state": {
+      "background": "rgb(246, 247, 249)",
+      "bodyFont": "sans, \"sans Fallback\"",
+      "heading": [
+        {
+          "font": "42px",
+          "height": 128.52272033691406,
+          "text": "Big ideas.Clear conviction.",
+          "top": 230.88067626953125
+        }
+      ],
+      "overflow": false,
+      "record": []
+    }
+  },
+  {
+    "width": 375,
+    "path": "/asset/NVDA",
+    "state": {
+      "background": "rgb(246, 247, 249)",
+      "bodyFont": "sans, \"sans Fallback\"",
+      "heading": [
+        {
+          "font": "30px",
+          "height": 36.17897415161133,
+          "text": "NVIDIANVDA",
+          "top": 247.5852203369141
+        }
+      ],
+      "overflow": false,
+      "record": [
+        {
+          "border": "rgb(230, 232, 236)",
+          "height": 111.93181610107422,
+          "padding": "0px"
+        }
+      ]
+    }
+  },
+  {
+    "width": 375,
+    "path": "/category/ai-companies",
+    "state": {
+      "background": "rgb(246, 247, 249)",
+      "bodyFont": "sans, \"sans Fallback\"",
+      "heading": [
+        {
+          "font": "30px",
+          "height": 32.99715805053711,
+          "text": "AI Companies",
+          "top": 217.8693084716797
+        }
+      ],
+      "overflow": false,
+      "record": []
+    }
+  }
+]

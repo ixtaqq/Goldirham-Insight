@@ -1,12 +1,63 @@
-# Open development dependency advisory
+# Development dependency advisory and remediation
 
-Status: **Open — not remediated and not marked risk-accepted.**
+Status: **Removed from the local dependency graph; full and production audits pass.**
 
-Verified 5 October 2026. Ownership: repository maintainer; no individual assigned
-by this implementation. Revisit before a production release and whenever the
-dependency-audit CI check changes.
+Verified 5 October 2026. The upstream advisory remains unpatched. This project
+removes the affected implementation from both tooling paths instead of suppressing
+the audit. GitHub CI must be checked for the exact commit after publishing.
 
-## Evidence
+## Remediation
+
+- Upgrade `tailwindcss` from 3.4.19 to 4.3.3 and use `@tailwindcss/postcss` 4.3.3.
+  This removes Tailwind's `braces`, `micromatch`, `chokidar` and `fast-glob` path.
+- Keep Next and its ESLint configuration at 16.3.6. Its plugin's only `fast-glob`
+  use is `globSync(pattern, { onlyDirectories: true })` in `get-root-dirs.js`.
+  Replace that dependency with the local `@goldirham/next-eslint-glob` adapter,
+  backed by `tinyglobby` 0.2.17. No vulnerable source is copied into the adapter.
+- The adapter preserves relative/absolute paths, stops implicit recursive directory
+  expansion and strips trailing separators. Direct substitution failed two tests
+  by returning nested directories and relative paths for absolute patterns.
+- The root `fast-glob` development dependency supplies the local package; the
+  version-scoped override references it using npm's `$fast-glob` syntax. The local
+  package is not a general replacement for the full `fast-glob` API. Do not use it
+  elsewhere or widen the override. Reassess it when updating Next lint tooling,
+  and remove the adapter once upstream uses a safe dependency.
+- Keep the existing Tailwind theme through `@config`, explicitly scan app,
+  components and lib, and migrate the score gradient utility. Put the existing
+  reference design's element reset in `@layer base`: leaving it unlayered caused
+  padding utilities to lose to the reset. Border and placeholder defaults retain
+  the v3 values.
+- Declare the root package as ESM for the existing TypeScript theme config.
+  CommonJS test and adapter files retain their explicit `.cjs` extension.
+
+The user approved the major migration. Tailwind 4 requires Safari 16.4+, Chrome
+111+ or Firefox 128+. Older browsers are outside this migration's support target.
+
+## Follow-up verification
+
+- `npm.cmd audit --audit-level=high`: `found 0 vulnerabilities`.
+- `npm.cmd audit --omit=dev --audit-level=high`: `found 0 vulnerabilities`.
+- Fresh isolated `npm.cmd ci --ignore-scripts` from the changed lockfile passes;
+  `npm.cmd ls fast-glob tinyglobby` reports a valid tree and all 25 tests pass there.
+- Build, typecheck, lint and all 25 regression tests pass in the working checkout.
+- Production smoke test passes: 32 pages, 26 disclosures, five chart ranges,
+  quote deduplication and unknown-symbol 404.
+- Browser checks cover the homepage, NVDA and AI Companies at 375px and 1280px CSS
+  widths, with no horizontal overflow. Font families, heading sizes, background,
+  research-record borders and 24px bottom padding are retained. Measurements are
+  not a pixel-perfect screenshot comparison; browser zoom changed during the run.
+- Score gradients render, chart range selection updates, and the mobile menu opens.
+  Enter in mobile search navigates to `/asset/AMD` with the correct heading.
+  Verification captures are in `tailwind-migration/`.
+- The original GitHub run passed quality checks and failed the full audit with
+  `Process completed with exit code 1`:
+  [run 37301685800](https://github.com/ixtaqq/Goldirham-Insight/actions/runs/37301685800).
+
+Sources: [Tailwind migration guide](https://tailwindcss.com/docs/upgrade-guide),
+[tinyglobby](https://github.com/SuperchupuDev/tinyglobby),
+[npm overrides](https://docs.npmjs.com/cli/v11/configuring-npm/package-json/#overrides).
+
+## Historical evidence: before remediation
 
 - Advisory: [GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm).
 - Affected: `braces <=3.0.3`; the advisory lists no patched version.
@@ -59,7 +110,7 @@ Tailwind 3 and the Next ESLint configuration). The advisory concerns deeply nest
 brace patterns exhausting the stack. Production audit results do not make build
 and development tooling safe; do not feed untrusted glob patterns into that tooling.
 
-## Decision for this implementation
+## Historical decision: initial implementation
 
 No forced audit fix, major Tailwind migration, Next lint downgrade, replacement
 fork or silent override was applied. npm's previously suggested changes involve
@@ -70,7 +121,7 @@ The separate CI audit job runs without `continue-on-error` and preserves evidenc
 It is expected to fail until the advisory is genuinely remediated. The application
 quality job can still report its own results independently.
 
-## Remediation acceptance criteria
+## Original remediation acceptance criteria
 
 1. Confirm a patched compatible release, or propose an explicitly reviewed tooling
    migration with exact versions and its source evidence.
@@ -81,4 +132,5 @@ quality job can still report its own results independently.
 4. Run the full npm audit and confirm this chain is absent. Do not suppress it,
    rename it or describe a dependency swap alone as remediation.
 
-This record is an open issue and a release consideration, not a security waiver.
+The original issue was not risk-accepted. The follow-up removes the affected code
+and leaves the full CI audit enforced.

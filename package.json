@@ -2,6 +2,7 @@
   "name": "goldirham",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "AI-era investment research platform — AI utilities, mega-cap stocks, ETFs & crypto with live charts and deep-dive research.",
   "scripts": {
     "dev": "next dev",
@@ -23,11 +24,17 @@
     "@types/node": "^20",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
-    "autoprefixer": "^10.4.20",
+    "@tailwindcss/postcss": "4.3.3",
     "eslint": "9.39.5",
     "eslint-config-next": "16.3.6",
-    "postcss": "^8.4.47",
-    "tailwindcss": "^3.4.14",
+    "fast-glob": "file:./tools/next-eslint-glob",
+    "postcss": "^8.5.16",
+    "tailwindcss": "4.3.3",
     "typescript": "^5"
+  },
+  "overrides": {
+    "@next/eslint-plugin-next@16.3.6": {
+      "fast-glob": "$fast-glob"
+    }
   }
 }

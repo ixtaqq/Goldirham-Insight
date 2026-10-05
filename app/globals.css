@@ -1,9 +1,13 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss" source(none);
+@config "../tailwind.config.ts";
+@source "../app";
+@source "../components";
+@source "../lib";
 
 :root { --gain:#187553; --loss:#bf4d54; --gold:#966b23; --foreground:#18251f; --muted:#68746d; --line:#e1e7e1; --canvas:#f7f9f6; }
 @layer base {
+  *,::before,::after,::backdrop,::file-selector-button { border-color:#e5e7eb; }
+  input::placeholder,textarea::placeholder { color:#9ca3af; }
   html { scroll-behavior:smooth; scroll-padding-top:6rem; }
   body { @apply bg-canvas text-ink-950 antialiased; margin:0; }
   h1,h2,h3,p { text-wrap:pretty; }

@@ -15,8 +15,9 @@ npm.cmd run typecheck
 npm.cmd run test:smoke
 ```
 
-The 22 regression tests include the original market regressions, structured-log
-redaction, review rendering, timestamp display and catalog integrity. The smoke
+The 25 regression tests include the original market regressions, structured-log
+redaction, review rendering, timestamp display, catalog integrity and Next lint
+directory matching. The smoke
 test starts a local production server on an available loopback port, disables
 optional provider keys, checks all 32 content pages and 26 review disclosures,
 exercises five simulated chart ranges and verifies quote deduplication/404 behavior.
@@ -38,12 +39,14 @@ TypeScript/TSX for Node tests; build/typecheck provide the separate type-safety 
 Actions are pinned to verified commit SHAs. Jobs have read-only repository
 permissions, do not retain checkout credentials, and do not deploy or use provider
 keys. The full audit is deliberately not suppressed or treated as success.
-Its current failure is explained in [the advisory record](security/dependency-advisory.md).
+The dependency remediation and its maintenance requirements are explained in
+[the advisory record](security/dependency-advisory.md).
 
-The workflow was parsed and its commands were exercised locally. A GitHub-hosted
-run and branch-protection requirements have not been activated: no commit or push
-was requested. After publishing, a maintainer can require the appropriate checks.
-Do not describe the repository as fully green while the audit fails.
+The [initial GitHub run](https://github.com/ixtaqq/Goldirham-Insight/actions/runs/37301685800)
+passed application quality checks and failed only the full dependency audit.
+The follow-up migration passes both audits locally. Check the run for the exact
+pushed commit before claiming GitHub CI passes. Branch protection is configured
+separately by a maintainer.
 
 ## Recording an editorial review
 
@@ -132,7 +135,7 @@ failure events, not an availability percentage: there is no success denominator,
 durable metrics storage or automatic alerting. Those require a separately chosen
 operational backend and traffic budget before adding more providers.
 
-## Verification recorded for this pass
+## Historical verification: initial implementation, before dependency migration
 
 - Build, typecheck and lint passed.
 - 22 regression tests passed; the production smoke suite passed.

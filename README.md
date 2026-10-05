@@ -50,6 +50,10 @@ automatically. Chart failures and empty results show an explicit retry action.
 
 Deployed on Vercel.
 
+Styles use Tailwind CSS 4.3.3 with its PostCSS plugin and the existing theme in
+`tailwind.config.ts`. Supported browsers are Safari 16.4+, Chrome 111+ and Firefox
+128+, following [Tailwind's browser requirements](https://tailwindcss.com/docs/upgrade-guide#browser-requirements).
+
 The interface follows the supplied research-desk design: a cool gray canvas,
 green accents, interactive research radar, and dark framework panels.
 Inter and JetBrains Mono are bundled locally in `app/fonts/` with their licenses,
@@ -102,10 +106,10 @@ without provider keys or external market-data calls. Build before running it.
 Exercise search, filters, navigation, and chart ranges in the browser after UI changes.
 
 The GitHub Actions workflow in `.github/workflows/ci.yml` runs lint, regression tests,
-build, typecheck and smoke tests. A separate dependency-audit job remains visibly
-failing while the known development-tool advisory is open; it preserves the audit
-JSON as an artifact. Adding this file does not activate required branch checks or
-run GitHub Actions until the changes are pushed.
+build, typecheck and smoke tests. A separate dependency-audit job checks the full
+dependency tree and preserves audit JSON as an artifact. Both full and production
+audits pass after the Tailwind migration and scoped Next ESLint glob replacement.
+Required branch checks must still be configured separately on GitHub.
 
 Market adapters validate provider values before caching them. Quote `updatedAt`
 is the provider timestamp in milliseconds; the response `ts` is the API response time.
@@ -123,7 +127,7 @@ metadata display **Not reviewed**; no authors, dates or citations are fabricated
 The optional `Asset.research` field holds a reviewer, actual review date, supporting
 HTTPS sources and the reasoning behind all three scores. Catalog tests check that
 recorded reviews are complete. See [the quality and provenance guide](docs/quality-and-provenance.md)
-for editing and operational instructions, and [the open dependency advisory](docs/security/dependency-advisory.md)
+for editing and operational instructions, and [the dependency remediation record](docs/security/dependency-advisory.md)
 for the remaining security limitation.
 
 ## Disclaimer

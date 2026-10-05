@@ -1,7 +1,7 @@
 # Goldirham
 
 Investment research demo built with Next.js 16 App Router, React 19,
-strict TypeScript, Tailwind CSS 3, and lightweight-charts 4.
+strict TypeScript, Tailwind CSS 4, and lightweight-charts 4.
 
 ## Layout and conventions
 
@@ -11,6 +11,10 @@ strict TypeScript, Tailwind CSS 3, and lightweight-charts 4.
 - `lib/market.ts` provides simulated market data; keep simulated and live data
   clearly distinguished in the UI.
 - Follow existing double quotes, semicolons, and the `@/*` root import alias.
+- Tailwind 4 loads the existing theme via `@config` in `app/globals.css`.
+  Keep element resets in `@layer base` so they do not override utility classes.
+- The Next ESLint glob adapter is scoped to plugin 16.3.6. Recheck it when updating
+  Next lint tooling; see `docs/security/dependency-advisory.md`.
 - Read the relevant installed Next.js docs under `node_modules/next/dist/docs/`
   before changing framework behavior.
 

@@ -40,7 +40,7 @@ export function ScoreBars({
             <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-line">
               <div
                 className={cn(
-                  "absolute inset-y-0 left-0 rounded-full bg-gradient-to-r",
+                  "absolute inset-y-0 left-0 rounded-full bg-linear-to-r",
                   TONE[tone]
                 )}
                 style={{ width: `${value * 10}%` }}
