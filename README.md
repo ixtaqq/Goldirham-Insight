@@ -4,7 +4,7 @@
 
 Goldirham Insight is an educational research and demonstration platform that tracks the companies and assets powering the AI build-out. It combines deep-dive theses, a consistent 3-factor scoring model, and market or simulated prices across five categories. Each quote and chart identifies its source.
 
-🔗 **Live site:** https://goldirham-lens.vercel.app/
+🔗 **Live site:** https://goldirham-insight.vercel.app//
 
 ---
 
