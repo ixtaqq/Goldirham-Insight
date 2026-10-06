@@ -74,7 +74,7 @@ recorded in `public/logos/README.md` and `public/logos/sources.json`.
 ## Local development and verification
 
 Use Node.js 22. On this Windows workspace, enable it with
-`& 'E:\workspace\Projects\Use-Node22.ps1'`, then run:
+`& 'E:\Workspace\Project\Use-Node22.ps1'`, then run:
 
 ```powershell
 npm.cmd ci

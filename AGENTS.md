@@ -23,7 +23,7 @@ strict TypeScript, Tailwind CSS 4, and lightweight-charts 4.
 Run from this repository in PowerShell with dependencies installed:
 
 ```powershell
-& 'E:\workspace\Projects\Use-Node22.ps1'
+& 'E:\Workspace\Project\Use-Node22.ps1'
 npm.cmd run lint
 & '.\node_modules\.bin\tsc.cmd' --noEmit --incremental false
 ```
