@@ -1,0 +1,170 @@
+
+> goldirham@1.0.0 test
+> node --test tests/*.test.cjs
+
+TAP version 13
+# Subtest: HTTP failures are recorded once per cache miss without leaking response bodies
+ok 1 - HTTP failures are recorded once per cache miss without leaking response bodies
+  ---
+  duration_ms: 84.4149
+  type: 'test'
+  ...
+# Subtest: network exceptions and timeouts are classified without logging error messages
+ok 2 - network exceptions and timeouts are classified without logging error messages
+  ---
+  duration_ms: 63.5397
+  type: 'test'
+  ...
+# Subtest: invalid and missing crypto records are counted without discarding a valid sibling
+ok 3 - invalid and missing crypto records are counted without discarding a valid sibling
+  ---
+  duration_ms: 15.6738
+  type: 'test'
+  ...
+# Subtest: malformed JSON and impossible provider timestamps are diagnosed
+ok 4 - malformed JSON and impossible provider timestamps are diagnosed
+  ---
+  duration_ms: 26.0523
+  type: 'test'
+  ...
+# Subtest: Next lint uses the current project when rootDir is not configured
+ok 5 - Next lint uses the current project when rootDir is not configured
+  ---
+  duration_ms: 0.8361
+  type: 'test'
+  ...
+# Subtest: Next lint resolves directory globs, brace patterns and Windows separators
+ok 6 - Next lint resolves directory globs, brace patterns and Windows separators
+  ---
+  duration_ms: 5.1855
+  type: 'test'
+  ...
+# Subtest: Next lint accepts multiple roots and excludes files and missing directories
+ok 7 - Next lint accepts multiple roots and excludes files and missing directories
+  ---
+  duration_ms: 0.9959
+  type: 'test'
+  ...
+# Subtest: one malformed crypto quote falls back without poisoning valid quotes
+ok 8 - one malformed crypto quote falls back without poisoning valid quotes
+  ---
+  duration_ms: 107.7075
+  type: 'test'
+  ...
+# Subtest: stale or impossible crypto changes use simulation
+ok 9 - stale or impossible crypto changes use simulation
+  ---
+  duration_ms: 136.8144
+  type: 'test'
+  ...
+# Subtest: invalid stock fields use simulation
+ok 10 - invalid stock fields use simulation
+  ---
+  duration_ms: 20.2427
+  type: 'test'
+  ...
+# Subtest: malformed chart history uses the labeled simulation fallback
+ok 11 - malformed chart history uses the labeled simulation fallback
+  ---
+  duration_ms: 20.9617
+  type: 'test'
+  ...
+# Subtest: duplicate symbols produce one quote and one provider request
+ok 12 - duplicate symbols produce one quote and one provider request
+  ---
+  duration_ms: 15.6761
+  type: 'test'
+  ...
+# Subtest: chart histories without distinct increasing seconds use simulation
+ok 13 - chart histories without distinct increasing seconds use simulation
+  ---
+  duration_ms: 47.9828
+  type: 'test'
+  ...
+# Subtest: concurrent cache misses share a single provider request
+ok 14 - concurrent cache misses share a single provider request
+  ---
+  duration_ms: 9.4914
+  type: 'test'
+  ...
+# Subtest: provider failures are cached briefly, then retried after expiry
+ok 15 - provider failures are cached briefly, then retried after expiry
+  ---
+  duration_ms: 7.5036
+  type: 'test'
+  ...
+# Subtest: equivalent crypto ID sets share a cache entry without mutating the input
+ok 16 - equivalent crypto ID sets share a cache entry without mutating the input
+  ---
+  duration_ms: 7.635
+  type: 'test'
+  ...
+# Subtest: quotes retain provider timestamps across API reads
+ok 17 - quotes retain provider timestamps across API reads
+  ---
+  duration_ms: 17.7839
+  type: 'test'
+  ...
+# Subtest: Finnhub credentials use a header instead of a request URL
+ok 18 - Finnhub credentials use a header instead of a request URL
+  ---
+  duration_ms: 7.4026
+  type: 'test'
+  ...
+# Subtest: valid chart history retains the latest provider point
+ok 19 - valid chart history retains the latest provider point
+  ---
+  duration_ms: 16.8829
+  type: 'test'
+  ...
+# Subtest: unknown chart symbols return 404 without an external request
+ok 20 - unknown chart symbols return 404 without an external request
+  ---
+  duration_ms: 14.5696
+  type: 'test'
+  ...
+# Subtest: missing review metadata never invents a reviewer, date or citation
+ok 21 - missing review metadata never invents a reviewer, date or citation
+  ---
+  duration_ms: 4.894
+  type: 'test'
+  ...
+# Subtest: recorded reviews show their evidence and all three score rationales
+ok 22 - recorded reviews show their evidence and all three score rationales
+  ---
+  duration_ms: 1.4796
+  type: 'test'
+  ...
+# Subtest: quote freshness shows the observation time in UTC, including an old market close
+ok 23 - quote freshness shows the observation time in UTC, including an old market close
+  ---
+  duration_ms: 0.9207
+  type: 'test'
+  ...
+# Subtest: simulated prices disclose that their timestamps are generation times
+ok 24 - simulated prices disclose that their timestamps are generation times
+  ---
+  duration_ms: 0.2408
+  type: 'test'
+  ...
+# Subtest: missing and invalid timestamps cannot crash the freshness display
+ok 25 - missing and invalid timestamps cannot crash the freshness display
+  ---
+  duration_ms: 1.2812
+  type: 'test'
+  ...
+# Subtest: the real catalog has unique symbols, valid categories and complete recorded reviews
+ok 26 - the real catalog has unique symbols, valid categories and complete recorded reviews
+  ---
+  duration_ms: 2.2622
+  type: 'test'
+  ...
+1..26
+# tests 26
+# suites 0
+# pass 26
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 636.9802

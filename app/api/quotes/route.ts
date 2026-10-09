@@ -8,6 +8,9 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const param = req.nextUrl.searchParams.get("symbols");
+  if (param && param.length > 1024) {
+    return NextResponse.json({ error: "Symbols query is too long" }, { status: 400 });
+  }
   const requested = param
     ? param.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean)
     : ASSETS.map((a) => a.symbol);

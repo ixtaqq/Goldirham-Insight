@@ -4,12 +4,15 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+  schedule:
+    - cron: "0 1 * * 1"
 
 permissions:
   contents: read
 
 jobs:
   quality:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -30,6 +33,18 @@ jobs:
       - run: npm run build
       - run: npm run typecheck
       - run: npm run test:smoke
+      - run: npx playwright install --with-deps chromium
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_GC: "1"
+      - run: npm run test:browser
+      - name: Preserve browser failure evidence
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: browser-failures
+          path: ${{ runner.temp }}/goldirham-browser-*
+          retention-days: 14
+          if-no-files-found: ignore
 
   dependency-audit:
     runs-on: ubuntu-latest

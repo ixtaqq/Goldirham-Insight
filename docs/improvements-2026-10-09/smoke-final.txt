@@ -1,0 +1,21 @@
+
+> goldirham@1.0.0 test:smoke
+> node --test tests/smoke.cjs
+
+TAP version 13
+# Subtest: production pages, review disclosures and market routes
+ok 1 - production pages, review disclosures and market routes
+  ---
+  duration_ms: 725.4083
+  type: 'test'
+  ...
+# 32 pages, 26 review disclosures, five chart ranges and quote deduplication passed.
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 881.3621

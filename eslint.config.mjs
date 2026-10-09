@@ -6,7 +6,7 @@ export default defineConfig([
   ...nextVitals,
   ...nextTs,
   {
-    files: ["tests/**/*.cjs", "tools/next-eslint-glob/*.cjs"],
+    files: ["tests/**/*.cjs", "tools/**/*.cjs"],
     rules: { "@typescript-eslint/no-require-imports": "off" },
   },
 ]);

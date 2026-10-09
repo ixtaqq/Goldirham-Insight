@@ -9,6 +9,7 @@ import { useMarket } from "./LiveMarketProvider";
 import { Sparkline } from "./Sparkline";
 import { ScoreBars } from "./ScoreBars";
 import { AssetMark } from "./AssetMark";
+import { ResearchStatus } from "./ResearchStatus";
 
 export function HeroShowcase({ assets }: { assets: CardData[] }) {
   const [selected, setSelected] = useState(assets[0].symbol);
@@ -29,6 +30,7 @@ export function HeroShowcase({ assets }: { assets: CardData[] }) {
           <Sparkline data={asset.spark} up={asset.spark.at(-1)! >= asset.spark[0]} width={380} height={64} className="radar-spark" />
           <p className="chart-note">Illustrative trend · simulated</p>
           <ScoreBars scores={asset.scores} className="bars" />
+          <ResearchStatus review={asset.review} />
         </div>
         <Link className="btn btn-primary" href={"/asset/" + asset.symbol}>Read the full thesis <ArrowUpRight size={16} /></Link>
       </div>

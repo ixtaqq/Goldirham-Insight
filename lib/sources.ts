@@ -15,13 +15,22 @@ const CG_BASE = "https://api.coingecko.com/api/v3";
 const CG_KEY = process.env.COINGECKO_API_KEY;
 const FINNHUB_KEY = process.env.FINNHUB_API_KEY;
 const REQUEST_TIMEOUT_MS = 5000;
+const WINDOW_MS = 60_000;
+const MAX_PENDING = 32;
+const MAX_CACHE = 128;
 
-type CacheEntry = { at: number; data: unknown };
+type CacheEntry = { expiresAt: number; data: unknown };
 const cache = new Map<string, CacheEntry>();
 const pending = new Map<string, Promise<unknown>>();
+type Provider = "coingecko" | "finnhub";
+type AdmissionWindow = { limit: number; admittedAt: number[]; reportedAt: number | null };
+const admissions: Record<Provider, AdmissionWindow> = {
+  coingecko: { limit: 5, admittedAt: [], reportedAt: null },
+  finnhub: { limit: 30, admittedAt: [], reportedAt: null },
+};
 
 class ProviderResponseError extends Error {
-  constructor(readonly reason: "http" | "invalid-response", readonly status?: number) {
+  constructor(readonly reason: "http" | "invalid-response" | "rate-limit", readonly status?: number) {
     super(reason);
   }
 }
@@ -41,18 +50,38 @@ function reportFailure(key: string, error: unknown, rejectedRecords?: number) {
   }));
 }
 
-async function cached<T>(key: string, ttlMs: number, fn: () => Promise<T>): Promise<T | null> {
+async function cached<T>(key: string, ttlMs: number, failureTtlMs: number, fn: () => Promise<T>): Promise<T | null> {
+  const now = Date.now();
+  for (const [entryKey, entry] of cache) {
+    if (entry.expiresAt <= now) cache.delete(entryKey);
+  }
   const hit = cache.get(key);
-  if (hit && Date.now() - hit.at < ttlMs) return hit.data as T | null;
+  if (hit) {
+    cache.delete(key);
+    cache.set(key, hit);
+    return hit.data as T | null;
+  }
   const inFlight = pending.get(key);
   if (inFlight) return inFlight as Promise<T | null>;
+  const provider = key.startsWith("fh:") ? "finnhub" : "coingecko";
+  const window = admissions[provider];
+  window.admittedAt = window.admittedAt.filter((at) => now - at < WINDOW_MS);
+  if (pending.size >= MAX_PENDING || window.admittedAt.length >= window.limit) {
+    if (window.reportedAt === null || now - window.reportedAt >= WINDOW_MS) {
+      reportFailure(key, new ProviderResponseError("rate-limit"));
+      window.reportedAt = now;
+    }
+    return null;
+  }
+  window.admittedAt.push(now);
   const request = fn()
     .catch((error: unknown) => {
       reportFailure(key, error);
       return null;
     })
     .then((data) => {
-      cache.set(key, { at: Date.now(), data });
+      if (cache.size >= MAX_CACHE) cache.delete(cache.keys().next().value!);
+      cache.set(key, { expiresAt: Date.now() + (data === null ? failureTtlMs : ttlMs), data });
       return data;
     })
     .finally(() => pending.delete(key));
@@ -79,7 +108,7 @@ export async function fetchCryptoQuotes(
   const uniqueIds = [...new Set(ids)].sort();
   const key = `cgq:${uniqueIds.join(",")}`;
   try {
-    return await cached(key, 12_000, async () => {
+    return await cached(key, 60_000, 12_000, async () => {
       const url = `${CG_BASE}/simple/price?ids=${uniqueIds.join(
         ","
       )}&vs_currencies=usd&include_24hr_change=true&include_market_cap=true&include_last_updated_at=true`;
@@ -117,7 +146,7 @@ export async function fetchCryptoQuotes(
         };
       }
       if (rejectedRecords) reportFailure(key, new ProviderResponseError("invalid-response"), rejectedRecords);
-      return out;
+      return Object.keys(out).length ? out : null;
     });
   } catch {
     return null;
@@ -132,7 +161,7 @@ export async function fetchCryptoChart(
   const { cgDays, points } = RANGE_CONFIG[range];
   const key = `cgc:${id}:${range}`;
   try {
-    return await cached(key, 30_000, async () => {
+    return await cached(key, 30_000, 30_000, async () => {
       const url = `${CG_BASE}/coins/${id}/market_chart?vs_currency=usd&days=${cgDays}`;
       const res = await fetch(url, {
         headers: cgHeaders(),
@@ -144,8 +173,9 @@ export async function fetchCryptoChart(
       const prices = json?.prices ?? [];
       if (
         !Array.isArray(prices) || prices.length < 2 ||
-        prices.some((p) => !Array.isArray(p) ||
-          !Number.isSafeInteger(p[0]) || p[0] <= 0 ||
+        prices.some((p, i) => !Array.isArray(p) ||
+          !isQuoteTimestamp(p[0]) ||
+          (i > 0 && Math.floor(p[0] / 1000) <= Math.floor(prices[i - 1][0] / 1000)) ||
           !Number.isFinite(p[1]) || round(p[1]) <= 0)
       ) throw new ProviderResponseError("invalid-response");
       // downsample evenly to ~points
@@ -181,7 +211,7 @@ export async function fetchStockQuote(symbol: string): Promise<StockQuote | null
   if (!FINNHUB_KEY) return null;
   const key = `fh:${symbol}`;
   try {
-    return await cached(key, 10_000, async () => {
+    return await cached(key, 60_000, 10_000, async () => {
       const url = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}`;
       const res = await fetch(url, {
         headers: { "X-Finnhub-Token": FINNHUB_KEY },

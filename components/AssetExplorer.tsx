@@ -4,18 +4,19 @@ import { useState } from "react";
 import { ArrowDown, ArrowUp, Search } from "lucide-react";
 import type { CardData } from "@/lib/card";
 import { CATEGORIES } from "@/lib/categories";
+import type { CategorySlug } from "@/lib/types";
 import { AssetCard } from "./AssetCard";
 
-const FILTERS = ["All", "Top upside", "Safest", "Top AI exposure", "Tier 1", "Crypto"];
+const FILTERS = ["All", "Top upside", "Safest", "Top AI exposure", "Tier 1", "Crypto"] as const;
 
 export function AssetExplorer({ assets }: { assets: CardData[] }) {
-  const [category, setCategory] = useState("all");
+  const [category, setCategory] = useState<CategorySlug | "all">("all");
   const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState("All");
+  const [filter, setFilter] = useState<(typeof FILTERS)[number]>("All");
   const [showAll, setShowAll] = useState(false);
   const term = query.trim().toLowerCase();
   const filtered = assets.filter((asset) =>
-    (category === "all" || asset.category === category || asset.alsoIn?.includes(category as CardData["category"])) &&
+    (category === "all" || asset.category === category || asset.alsoIn?.includes(category)) &&
     (filter !== "Tier 1" || asset.tier === 1) &&
     (filter !== "Crypto" || asset.assetClass === "crypto") &&
     (asset.name + " " + asset.symbol + " " + asset.theme).toLowerCase().includes(term)

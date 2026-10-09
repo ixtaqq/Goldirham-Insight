@@ -34,7 +34,10 @@ export function AssetSearch({ assets, onNavigate }: { assets: SearchAsset[]; onN
         placeholder="Search assets…"
         value={query}
         onFocus={() => setFocused(true)}
-        onChange={(event) => setQuery(event.target.value)}
+        onChange={(event) => {
+          setQuery(event.target.value);
+          setFocused(true);
+        }}
         onKeyDown={(event) => {
           if (event.key === "Escape") dismiss();
           if (event.key === "Enter" && term && matches[0]) {

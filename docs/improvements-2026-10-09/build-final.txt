@@ -1,0 +1,41 @@
+
+> goldirham@1.0.0 build
+> next build
+
+▲ Next.js 16.3.8 (Turbopack)
+✓ Running next.config.mjs took 12ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 199ms
+  Running TypeScript ...
+  Finished TypeScript in 1058ms ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/35) ...
+  Generating static pages using 9 workers (8/35) 
+  Generating static pages using 9 workers (17/35) 
+  Generating static pages using 9 workers (26/35) 
+✓ Generating static pages using 9 workers (35/35) in 656ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/chart
+├ ƒ /api/quotes
+├   /asset/[symbol]
+│ ├ ● /asset/CEG
+│ ├ ● /asset/VST
+│ ├ ● /asset/NEE
+│ └ ● [+23 more paths]
+├   /category/[slug]
+│ ├ ● /category/ai-utilities
+│ ├ ● /category/ai-companies
+│ ├ ● /category/mega-stocks
+│ └ ● [+2 more paths]
+└ ○ /icon.svg
+
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+

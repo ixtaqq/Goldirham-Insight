@@ -28,3 +28,7 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+# browser test artifacts
+/playwright-report/
+/test-results/

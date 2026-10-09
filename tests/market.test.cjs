@@ -59,6 +59,20 @@ test("duplicate symbols produce one quote and one provider request", async () =>
   assert.equal(calls, 1);
 });
 
+test("chart histories without distinct increasing seconds use simulation", async () => {
+  const histories = [
+    [[timestamp * 1000, 100], [timestamp * 1000 + 500, 101]],
+    [[timestamp * 1000, 100], [(timestamp - 60) * 1000, 101]],
+    [[8_640_000_000_000_001, 100], [8_640_000_000_001_001, 101]],
+  ];
+  for (const prices of histories) {
+    const { GET } = load("app/api/chart/route.ts", { fetch: async () => json({ prices }) });
+    const body = await (await GET(request("chart?symbol=BTC&range=1D"))).json();
+    assert.equal(body.source, "simulated");
+    assert.equal(body.points.length, 96);
+  }
+});
+
 test("concurrent cache misses share a single provider request", async () => {
   let calls = 0;
   const { fetchCryptoQuotes } = load("lib/sources.ts", {

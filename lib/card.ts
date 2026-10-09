@@ -1,5 +1,15 @@
 import { sparkline } from "./market";
-import type { Asset, AssetClass, CategorySlug, Scores } from "./types";
+import type { Asset, AssetClass, CategorySlug, ResearchReview, Scores } from "./types";
+
+export type ReviewStatus =
+  | { status: "unreviewed" }
+  | { status: "reviewed"; reviewedBy: string; reviewedAt: string };
+
+export function toReviewStatus(review?: ResearchReview): ReviewStatus {
+  return review
+    ? { status: "reviewed", reviewedBy: review.reviewedBy, reviewedAt: review.reviewedAt }
+    : { status: "unreviewed" };
+}
 
 /**
  * Lightweight projection of an Asset for cards — deliberately excludes the
@@ -17,6 +27,7 @@ export interface CardData {
   tagline: string;
   entryRange: string;
   scores: Scores;
+  review: ReviewStatus;
   accent: string;
   spark: number[];
 }
@@ -34,6 +45,7 @@ export function toCardData(a: Asset): CardData {
     tagline: a.tagline,
     entryRange: a.entryRange,
     scores: a.scores,
+    review: toReviewStatus(a.research),
     accent: a.accent ?? "#598bff",
     spark: sparkline(a.symbol, a.basePrice, a.vol),
   };

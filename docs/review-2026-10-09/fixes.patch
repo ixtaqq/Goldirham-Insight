@@ -1,0 +1,337 @@
+diff --git a/README.md b/README.md
+index a8960d8..05b8e0b 100644
+--- a/README.md
++++ b/README.md
+@@ -81,6 +81,12 @@ npm.cmd ci
+ npm.cmd run dev
+ ```
+ 
++If you move this checkout on Windows, reinstall dependencies before development.
++The local `fast-glob` adapter uses a junction that can still target the old path.
++Check it with `Get-Item node_modules\fast-glob | Select-Object Target` if lint
++reports `Cannot find module 'fast-glob'`. Preserve any local dependency edits
++before reinstalling.
++
+ No API keys are required. Optional server-only keys are documented in `.env.example`;
+ put your own values in `.env.local`. `COINGECKO_API_KEY` supports a Demo key only.
+ Do not use a Pro key with the public API host. Never expose these keys through
+diff --git a/app/globals.css b/app/globals.css
+index d38df58..8d9871e 100644
+--- a/app/globals.css
++++ b/app/globals.css
+@@ -248,12 +248,14 @@
+   .research-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } .research-card-price>strong { font-size:25px; }
+   .theme-card { padding-inline:13px; } .pulse-item { padding:13px; gap:8px; } .pulse-item .asset-mark { display:none; }
+ }
+-@media (max-width:850px) {
+-  .site-container { width:calc(100% - 3rem); } .nav-inner { height:70px; }
+-  .nav-links,.nav-actions { display:none; } .menu-toggle { display:flex; }
++@media (max-width:1000px) {
+   .mobile-navigation { display:block; padding-bottom:1rem; border-top:1px solid var(--line); padding-top:1rem; }
+   .mobile-navigation .nav-search { width:100%; } .mobile-nav-links { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.7rem; }
+   .mobile-navigation .search-results { width:100%; max-width:none; }
++}
++@media (max-width:850px) {
++  .site-container { width:calc(100% - 3rem); } .nav-inner { height:70px; }
++  .nav-links,.nav-actions { display:none; } .menu-toggle { display:flex; }
+   .hero-grid { grid-template-columns:minmax(0,1fr); padding-top:48px; gap:24px; }
+   .hero h1 { font-size:3rem; } .hero-description { font-size:13px; } .hero .button { font-size:10px; padding-inline:14px; gap:9px; }
+   .hero-showcase { width:480px; max-width:100%; margin:10px auto 0; }
+diff --git a/components/AssetSearch.tsx b/components/AssetSearch.tsx
+index 3672e19..c0ac6c4 100644
+--- a/components/AssetSearch.tsx
++++ b/components/AssetSearch.tsx
+@@ -34,7 +34,10 @@ export function AssetSearch({ assets, onNavigate }: { assets: SearchAsset[]; onN
+         placeholder="Search assets…"
+         value={query}
+         onFocus={() => setFocused(true)}
+-        onChange={(event) => setQuery(event.target.value)}
++        onChange={(event) => {
++          setQuery(event.target.value);
++          setFocused(true);
++        }}
+         onKeyDown={(event) => {
+           if (event.key === "Escape") dismiss();
+           if (event.key === "Enter" && term && matches[0]) {
+diff --git a/docs/quality-and-provenance.md b/docs/quality-and-provenance.md
+index 79d6386..8463c82 100644
+--- a/docs/quality-and-provenance.md
++++ b/docs/quality-and-provenance.md
+@@ -7,7 +7,7 @@ Implemented 5 October 2026 as the first follow-up to the project review.
+ Use Node 22 and run:
+ 
+ ```powershell
+-& 'E:\workspace\Projects\Use-Node22.ps1'
++& 'E:\Workspace\Project\Use-Node22.ps1'
+ npm.cmd run lint
+ npm.cmd test
+ npm.cmd run build
+@@ -15,7 +15,7 @@ npm.cmd run typecheck
+ npm.cmd run test:smoke
+ ```
+ 
+-The 25 regression tests include the original market regressions, structured-log
++The regression tests include the original market regressions, structured-log
+ redaction, review rendering, timestamp display, catalog integrity and Next lint
+ directory matching. The smoke
+ test starts a local production server on an available loopback port, disables
+diff --git a/docs/security/dependency-advisory.md b/docs/security/dependency-advisory.md
+index 5679292..0b518a2 100644
+--- a/docs/security/dependency-advisory.md
++++ b/docs/security/dependency-advisory.md
+@@ -1,5 +1,18 @@
+ # Development dependency advisory and remediation
+ 
++## Update on 9 October 2026
++
++Next runtime is now 16.3.8 and `source-map-js` is 1.2.2. The full audit reports
++zero vulnerabilities in [the current verification record](../review-2026-10-09/audit.json).
++This addresses the new [Next advisories](https://github.com/advisories/GHSA-cjq9-62q9-8jv4)
++and [source-map-js advisory](https://github.com/advisories/GHSA-68fv-2mgg-jv7q).
++An audit identifies affected dependency versions; it does not establish that an
++application-specific exploit succeeded.
++
++The ESLint configuration and plugin remain at 16.3.6. Their scoped glob adapter
++and its regression tests are unchanged. The runtime patch does not widen that
++override. The 5 October verification and remediation history follows below.
++
+ Status: **Removed from the local dependency graph; full and production audits pass.**
+ 
+ Verified 5 October 2026. The upstream advisory remains unpatched. This project
+diff --git a/lib/sources.ts b/lib/sources.ts
+index 287df94..528707f 100644
+--- a/lib/sources.ts
++++ b/lib/sources.ts
+@@ -144,8 +144,9 @@ export async function fetchCryptoChart(
+       const prices = json?.prices ?? [];
+       if (
+         !Array.isArray(prices) || prices.length < 2 ||
+-        prices.some((p) => !Array.isArray(p) ||
+-          !Number.isSafeInteger(p[0]) || p[0] <= 0 ||
++        prices.some((p, i) => !Array.isArray(p) ||
++          !isQuoteTimestamp(p[0]) ||
++          (i > 0 && Math.floor(p[0] / 1000) <= Math.floor(prices[i - 1][0] / 1000)) ||
+           !Number.isFinite(p[1]) || round(p[1]) <= 0)
+       ) throw new ProviderResponseError("invalid-response");
+       // downsample evenly to ~points
+diff --git a/package-lock.json b/package-lock.json
+index 6aa4031..c7631cb 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -10,7 +10,7 @@
+       "dependencies": {
+         "lightweight-charts": "^4.2.1",
+         "lucide-react": "^0.453.0",
+-        "next": "16.3.6",
++        "next": "16.3.8",
+         "react": "19.2.8",
+         "react-dom": "19.2.8"
+       },
+@@ -1165,9 +1165,9 @@
+       }
+     },
+     "node_modules/@next/env": {
+-      "version": "16.3.6",
+-      "resolved": "https://registry.npmjs.org/@next/env/-/env-16.3.6.tgz",
+-      "integrity": "sha512-x9Vblze1EbtltQYnNH38xCPWU3TVfBd1eXqA3+w9+BTpedkkdNpAaltXlGQ/nsc1+E0mVTNrtcbX3GoO09zeLQ==",
++      "version": "16.3.8",
++      "resolved": "https://registry.npmjs.org/@next/env/-/env-16.3.8.tgz",
++      "integrity": "sha512-Al9zqHVV7TJv0eFuOU4U7Lvv74PTih4Ch63sk2xCIpSTkE3udFnaOcnzP2lQVymiL7yS9Cj2iClUXlR3EQ5sEw==",
+       "license": "MIT"
+     },
+     "node_modules/@next/eslint-plugin-next": {
+@@ -1214,9 +1214,9 @@
+       }
+     },
+     "node_modules/@next/swc-darwin-arm64": {
+-      "version": "16.3.6",
+-      "resolved": "https://registry.npmjs.org/@next/swc-darwin-arm64/-/swc-darwin-arm64-16.3.6.tgz",
+-      "integrity": "sha512-E/7GEqaUkt8mk/T8v9lAnrhzR06kdq1ZBkC12F8tAMkdIadwNp3H1KqHynDHrpcTlGCUdq/qu6vUL2aYVyYBdw==",
++      "version": "16.3.8",
++      "resolved": "https://registry.npmjs.org/@next/swc-darwin-arm64/-/swc-darwin-arm64-16.3.8.tgz",
++      "integrity": "sha512-2JPRMh2nmQG5CiL7cXGL9AGwnPWJQ//cTtAUCT+w511QHk79SYz3LGv/pc5X643B/WEO0rvu3Yww0hqwt3kgeA==",
+       "cpu": [
+         "arm64"
+       ],
+@@ -1230,9 +1230,9 @@
+       }
+     },
+     "node_modules/@next/swc-darwin-x64": {
+-      "version": "16.3.6",
+-      "resolved": "https://registry.npmjs.org/@next/swc-darwin-x64/-/swc-darwin-x64-16.3.6.tgz",
+-      "integrity": "sha512-yBE893/nDWTlaiBD1p+qgt7NUen4U5R6FXyH0s67Npq1S3E0cVSef1WIXC2xBRgQvwAvJq6DnS6Y6PrY0cy4Ew==",
++      "version": "16.3.8",
++      "resolved": "https://registry.npmjs.org/@next/swc-darwin-x64/-/swc-darwin-x64-16.3.8.tgz",
++      "integrity": "sha512-GZtCCOBKJ4leVIT/Th0llWKhD1ca92lzbQiS5R5ON9QkoiFnilFsebDae1JU2a3HWoKMEmEZWGs1AGLavVM72Q==",
+       "cpu": [
+         "x64"
+       ],
+@@ -1246,9 +1246,9 @@
+       }
+     },
+     "node_modules/@next/swc-linux-arm64-gnu": {
+-      "version": "16.3.6",
+-      "resolved": "https://registry.npmjs.org/@next/swc-linux-arm64-gnu/-/swc-linux-arm64-gnu-16.3.6.tgz",
+-      "integrity": "sha512-KJDpjBqBPYlvkivmyrp+Qys6k/7ksbqGQvRVc6ZEGfR+cjQxx+nUkJaWmNZJsmoOrqYNbaXByF8wa0lBwDhB3Q==",
++      "version": "16.3.8",
++      "resolved": "https://registry.npmjs.org/@next/swc-linux-arm64-gnu/-/swc-linux-arm64-gnu-16.3.8.tgz",
++      "integrity": "sha512-O659ygeQYqneJ1fBKMpFxIFqYkYswu8IAS1OCKK/4f3ZgJJm1dRz4fVJZRi/kLLWjnBKnebOePA4WNv+sV1pVA==",
+       "cpu": [
+         "arm64"
+       ],
+@@ -1265,9 +1265,9 @@
+       }
+     },
+     "node_modules/@next/swc-linux-arm64-musl": {
+-      "version": "16.3.6",
+-      "resolved": "https://registry.npmjs.org/@next/swc-linux-arm64-musl/-/swc-linux-arm64-musl-16.3.6.tgz",
+-      "integrity": "sha512-mqNg2K+hvWskSRb/QM+Ix412DvBsuSF0XV+frTSw5vmoucNnIlynFwKYew8D01bfATErMOM7Bujrf0BA5DRKFA==",
++      "version": "16.3.8",
++      "resolved": "https://registry.npmjs.org/@next/swc-linux-arm64-musl/-/swc-linux-arm64-musl-16.3.8.tgz",
++      "integrity": "sha512-dSjKSyWpzxoO1d3DIZZcP4XJcNaKeLmxQMFOiYl5vuBRMmweIqnAhty8tAmRsvTss779cK1FtYnDMj40e4TQlg==",
+       "cpu": [
+         "arm64"
+       ],
+@@ -1284,9 +1284,9 @@
+       }
+     },
+     "node_modules/@next/swc-linux-x64-gnu": {
+-      "version": "16.3.6",
+-      "resolved": "https://registry.npmjs.org/@next/swc-linux-x64-gnu/-/swc-linux-x64-gnu-16.3.6.tgz",
+-      "integrity": "sha512-nFncBNGAYouRHjRVaITs9beZRfhX4ssVwpnvPIAbkZVH6LtGoAVlH4bJ8Cnf9SOo9bsXgPFer/GdHtEE3JNOkw==",
++      "version": "16.3.8",
++      "resolved": "https://registry.npmjs.org/@next/swc-linux-x64-gnu/-/swc-linux-x64-gnu-16.3.8.tgz",
++      "integrity": "sha512-lbqOuz3RPRcv+o9msNsJw5x4+Y1ZwPTs6vmL6DCf7i0fZfvng/F59wyeDwqHIvV0mK//RBy/jJkZ+nCKsSMXjQ==",
+       "cpu": [
+         "x64"
+       ],
+@@ -1303,9 +1303,9 @@
+       }
+     },
+     "node_modules/@next/swc-linux-x64-musl": {
+-      "version": "16.3.6",
+-      "resolved": "https://registry.npmjs.org/@next/swc-linux-x64-musl/-/swc-linux-x64-musl-16.3.6.tgz",
+-      "integrity": "sha512-5Mf3cHDGR/Iz0ng2Bj3zUR3p5QS9YK3Hn2QiAfavFmyF48zwThAjpFoiTKNIcOHLYS4zEk+gzyJ/9deQ2ZB8yQ==",
++      "version": "16.3.8",
++      "resolved": "https://registry.npmjs.org/@next/swc-linux-x64-musl/-/swc-linux-x64-musl-16.3.8.tgz",
++      "integrity": "sha512-+316WswI8ScVgZeUd+1KGaXkHhaYQzCjvH/05TZSpJ8zBizb1a4G7DtO7F12jcBIqMOtsz9ji1t48fmKtzqsGA==",
+       "cpu": [
+         "x64"
+       ],
+@@ -1322,9 +1322,9 @@
+       }
+     },
+     "node_modules/@next/swc-win32-arm64-msvc": {
+-      "version": "16.3.6",
+-      "resolved": "https://registry.npmjs.org/@next/swc-win32-arm64-msvc/-/swc-win32-arm64-msvc-16.3.6.tgz",
+-      "integrity": "sha512-0jkJy0C2kbrJWTk4YLa3xk80pVBpx8FCHJym7CnUfDAXe/FWv5qT7SQJbR0KuemyxaEDlEx5WT4VQJoTW+/9Qw==",
++      "version": "16.3.8",
++      "resolved": "https://registry.npmjs.org/@next/swc-win32-arm64-msvc/-/swc-win32-arm64-msvc-16.3.8.tgz",
++      "integrity": "sha512-ji0gd4kMYUxO+1fJBIbiBVRCjzG/lloiyCccnlebvb1ZJ5qXCPZqYg4Jl1DrrixnWNMKylzgpmMWx0yNDYXlzw==",
+       "cpu": [
+         "arm64"
+       ],
+@@ -1338,9 +1338,9 @@
+       }
+     },
+     "node_modules/@next/swc-win32-x64-msvc": {
+-      "version": "16.3.6",
+-      "resolved": "https://registry.npmjs.org/@next/swc-win32-x64-msvc/-/swc-win32-x64-msvc-16.3.6.tgz",
+-      "integrity": "sha512-/YXjI1e5OXcZ7YpxRwgP/1jAV/SBKTzeVKqN2mk7mLpcICsyn3Gl5+dIfDTJp70M0ccMhyMMRso4v6mPDCGepg==",
++      "version": "16.3.8",
++      "resolved": "https://registry.npmjs.org/@next/swc-win32-x64-msvc/-/swc-win32-x64-msvc-16.3.8.tgz",
++      "integrity": "sha512-WcTlaKt/TWkh5kUjdJcUmB1XgZ+1c6fz4Y9fDHL73YNSdGaUWjceeWrrlwF0nv19iABYWC4iAq1oX1w4Bn0vfg==",
+       "cpu": [
+         "x64"
+       ],
+@@ -5312,12 +5312,12 @@
+       "license": "MIT"
+     },
+     "node_modules/next": {
+-      "version": "16.3.6",
+-      "resolved": "https://registry.npmjs.org/next/-/next-16.3.6.tgz",
+-      "integrity": "sha512-L+otWM/aQbYTx98aZhgEoMb4bZAXx1YVW4UMA/vuCyCoWG5HJyZUili8QAkqzrcC+5///tsz3s0M+SlyB5bLMw==",
++      "version": "16.3.8",
++      "resolved": "https://registry.npmjs.org/next/-/next-16.3.8.tgz",
++      "integrity": "sha512-U7QEZaTini6wKrb8A8hqLLqYQyCetegKjCpJOyxk642vWoMoU1x5PyZCJFvgYgiptA8xc5j/9xYlZFO7w9Sjmw==",
+       "license": "MIT",
+       "dependencies": {
+-        "@next/env": "16.3.6",
++        "@next/env": "16.3.8",
+         "@swc/helpers": "0.5.23",
+         "baseline-browser-mapping": "^2.9.19",
+         "caniuse-lite": "^1.0.30001579",
+@@ -5331,14 +5331,14 @@
+         "node": ">=20.9.0"
+       },
+       "optionalDependencies": {
+-        "@next/swc-darwin-arm64": "16.3.6",
+-        "@next/swc-darwin-x64": "16.3.6",
+-        "@next/swc-linux-arm64-gnu": "16.3.6",
+-        "@next/swc-linux-arm64-musl": "16.3.6",
+-        "@next/swc-linux-x64-gnu": "16.3.6",
+-        "@next/swc-linux-x64-musl": "16.3.6",
+-        "@next/swc-win32-arm64-msvc": "16.3.6",
+-        "@next/swc-win32-x64-msvc": "16.3.6",
++        "@next/swc-darwin-arm64": "16.3.8",
++        "@next/swc-darwin-x64": "16.3.8",
++        "@next/swc-linux-arm64-gnu": "16.3.8",
++        "@next/swc-linux-arm64-musl": "16.3.8",
++        "@next/swc-linux-x64-gnu": "16.3.8",
++        "@next/swc-linux-x64-musl": "16.3.8",
++        "@next/swc-win32-arm64-msvc": "16.3.8",
++        "@next/swc-win32-x64-msvc": "16.3.8",
+         "sharp": "^0.35.4"
+       },
+       "peerDependencies": {
+@@ -6089,9 +6089,9 @@
+       }
+     },
+     "node_modules/source-map-js": {
+-      "version": "1.2.1",
+-      "resolved": "https://registry.npmjs.org/source-map-js/-/source-map-js-1.2.1.tgz",
+-      "integrity": "sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==",
++      "version": "1.2.2",
++      "resolved": "https://registry.npmjs.org/source-map-js/-/source-map-js-1.2.2.tgz",
++      "integrity": "sha512-KGj/8Y43x35aZVDtt+J4mK1hoLGHULMYfSkODJNQjNDC3oW1PqPoxMwo0pLUsWM/UEGzON/NxeHywEfNXNP3Vw==",
+       "license": "BSD-3-Clause",
+       "engines": {
+         "node": ">=0.10.0"
+diff --git a/package.json b/package.json
+index 1af7c66..e1a7b31 100644
+--- a/package.json
++++ b/package.json
+@@ -16,7 +16,7 @@
+   "dependencies": {
+     "lightweight-charts": "^4.2.1",
+     "lucide-react": "^0.453.0",
+-    "next": "16.3.6",
++    "next": "16.3.8",
+     "react": "19.2.8",
+     "react-dom": "19.2.8"
+   },
+diff --git a/tests/market.test.cjs b/tests/market.test.cjs
+index 9aa3769..06592de 100644
+--- a/tests/market.test.cjs
++++ b/tests/market.test.cjs
+@@ -59,6 +59,20 @@ test("duplicate symbols produce one quote and one provider request", async () =>
+   assert.equal(calls, 1);
+ });
+ 
++test("chart histories without distinct increasing seconds use simulation", async () => {
++  const histories = [
++    [[timestamp * 1000, 100], [timestamp * 1000 + 500, 101]],
++    [[timestamp * 1000, 100], [(timestamp - 60) * 1000, 101]],
++    [[8_640_000_000_000_001, 100], [8_640_000_000_001_001, 101]],
++  ];
++  for (const prices of histories) {
++    const { GET } = load("app/api/chart/route.ts", { fetch: async () => json({ prices }) });
++    const body = await (await GET(request("chart?symbol=BTC&range=1D"))).json();
++    assert.equal(body.source, "simulated");
++    assert.equal(body.points.length, 96);
++  }
++});
++
+ test("concurrent cache misses share a single provider request", async () => {
+   let calls = 0;
+   const { fetchCryptoQuotes } = load("lib/sources.ts", {

@@ -1,0 +1,32 @@
+TAP version 13
+# Subtest: a wholly rejected crypto batch retries after the failure delay
+not ok 1 - a wholly rejected crypto batch retries after the failure delay
+  ---
+  duration_ms: 77.5788
+  type: 'test'
+  location: 'E:\\Workspace\\Project\\web\\Goldirham-Insight\\tests\\provider-limits.test.cjs:51:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    {} !== null
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: ~
+  actual:
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (E:\Workspace\Project\web\Goldirham-Insight\tests\provider-limits.test.cjs:57:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 279.9463

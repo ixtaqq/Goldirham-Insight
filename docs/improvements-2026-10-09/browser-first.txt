@@ -1,0 +1,111 @@
+
+> goldirham@1.0.0 test:browser
+> playwright test
+
+[WebServer] (node:38796) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 14 tests using 2 workers
+
+(node:3144) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4004) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  2 [chromium] › tests\browser\markets.spec.ts:70:3 › menu search and Escape work at 850px (1.7s)
+  ok  3 [chromium] › tests\browser\markets.spec.ts:70:3 › menu search and Escape work at 900px (599ms)
+  ok  4 [chromium] › tests\browser\markets.spec.ts:70:3 › menu search and Escape work at 1000px (632ms)
+  ok  5 [chromium] › tests\browser\markets.spec.ts:94:1 › desktop navigation returns above the menu breakpoint (412ms)
+  ok  6 [chromium] › tests\browser\markets.spec.ts:103:1 › theme filtering includes cross-listed assets and clears empty results (1.8s)
+  ok  7 [chromium] › tests\browser\markets.spec.ts:126:1 › ranking orders filtered research by the selected score (676ms)
+  x   1 [chromium] › tests\browser\markets.spec.ts:48:1 › desktop search reopens after Escape and after Enter navigation (5.8s)
+(node:3748) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  8 [chromium] › tests\browser\markets.spec.ts:144:1 › all catalog and ranked cards disclose missing human review (702ms)
+  ok  9 [chromium] › tests\browser\markets.spec.ts:158:3 › chart recovers from http on Retry (453ms)
+  ok 10 [chromium] › tests\browser\markets.spec.ts:158:3 › chart recovers from empty on Retry (455ms)
+  ok 11 [chromium] › tests\browser\markets.spec.ts:179:1 › rapid chart ranges ignore an older delayed response (476ms)
+  ok 12 [chromium] › tests\browser\markets.spec.ts:204:1 › quote failure retains the last price and recovers on the next poll (517ms)
+  ok 14 [chromium] › tests\browser\markets.spec.ts:258:1 › hiding aborts an in-flight poll and resume does not create duplicate polling (708ms)
+  x  13 [chromium] › tests\browser\markets.spec.ts:228:1 › initially hidden tabs fetch once on resume and stop polling while hidden (5.6s)
+
+
+  1) [chromium] › tests\browser\markets.spec.ts:48:1 › desktop search reopens after Escape and after Enter navigation 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  getByRole('heading', { level: 1 })
+    Expected: "NVIDIA NVDA"
+    Received: "NVIDIANVDA"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveText" getByRole('heading', { level: 1 }) with timeout 5000ms
+      - waiting for getByRole('heading', { level: 1 })
+        14 × locator resolved to <h1 class="min-w-0 flex flex-wrap items-baseline gap-x-3 text-3xl font-bold tracking-tight text-ink-950 sm:text-4xl">…</h1>
+           - unexpected value "NVIDIANVDA"
+
+
+      58 |   await search.press("Enter");
+      59 |   await expect(page).toHaveURL("/asset/NVDA");
+    > 60 |   await expect(page.getByRole("heading", { level: 1 })).toHaveText("NVIDIA NVDA");
+         |                                                         ^
+      61 |   await expect(search).toHaveValue("");
+      62 |   await search.fill("btc");
+      63 |   await expect(page.locator(".search-results").getByRole("link", { name: /BTC/ })).toBeVisible();
+        at E:\Workspace\Project\web\Goldirham-Insight\tests\browser\markets.spec.ts:60:57
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    C:\Users\shaxii\AppData\Local\Temp\goldirham-browser-06dcb8f5-65bd-45c6-a8db-6de7aeb41c46\markets-desktop-search-reo-40bec--and-after-Enter-navigation-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: C:\Users\shaxii\AppData\Local\Temp\goldirham-browser-06dcb8f5-65bd-45c6-a8db-6de7aeb41c46\markets-desktop-search-reo-40bec--and-after-Enter-navigation-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    C:\Users\shaxii\AppData\Local\Temp\goldirham-browser-06dcb8f5-65bd-45c6-a8db-6de7aeb41c46\markets-desktop-search-reo-40bec--and-after-Enter-navigation-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace C:\Users\shaxii\AppData\Local\Temp\goldirham-browser-06dcb8f5-65bd-45c6-a8db-6de7aeb41c46\markets-desktop-search-reo-40bec--and-after-Enter-navigation-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests\browser\markets.spec.ts:228:1 › initially hidden tabs fetch once on resume and stop polling while hidden 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('region', { name: 'Find your next conviction.' }).locator('a[href^="/asset/"]').filter({ hasText: 'NVDA' }).getByText('$123.45', { exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('region', { name: 'Find your next conviction.' }).locator('a[href^="/asset/"]').filter({ hasText: 'NVDA' }).getByText('$123.45', { exact: true }) with timeout 5000ms
+      - waiting for getByRole('region', { name: 'Find your next conviction.' }).locator('a[href^="/asset/"]').filter({ hasText: 'NVDA' }).getByText('$123.45', { exact: true })
+
+
+      242 |   await setVisibility(page, "visible");
+      243 |   const nvda = cards(page).filter({ hasText: "NVDA" });
+    > 244 |   await expect(nvda.getByText("$123.45", { exact: true })).toBeVisible();
+          |                                                            ^
+      245 |   expect(attempts).toBe(1);
+      246 |   await setVisibility(page, "hidden");
+      247 |   await page.clock.runFor(30000);
+        at E:\Workspace\Project\web\Goldirham-Insight\tests\browser\markets.spec.ts:244:60
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    C:\Users\shaxii\AppData\Local\Temp\goldirham-browser-0eb2588d-b2f6-4cec-96a0-fa6b4b437627\markets-initially-hidden-t-8c6b2-d-stop-polling-while-hidden-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: C:\Users\shaxii\AppData\Local\Temp\goldirham-browser-0eb2588d-b2f6-4cec-96a0-fa6b4b437627\markets-initially-hidden-t-8c6b2-d-stop-polling-while-hidden-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    C:\Users\shaxii\AppData\Local\Temp\goldirham-browser-0eb2588d-b2f6-4cec-96a0-fa6b4b437627\markets-initially-hidden-t-8c6b2-d-stop-polling-while-hidden-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace C:\Users\shaxii\AppData\Local\Temp\goldirham-browser-0eb2588d-b2f6-4cec-96a0-fa6b4b437627\markets-initially-hidden-t-8c6b2-d-stop-polling-while-hidden-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chromium] › tests\browser\markets.spec.ts:48:1 › desktop search reopens after Escape and after Enter navigation 
+    [chromium] › tests\browser\markets.spec.ts:228:1 › initially hidden tabs fetch once on resume and stop polling while hidden 
+  12 passed (22.2s)

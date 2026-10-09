@@ -39,16 +39,22 @@ export function LiveMarketProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true;
-    let timer: ReturnType<typeof setTimeout>;
-    let controller: AbortController;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let controller: AbortController | null = null;
+    let generation = 0;
+    let hidden = document.hidden;
 
     const load = async () => {
-      controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15_000);
+      if (!active || hidden || controller) return;
+      clearTimeout(timer);
+      const request = new AbortController();
+      controller = request;
+      const currentGeneration = ++generation;
+      const timeout = setTimeout(() => request.abort(), 15_000);
       try {
         const res = await fetch("/api/quotes", {
           cache: "no-store",
-          signal: controller.signal,
+          signal: request.signal,
         });
         if (!res.ok) throw new Error(`Quote request failed: ${res.status}`);
         const json = (await res.json()) as { quotes: Quote[] };
@@ -64,7 +70,7 @@ export function LiveMarketProvider({ children }: { children: ReactNode }) {
         )) {
           throw new Error("Invalid quote response");
         }
-        if (!active) return;
+        if (!active || currentGeneration !== generation) return;
 
         const map: QuoteMap = {};
         const nextDir: Record<string, "up" | "down" | "flat"> = {};
@@ -84,18 +90,37 @@ export function LiveMarketProvider({ children }: { children: ReactNode }) {
         setReady(true);
         setError(false);
       } catch {
-        if (active) setError(true);
+        if (active && currentGeneration === generation) setError(true);
       } finally {
         clearTimeout(timeout);
-        if (active) timer = setTimeout(load, POLL_MS);
+        if (active && currentGeneration === generation) {
+          controller = null;
+          if (!hidden) timer = setTimeout(load, POLL_MS);
+        }
       }
     };
 
-    load();
+    const onVisibilityChange = () => {
+      if (hidden === document.hidden) return;
+      hidden = document.hidden;
+      if (hidden) {
+        clearTimeout(timer);
+        generation++;
+        controller?.abort();
+        controller = null;
+      } else {
+        void load();
+      }
+    };
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    void load();
     return () => {
       active = false;
+      generation++;
       clearTimeout(timer);
-      controller.abort();
+      controller?.abort();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, []);
 

@@ -1,0 +1,8 @@
+ts	phase	decision	why	evidence	result
+2026-10-09T08:32:56.0378891Z	analysis	Completed baseline before code changes	Separate existing failures from introduced ones	failures.md	Lint and one test file failed; build and smoke passed
+2026-10-09T08:32:56.0378891Z	security	Patch Next runtime and source-map-js only	Fix reported vulnerabilities without changing scoped lint adapter	../../package.json; audit.json	Zero reported vulnerabilities
+2026-10-09T08:32:56.0378891Z	tooling	Preserve stale junction and create correct adapter junction	Checkout relocation left an absolute target pointing outside the repo	../../README.md; lint.txt; tests.txt	Lint and glob tests pass
+2026-10-09T08:32:56.0378891Z	charts	Reject invalid and non-increasing chart timestamps	Accepted history could collapse to one unusable point	../../tests/market.test.cjs:62; tests.txt	Regression failed before fix and passed after
+2026-10-09T08:32:56.0378891Z	ui	Repair search focus and mobile panel breakpoint	Browser reproduced missing results and hidden navigation	browser-checks.md	Browser checks pass
+2026-10-09T08:32:56.0378891Z	verification	Inspect screenshot before calling it evidence	First capture showed stale content despite updated DOM	browser-checks.md; verified-tablet-menu.png	Second capture verified
+2026-10-09T08:32:56.0378891Z	review	Keep roadmap separate from implemented changes	Larger feature and infrastructure work needs product decisions	REVIEW.md	Local fixes complete; deployment and clean install unverified

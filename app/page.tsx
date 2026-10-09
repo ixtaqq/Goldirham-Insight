@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight, ArrowUpRight, ClipboardList, Gauge, Globe2, Layers } from "lucide-react";
 import { ASSETS, getAsset } from "@/lib/assets";
 import { CATEGORIES } from "@/lib/categories";
-import { toCardData } from "@/lib/card";
+import { toCardData, toReviewStatus } from "@/lib/card";
 import { Hero } from "@/components/Hero";
 import { MarketPulse } from "@/components/MarketPulse";
 import { AssetExplorer } from "@/components/AssetExplorer";
@@ -31,8 +31,8 @@ export default function HomePage() {
   }).map(toCardData);
   const spotlight = ["NVDA", "CEG", "BTC"].map((symbol) => toCardData(getAsset(symbol)!));
   const examples = ["AAPL", "NVDA", "SOL"].map((symbol) => {
-    const { name, scores, entryRange, whyItWins } = getAsset(symbol)!;
-    return { symbol, name, scores, entryRange, whyItWins };
+    const { name, scores, entryRange, whyItWins, research } = getAsset(symbol)!;
+    return { symbol, name, scores, entryRange, whyItWins, review: toReviewStatus(research) };
   });
 
   return (

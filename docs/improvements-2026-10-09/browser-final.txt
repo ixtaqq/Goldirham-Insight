@@ -1,0 +1,29 @@
+
+> goldirham@1.0.0 test:browser
+> playwright test
+
+[WebServer] (node:6932) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 14 tests using 2 workers
+
+(node:33600) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:37700) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  2 [chromium] › tests\browser\markets.spec.ts:70:3 › menu search and Escape work at 850px (715ms)
+  ok  1 [chromium] › tests\browser\markets.spec.ts:48:1 › desktop search reopens after Escape and after Enter navigation (717ms)
+  ok  4 [chromium] › tests\browser\markets.spec.ts:70:3 › menu search and Escape work at 1000px (640ms)
+  ok  3 [chromium] › tests\browser\markets.spec.ts:70:3 › menu search and Escape work at 900px (655ms)
+  ok  5 [chromium] › tests\browser\markets.spec.ts:94:1 › desktop navigation returns above the menu breakpoint (349ms)
+  ok  7 [chromium] › tests\browser\markets.spec.ts:126:1 › ranking orders filtered research by the selected score (605ms)
+  ok  8 [chromium] › tests\browser\markets.spec.ts:144:1 › all catalog and ranked cards disclose missing human review (611ms)
+  ok  6 [chromium] › tests\browser\markets.spec.ts:103:1 › theme filtering includes cross-listed assets and clears empty results (1.6s)
+  ok 10 [chromium] › tests\browser\markets.spec.ts:158:3 › chart recovers from empty on Retry (397ms)
+  ok  9 [chromium] › tests\browser\markets.spec.ts:158:3 › chart recovers from http on Retry (402ms)
+  ok 12 [chromium] › tests\browser\markets.spec.ts:204:1 › quote failure retains the last price and recovers on the next poll (485ms)
+  ok 11 [chromium] › tests\browser\markets.spec.ts:179:1 › rapid chart ranges ignore an older delayed response (521ms)
+  ok 13 [chromium] › tests\browser\markets.spec.ts:228:1 › initially hidden tabs fetch once on resume and stop polling while hidden (662ms)
+  ok 14 [chromium] › tests\browser\markets.spec.ts:260:1 › hiding aborts an in-flight poll and resume does not create duplicate polling (700ms)
+
+  14 passed (5.8s)

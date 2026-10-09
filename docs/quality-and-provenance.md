@@ -7,15 +7,18 @@ Implemented 5 October 2026 as the first follow-up to the project review.
 Use Node 22 and run:
 
 ```powershell
-& 'E:\workspace\Projects\Use-Node22.ps1'
+& 'E:\Workspace\Project\Use-Node22.ps1'
 npm.cmd run lint
 npm.cmd test
 npm.cmd run build
 npm.cmd run typecheck
 npm.cmd run test:smoke
+$env:PLAYWRIGHT_SKIP_BROWSER_GC = '1'
+npx.cmd playwright install chromium
+npm.cmd run test:browser
 ```
 
-The 25 regression tests include the original market regressions, structured-log
+The regression tests include the original market regressions, structured-log
 redaction, review rendering, timestamp display, catalog integrity and Next lint
 directory matching. The smoke
 test starts a local production server on an available loopback port, disables
@@ -24,17 +27,28 @@ exercises five simulated chart ranges and verifies quote deduplication/404 behav
 It stops its own process afterward. It does not render client JavaScript or replace
 browser interaction checks.
 
-No dependency was added for these checks. The existing test loader transpiles
-TypeScript/TSX for Node tests; build/typecheck provide the separate type-safety check.
+The Node checks use the existing TypeScript/TSX test loader. Build and typecheck
+provide the separate type-safety check. Playwright is a development dependency for
+the Chromium interaction suite. Fixture APIs exercise search, ranking, menu
+breakpoints, review disclosures, chart retries, and visibility-aware quote polling.
+Browser requests to external origins are blocked. The suite starts its own
+production server on port 3101 and writes failure evidence to a fresh temporary
+directory. Controlled visibility events test the application's response to those
+events; they do not test Chromium's background scheduling policy.
 
 ## CI behavior
 
 `.github/workflows/ci.yml` runs on pushes, pull requests and manual dispatch:
 
 - `quality`: reproducible install, lint, regression tests, production build,
-  typecheck, then production HTTP smoke tests.
+  typecheck, production HTTP smoke tests, and Chromium interactions. Failed browser
+  runs preserve traces and screenshots as a GitHub artifact.
 - `dependency-audit`: audits production and all dependencies, then saves an audit
   artifact even when npm reports vulnerabilities.
+
+The dependency audit also runs each Monday at 01:00 UTC, which is 09:00 in Kuala
+Lumpur. Scheduled runs skip the application quality job. The schedule becomes
+active after this workflow reaches the repository's default branch.
 
 Actions are pinned to verified commit SHAs. Jobs have read-only repository
 permissions, do not retain checkout credentials, and do not deploy or use provider
@@ -53,7 +67,11 @@ separately by a maintainer.
 The current catalog has no recorded editorial reviews. Each of its 26 asset pages
 therefore displays **Not reviewed**, with an explicit explanation that reviewer,
 review date and citations are missing. Existing thesis prose and scores were
-preserved, not retrospectively certified.
+preserved, not retrospectively certified. Catalog cards, ranked research cards,
+the hero radar, and the framework scorecard also disclose the review status beside
+their scores. Reviewed cards carry only the real reviewer and date; supporting
+sources and score rationales remain on the asset page. This improvement run leaves
+all entries unreviewed until human editorial review.
 
 After an actual review, add the optional `research` property to that asset in
 `lib/assets.ts`. Its `ResearchReview` type requires:
@@ -91,6 +109,11 @@ can be legitimate. Failed polling continues to label retained quotes as updates
 unavailable. Existing cards and the ticker retain their source/stale labels; the
 detailed timestamp appears on the asset page.
 
+Hidden tabs stop quote polling and cancel any pending quote request. Returning to
+the tab requests quotes immediately and resumes polling six seconds after each
+completed request. Obsolete responses cannot replace retained prices or schedule
+another poll. Hiding a tab does not itself mark retained quotes as failed updates.
+
 ## Provider-failure logs
 
 Market adapters emit one JSON warning for a failed cache miss, or one warning
@@ -109,7 +132,7 @@ Example event:
 |---|---|
 | `provider` | `coingecko`, `finnhub` |
 | `operation` | `quotes`, `chart` |
-| `reason` | `http`, `timeout`, `network`, `invalid-response` |
+| `reason` | `http`, `timeout`, `network`, `invalid-response`, `rate-limit` |
 | `status` | HTTP status, present only for HTTP failures |
 | `rejectedRecords` | Invalid/missing crypto record count, when applicable |
 
@@ -134,6 +157,42 @@ Cached failures last 10–12 seconds for quotes and 30 seconds for charts. Logs 
 failure events, not an availability percentage: there is no success denominator,
 durable metrics storage or automatic alerting. Those require a separately chosen
 operational backend and traffic budget before adding more providers.
+
+## Provider admission and cache limits
+
+`lib/sources.ts` limits each process to five CoinGecko attempts and 30 Finnhub
+attempts in a rolling 60-second window. CoinGecko quotes and charts share a budget.
+Cache hits and callers sharing pending requests do not consume another attempt.
+The process retains at most 128 cache entries and 32 pending requests. Expired
+entries are pruned on access, and capacity eviction removes the least recently
+read entry. Successful quotes cache for 60 seconds; charts cache for 30 seconds.
+Failed quote requests retain the existing 10–12 second retry delay.
+
+These are conservative application policies, not provider subscription quotas.
+Multiple server instances each have their own budget. A denied request returns
+the existing labeled simulation and does not create a cached failure. Admission
+denials emit `reason=rate-limit` at most once per provider per minute. Those
+warnings are sampled events, so their count is not the total number of denials.
+The quotes route rejects a `symbols` query longer than 1024 characters with HTTP
+400 before contacting providers.
+
+## Summarize exported fallback logs
+
+Export the structured JSON events to an NDJSON file, then run:
+
+```powershell
+npm.cmd run market:health -- 'logs.ndjson'
+```
+
+The tool also accepts NDJSON on standard input. The report groups events by
+provider, operation, reason, and HTTP status. It counts rejected records and
+invalid input lines. Unknown fields, malformed JSON, and unsupported values are
+rejected without echoing their contents. Unreadable input exits with status 1 and
+the message `Unable to read market logs.`
+
+Partial crypto batch rejections count as one event even when other records remain
+usable. Logs have no success denominator, and admission warnings are sampled.
+Do not interpret this report as availability or as the number of denied requests.
 
 ## Historical verification: initial implementation, before dependency migration
 

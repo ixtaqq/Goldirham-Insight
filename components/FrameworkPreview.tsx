@@ -4,11 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight, Check } from "lucide-react";
 import type { Asset } from "@/lib/types";
+import type { ReviewStatus } from "@/lib/card";
 import { avgScore } from "@/lib/utils";
 import { ScoreBars } from "./ScoreBars";
 import { AssetMark } from "./AssetMark";
+import { ResearchStatus } from "./ResearchStatus";
 
-type Example = Pick<Asset, "symbol" | "name" | "scores" | "entryRange" | "whyItWins">;
+type Example = Pick<Asset, "symbol" | "name" | "scores" | "entryRange" | "whyItWins"> & { review: ReviewStatus };
 
 export function FrameworkPreview({ assets }: { assets: Example[] }) {
   const [selected, setSelected] = useState(assets[0].symbol);
@@ -19,6 +21,7 @@ export function FrameworkPreview({ assets }: { assets: Example[] }) {
       <div className="score-name"><AssetMark symbol={asset.symbol} /><span>{asset.name}</span></div>
       <div className="big"><span className="score">{avgScore(asset.scores).toFixed(1)}</span><span className="of">/10 · composite</span></div>
       <ScoreBars scores={asset.scores} />
+      <ResearchStatus review={asset.review} />
       <div className="val-pill">{asset.entryRange}</div>
       <ul>{asset.whyItWins.slice(0, 3).map((item) => <li key={item}><Check size={14} className="text-gain" />{item}</li>)}</ul>
       <Link href={"/asset/" + asset.symbol} className="score-link">Read {asset.symbol} research <ArrowUpRight size={14} /></Link>

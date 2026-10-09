@@ -1,0 +1,230 @@
+
+> goldirham@1.0.0 test
+> node --test tests/*.test.cjs
+
+TAP version 13
+# Subtest: catalog projections disclose missing reviews without inventing attribution
+ok 1 - catalog projections disclose missing reviews without inventing attribution
+  ---
+  duration_ms: 12.67
+  type: 'test'
+  ...
+# Subtest: reviewed projections retain actual attribution without sending full evidence to cards
+ok 2 - reviewed projections retain actual attribution without sending full evidence to cards
+  ---
+  duration_ms: 0.6238
+  type: 'test'
+  ...
+# Subtest: HTTP failures are recorded once per cache miss without leaking response bodies
+ok 3 - HTTP failures are recorded once per cache miss without leaking response bodies
+  ---
+  duration_ms: 92.8949
+  type: 'test'
+  ...
+# Subtest: network exceptions and timeouts are classified without logging error messages
+ok 4 - network exceptions and timeouts are classified without logging error messages
+  ---
+  duration_ms: 84.4701
+  type: 'test'
+  ...
+# Subtest: invalid and missing crypto records are counted without discarding a valid sibling
+ok 5 - invalid and missing crypto records are counted without discarding a valid sibling
+  ---
+  duration_ms: 23.0708
+  type: 'test'
+  ...
+# Subtest: malformed JSON and impossible provider timestamps are diagnosed
+ok 6 - malformed JSON and impossible provider timestamps are diagnosed
+  ---
+  duration_ms: 28.0416
+  type: 'test'
+  ...
+# Subtest: Next lint uses the current project when rootDir is not configured
+ok 7 - Next lint uses the current project when rootDir is not configured
+  ---
+  duration_ms: 1.2613
+  type: 'test'
+  ...
+# Subtest: Next lint resolves directory globs, brace patterns and Windows separators
+ok 8 - Next lint resolves directory globs, brace patterns and Windows separators
+  ---
+  duration_ms: 7.9019
+  type: 'test'
+  ...
+# Subtest: Next lint accepts multiple roots and excludes files and missing directories
+ok 9 - Next lint accepts multiple roots and excludes files and missing directories
+  ---
+  duration_ms: 1.1303
+  type: 'test'
+  ...
+# Subtest: market health aggregates actual fallback records without echoing rejected input
+ok 10 - market health aggregates actual fallback records without echoing rejected input
+  ---
+  duration_ms: 66.6678
+  type: 'test'
+  ...
+# Subtest: market health reports unreadable input without exposing its path
+ok 11 - market health reports unreadable input without exposing its path
+  ---
+  duration_ms: 63.4714
+  type: 'test'
+  ...
+# Subtest: one malformed crypto quote falls back without poisoning valid quotes
+ok 12 - one malformed crypto quote falls back without poisoning valid quotes
+  ---
+  duration_ms: 131.5241
+  type: 'test'
+  ...
+# Subtest: stale or impossible crypto changes use simulation
+ok 13 - stale or impossible crypto changes use simulation
+  ---
+  duration_ms: 155.292
+  type: 'test'
+  ...
+# Subtest: invalid stock fields use simulation
+ok 14 - invalid stock fields use simulation
+  ---
+  duration_ms: 20.2637
+  type: 'test'
+  ...
+# Subtest: malformed chart history uses the labeled simulation fallback
+ok 15 - malformed chart history uses the labeled simulation fallback
+  ---
+  duration_ms: 23.776
+  type: 'test'
+  ...
+# Subtest: duplicate symbols produce one quote and one provider request
+ok 16 - duplicate symbols produce one quote and one provider request
+  ---
+  duration_ms: 23.0687
+  type: 'test'
+  ...
+# Subtest: chart histories without distinct increasing seconds use simulation
+ok 17 - chart histories without distinct increasing seconds use simulation
+  ---
+  duration_ms: 56.9961
+  type: 'test'
+  ...
+# Subtest: concurrent cache misses share a single provider request
+ok 18 - concurrent cache misses share a single provider request
+  ---
+  duration_ms: 8.6648
+  type: 'test'
+  ...
+# Subtest: provider failures are cached briefly, then retried after expiry
+ok 19 - provider failures are cached briefly, then retried after expiry
+  ---
+  duration_ms: 8.1841
+  type: 'test'
+  ...
+# Subtest: equivalent crypto ID sets share a cache entry without mutating the input
+ok 20 - equivalent crypto ID sets share a cache entry without mutating the input
+  ---
+  duration_ms: 17.0319
+  type: 'test'
+  ...
+# Subtest: quotes retain provider timestamps across API reads
+ok 21 - quotes retain provider timestamps across API reads
+  ---
+  duration_ms: 17.147
+  type: 'test'
+  ...
+# Subtest: Finnhub credentials use a header instead of a request URL
+ok 22 - Finnhub credentials use a header instead of a request URL
+  ---
+  duration_ms: 12.8777
+  type: 'test'
+  ...
+# Subtest: valid chart history retains the latest provider point
+ok 23 - valid chart history retains the latest provider point
+  ---
+  duration_ms: 16.9017
+  type: 'test'
+  ...
+# Subtest: unknown chart symbols return 404 without an external request
+ok 24 - unknown chart symbols return 404 without an external request
+  ---
+  duration_ms: 18.5061
+  type: 'test'
+  ...
+# Subtest: missing review metadata never invents a reviewer, date or citation
+ok 25 - missing review metadata never invents a reviewer, date or citation
+  ---
+  duration_ms: 6.1052
+  type: 'test'
+  ...
+# Subtest: recorded reviews show their evidence and all three score rationales
+ok 26 - recorded reviews show their evidence and all three score rationales
+  ---
+  duration_ms: 1.5856
+  type: 'test'
+  ...
+# Subtest: quote freshness shows the observation time in UTC, including an old market close
+ok 27 - quote freshness shows the observation time in UTC, including an old market close
+  ---
+  duration_ms: 1.0428
+  type: 'test'
+  ...
+# Subtest: simulated prices disclose that their timestamps are generation times
+ok 28 - simulated prices disclose that their timestamps are generation times
+  ---
+  duration_ms: 0.2767
+  type: 'test'
+  ...
+# Subtest: missing and invalid timestamps cannot crash the freshness display
+ok 29 - missing and invalid timestamps cannot crash the freshness display
+  ---
+  duration_ms: 1.8565
+  type: 'test'
+  ...
+# Subtest: the real catalog has unique symbols, valid categories and complete recorded reviews
+ok 30 - the real catalog has unique symbols, valid categories and complete recorded reviews
+  ---
+  duration_ms: 2.7547
+  type: 'test'
+  ...
+# Subtest: CoinGecko quotes and charts share a rolling budget and recover without caching denials
+ok 31 - CoinGecko quotes and charts share a rolling budget and recover without caching denials
+  ---
+  duration_ms: 102.3034
+  type: 'test'
+  ...
+# Subtest: shared requests and cache reads preserve a stock quote without spending more budget
+ok 32 - shared requests and cache reads preserve a stock quote without spending more budget
+  ---
+  duration_ms: 36.4347
+  type: 'test'
+  ...
+# Subtest: distinct concurrent stock misses cannot exceed admission and expire on a rolling window
+ok 33 - distinct concurrent stock misses cannot exceed admission and expire on a rolling window
+  ---
+  duration_ms: 33.1307
+  type: 'test'
+  ...
+# Subtest: global pending capacity releases after completion without forgetting admitted work
+ok 34 - global pending capacity releases after completion without forgetting admitted work
+  ---
+  duration_ms: 25.5091
+  type: 'test'
+  ...
+# Subtest: an exhausted crypto budget still serves the route's labeled simulated fallback
+ok 35 - an exhausted crypto budget still serves the route's labeled simulated fallback
+  ---
+  duration_ms: 36.7474
+  type: 'test'
+  ...
+# Subtest: oversized symbol inputs return an actionable error without contacting providers
+ok 36 - oversized symbol inputs return an actionable error without contacting providers
+  ---
+  duration_ms: 23.5535
+  type: 'test'
+  ...
+1..36
+# tests 36
+# suites 0
+# pass 36
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 760.5197

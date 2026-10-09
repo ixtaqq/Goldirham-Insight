@@ -1,5 +1,18 @@
 # Development dependency advisory and remediation
 
+## Update on 9 October 2026
+
+Next runtime is now 16.3.8 and `source-map-js` is 1.2.2. The full audit reports
+zero vulnerabilities in [the current verification record](../review-2026-10-09/audit.json).
+This addresses the new [Next advisories](https://github.com/advisories/GHSA-cjq9-62q9-8jv4)
+and [source-map-js advisory](https://github.com/advisories/GHSA-68fv-2mgg-jv7q).
+An audit identifies affected dependency versions; it does not establish that an
+application-specific exploit succeeded.
+
+The ESLint configuration and plugin remain at 16.3.6. Their scoped glob adapter
+and its regression tests are unchanged. The runtime patch does not widen that
+override. The 5 October verification and remediation history follows below.
+
 Status: **Removed from the local dependency graph; full and production audits pass.**
 
 Verified 5 October 2026. The upstream advisory remains unpatched. This project
