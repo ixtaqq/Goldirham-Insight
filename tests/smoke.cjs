@@ -47,6 +47,18 @@ test("production pages, review disclosures and market routes", { timeout: 60_000
 
   const { ASSETS } = load("lib/assets.ts");
   const { CATEGORIES } = load("lib/categories.ts");
+  const emptyComparison = await fetch(`${base}/compare`);
+  assert.equal(emptyComparison.status, 200);
+  assert.match(await emptyComparison.text(), /Start with an asset you know/);
+  const comparison = await fetch(`${base}/compare?symbols=NVDA&symbols=CEG&symbols=BTC`);
+  assert.equal(comparison.status, 200);
+  const comparisonHtml = await comparison.text();
+  assert.match(comparisonHtml, /<table/);
+  assert.match(comparisonHtml, /Key risks/);
+  for (const symbol of ["NVDA", "CEG", "BTC"]) {
+    assert.ok(comparisonHtml.includes(`id="research-record-${symbol}"`), symbol);
+    assert.ok(comparisonHtml.replace(/<!--.*?-->/g, "").includes(`Read ${symbol} research`), symbol);
+  }
   for (const asset of ASSETS) {
     const response = await fetch(`${base}/asset/${asset.symbol}`);
     assert.equal(response.status, 200, asset.symbol);
@@ -67,5 +79,5 @@ test("production pages, review disclosures and market routes", { timeout: 60_000
     assert.ok(chart.points.length > 1 && chart.points.every((p) => p.value > 0));
   }
   assert.equal((await fetch(`${base}/api/chart?symbol=UNKNOWN`)).status, 404);
-  t.diagnostic(`${ASSETS.length + CATEGORIES.length + 1} pages, ${ASSETS.length} review disclosures, five chart ranges and quote deduplication passed.`);
+  t.diagnostic(`${ASSETS.length + CATEGORIES.length + 2} pages including comparison, empty and selected comparison states, ${ASSETS.length} asset review disclosures, five chart ranges and quote deduplication passed.`);
 });

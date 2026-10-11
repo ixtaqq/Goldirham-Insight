@@ -17,6 +17,7 @@ export function Navbar({ assets }: { assets: SearchAsset[] }) {
     { href: "/", label: "Overview" },
     { href: "/#live", label: "Live desk" },
     { href: "/#markets", label: "Research" },
+    { href: "/compare", label: "Compare assets" },
     { href: "/#approach", label: "Framework" },
     { href: "/#why", label: "About" },
   ];

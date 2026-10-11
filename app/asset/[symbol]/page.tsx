@@ -13,6 +13,7 @@ import {
 import { ASSETS, getAsset, getRelated } from "@/lib/assets";
 import { getCategory } from "@/lib/categories";
 import { toCardData } from "@/lib/card";
+import { comparisonHref } from "@/lib/compare";
 import { avgScore } from "@/lib/utils";
 import { LivePrice } from "@/components/LivePrice";
 import { LiveChart } from "@/components/LiveChart";
@@ -102,6 +103,7 @@ export default async function AssetPage(props: { params: Promise<{ symbol: strin
             <p className="mt-2 max-w-xl text-base leading-relaxed text-muted">
               {asset.theme} — {asset.tagline}
             </p>
+            <Link href={comparisonHref([asset.symbol])} className="compare-text-link mt-3 inline-flex">Compare this asset</Link>
           </div>
 
           <div className="shrink-0 lg:text-right">

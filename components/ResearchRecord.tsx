@@ -6,11 +6,11 @@ const FACTORS = [
   { key: "aiExposure", label: "AI exposure" },
 ] as const;
 
-export function ResearchRecord({ review }: { review?: ResearchReview }) {
+export function ResearchRecord({ review, headingId = "research-record-heading" }: { review?: ResearchReview; headingId?: string }) {
   return (
-    <section aria-labelledby="research-record-heading" className="mb-6 border-b border-line pb-6">
+    <section aria-labelledby={headingId} className="mb-6 border-b border-line pb-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 id="research-record-heading" className="text-sm font-semibold text-ink-950">Research record</h2>
+        <h2 id={headingId} className="text-sm font-semibold text-ink-950">Research record</h2>
         <span className="rounded-md border border-line px-2 py-1 text-xs text-muted">
           {review ? "Reviewed" : "Not reviewed"}
         </span>

@@ -33,6 +33,15 @@ test("recorded reviews show their evidence and all three score rationales", () =
   assert.doesNotMatch(html, /Not reviewed/);
 });
 
+test("multiple research records can expose distinct accessible headings", () => {
+  for (const symbol of ["NVDA", "CEG", "BTC"]) {
+    const html = render(ResearchRecord, { headingId: `research-record-${symbol}` });
+    assert.ok(html.includes(`aria-labelledby="research-record-${symbol}"`));
+    assert.ok(html.includes(`id="research-record-${symbol}"`));
+    assert.doesNotMatch(html, /id="research-record-heading"/);
+  }
+});
+
 test("quote freshness shows the observation time in UTC, including an old market close", () => {
   const quote = { source: "finnhub", updatedAt: Date.parse("2026-10-02T20:00:00Z") };
   const html = render(QuoteFreshness, { quote });
