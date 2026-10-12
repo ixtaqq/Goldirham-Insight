@@ -154,6 +154,27 @@ test("all catalog and ranked cards disclose missing human review", async ({ page
   await expect(categoryCards.getByText("Not reviewed", { exact: true })).toHaveCount(8);
 });
 
+for (const width of [375, 1280]) {
+  test(`an anchor link stays on the research desk when quotes arrive at ${width}px`, async ({ page }) => {
+    let release = () => {};
+    const held = new Promise<void>((resolve) => { release = resolve; });
+    const quotes = ["NVDA", "CEG", "MSFT", "BTC", "GOOGL", "VST"].map((symbol, index) => ({
+      symbol, price: 100 + index, change: 1, changePct: 1 + index, currency: "USD", source: "simulated", updatedAt: 1791504000000,
+    }));
+    await page.route("**/api/quotes", async (route) => { await held; await route.fulfill({ json: { quotes } }); });
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto("/#markets");
+    const top = () => desk(page).evaluate((element) => Math.round(element.getBoundingClientRect().top));
+    await expect(page.getByText("Loading the research desk…")).toBeAttached();
+    const before = await top();
+    expect(before).toBeLessThanOrEqual(100);
+    release();
+    await expect(page.locator("#live a.feed-row")).toHaveCount(6);
+    await expect(page.locator(".tape-item").first()).toHaveAttribute("href", /\/asset\//);
+    expect(await top()).toBe(before);
+  });
+}
+
 for (const width of [320, 768, 1440]) {
   test(`score disclosures remain visible at ${width}px`, async ({ page }, testInfo) => {
     await page.setViewportSize({ width, height: 900 });

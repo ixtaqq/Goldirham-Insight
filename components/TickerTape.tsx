@@ -27,7 +27,7 @@ export function TickerTape() {
             </Link>
           ))}
         </div>
-      ) : !error ? <p className="tape-status">Loading market data…</p> : null}
+      ) : !error ? <div className="tape-row tape-row-pending"><p className="tape-item"><span className="asset-mark asset-mark-small" aria-hidden="true" />Loading market data…</p></div> : null}
       {row.length > 0 && <button className="ticker-control" aria-label={paused ? "Resume ticker" : "Pause ticker"} onClick={() => setPaused(!paused)}>{paused ? <Play size={15} /> : <Pause size={15} />}</button>}
     </div>
   );

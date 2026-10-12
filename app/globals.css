@@ -8,7 +8,8 @@
 @layer base {
   *,::before,::after,::backdrop,::file-selector-button { border-color:#e5e7eb; }
   input::placeholder,textarea::placeholder { color:#9ca3af; }
-  html { scroll-behavior:smooth; scroll-padding-top:6rem; }
+  html { scroll-padding-top:6rem; }
+  html:focus-within { scroll-behavior:smooth; }
   body { @apply bg-canvas text-ink-950 antialiased; margin:0; }
   h1,h2,h3,p { text-wrap:pretty; }
   a,button,input,select { -webkit-tap-highlight-color:transparent; }
@@ -128,6 +129,8 @@
 .tape-item small { font-size:8px; color:#617064; }
 .tape-price { color:#5a695f; font-variant-numeric:tabular-nums; }
 .tape-status { text-align:center; padding:14px; color:#6e7e71; font-size:11px; }
+.tape-row-pending { width:auto; justify-content:center; animation:none; color:#6e7e71; }
+.tape-row-pending .tape-item { border-right:0; }
 .section-space { padding-top:78px; }
 .section-heading { display:flex; justify-content:space-between; align-items:flex-end; gap:1.5rem; margin-bottom:28px; }
 .section-heading h2 { font-size:clamp(1.75rem,2.6vw,2.35rem); letter-spacing:-.055em; line-height:1.2; font-weight:800; margin-top:10px; }
