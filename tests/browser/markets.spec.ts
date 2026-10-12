@@ -259,7 +259,7 @@ test("initially hidden tabs fetch once on resume and stop polling while hidden",
   await page.goto("/");
   await desk(page).getByRole("button", { name: "Safest", exact: true }).click();
   await expect(cards(page).nth(0)).toHaveAttribute("href", "/asset/NEE");
-  await desk(page).getByRole("button", { name: "All", exact: true }).click();
+  await desk(page).getByRole("button", { name: "Featured", exact: true }).click();
   await expect(cards(page).filter({ hasText: "NVDA" })).toBeVisible();
   await page.clock.pauseAt(new Date(CLOCK_START.getTime() + 1000));
   await page.clock.runFor(30000);
