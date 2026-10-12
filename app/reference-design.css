@@ -351,6 +351,8 @@ button,a,input,select { -webkit-tap-highlight-color:transparent; }
 .feed-source { color:var(--ink-3); font-size:11px; width:70px; text-align:right; flex:none; }
 .feed-state { padding:20px; color:var(--ink-2); font-size:13px; }
 .feed-row-pending { color:var(--ink-3); }
+.feed-pending-text { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+@media(max-width:359px) { .feed-row .asset-mark { display:none; } }
 .research-section { padding-top:24px; padding-bottom:56px; }
 .desk-search { width:280px; max-width:100%; }
 .desk-input { position:relative; }

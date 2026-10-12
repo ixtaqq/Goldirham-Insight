@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { ArrowDown, ArrowUp, Search } from "lucide-react";
 import type { CardData } from "@/lib/card";
 import { CATEGORIES } from "@/lib/categories";
-import { composite, DEFAULT_VIEW, explorerHref, exploreAssets, FACTORS, inCategory, MAX_WEIGHT, parseExplorerView, RANKINGS, type ExplorerView, type Weights } from "@/lib/explorer";
+import { composite, DEFAULT_VIEW, explorerHref, exploreAssets, FACTORS, inCategory, MAX_QUERY_LENGTH, MAX_WEIGHT, parseExplorerView, RANKINGS, type ExplorerView, type Weights } from "@/lib/explorer";
 import { AssetCard } from "./AssetCard";
 
 const DRAFT_SYNC_DELAY = 250;
@@ -24,28 +24,35 @@ export function AssetExplorer({ assets }: { assets: CardData[] }) {
 
 function LinkedExplorer({ assets }: { assets: CardData[] }) {
   const { view: linked, adjusted } = parseExplorerView(useSearchParams());
-  // Drafts stay local so inputs never wait on the router.
+  const linkedHref = explorerHref(linked);
+  // Drafts stay local so inputs never wait on the router. When the URL changes to one this component
+  // did not write (Back, Forward, or a link to "/"), it replaces them. Next applies history writes in a
+  // transition, so a render can still see the old URL; only an actual URL change is compared.
   const [draft, setDraft] = useState(() => draftOf(linked));
+  const [sync, setSync] = useState({ seen: linkedHref, written: linkedHref });
+  if (linkedHref !== sync.seen) {
+    setSync({ seen: linkedHref, written: linkedHref });
+    if (linkedHref !== sync.written) setDraft(draftOf(linked));
+  }
   const view = { ...linked, ...draft };
   const href = explorerHref(view);
-  const linkedHref = explorerHref(linked);
-
-  useEffect(() => {
-    const restore = () => setDraft(draftOf(parseExplorerView(new URLSearchParams(location.search)).view));
-    addEventListener("popstate", restore);
-    return () => removeEventListener("popstate", restore);
-  }, []);
 
   useEffect(() => {
     if (href === linkedHref) return;
-    const timer = setTimeout(() => history.replaceState(null, "", href), DRAFT_SYNC_DELAY);
+    const timer = setTimeout(() => {
+      setSync((current) => ({ ...current, written: href }));
+      history.replaceState(null, "", href);
+    }, DRAFT_SYNC_DELAY);
     return () => clearTimeout(timer);
   }, [href, linkedHref]);
 
   const change = (next: Partial<ExplorerView>) => {
     const target = { ...view, ...next };
+    const targetHref = explorerHref(target);
+    if (targetHref === href) return;
     setDraft(draftOf(target));
-    history.pushState(null, "", explorerHref(target));
+    setSync((current) => ({ ...current, written: targetHref }));
+    history.pushState(null, "", targetHref);
   };
 
   return <ExplorerDesk assets={assets} view={view} adjusted={adjusted} onDraft={(next) => setDraft({ ...draft, ...next })} onChange={change} />;
@@ -69,7 +76,7 @@ function ExplorerDesk({ assets, view, adjusted = false, onDraft = () => {}, onCh
       <div className="container-x">
         <div className="sec-head">
           <div><p className="eyebrow">The research desk</p><h2 id="research-heading" className="display">Find your next conviction.</h2><p className="sec-sub">Real businesses. Clear theses. The risks included. Prices identify their source — scores are editorial.</p></div>
-          <div className="desk-search"><label htmlFor="library-search" className="label">Filter the desk</label><div className="desk-input"><Search size={16} aria-hidden="true" /><input id="library-search" className="input" type="search" placeholder="Company or ticker…" value={view.query} onChange={(event) => onDraft({ query: event.target.value })} /></div></div>
+          <div className="desk-search"><label htmlFor="library-search" className="label">Filter the desk</label><div className="desk-input"><Search size={16} aria-hidden="true" /><input id="library-search" className="input" type="search" placeholder="Company or ticker…" maxLength={MAX_QUERY_LENGTH} value={view.query} onChange={(event) => onDraft({ query: event.target.value })} /></div></div>
         </div>
         <div className="toolbar">
           <div className="segmented research-segments" role="group" aria-label="Rank research">{RANKINGS.map((item) => <button key={item.id} data-active={view.ranking === item.id} aria-pressed={view.ranking === item.id} onClick={() => onChange({ ranking: item.id })}>{item.label}</button>)}</div>

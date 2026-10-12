@@ -30,9 +30,17 @@ table of score weights, so each preset ranks by the same composite function.
 Ties keep the featured order.
 
 Theme, tier, and ranking changes push a history entry with
-`history.pushState`, which Next.js syncs into `useSearchParams`. Typing stays in
-local state and replaces the current entry after a 250ms pause, so Back skips
-keystrokes. A `popstate` listener restores typed text after Back and Forward.
+`history.pushState`, which Next.js syncs into `useSearchParams`. Choosing the
+active ranking again adds no entry. Typing stays in local state and replaces the
+current entry after a 250ms pause, so Back skips keystrokes. The explorer records
+each URL it writes. When the URL changes to one it did not write, such as after
+Back, Forward, or a link to `/`, the URL replaces the typed text. Next.js applies
+history writes in a transition, so the comparison runs only when the URL itself
+changes. The search box stops at the 80-character link limit.
+
+Known limit: a card opened within 250ms of the last keystroke leaves the previous
+search in that history entry. Writing the URL during unmount would overwrite the
+asset page's new entry instead.
 
 Ranking and filtering are separate controls. The former Crypto ranking button
 duplicated the Crypto theme, and Tier 1 could not combine with a ranking.
@@ -58,9 +66,11 @@ parameters, such as campaign tags, are ignored.
 Loading `/#markets` previously stayed at the top of the page. Smooth scrolling
 turned the load-time fragment scroll into an animation that hydration
 interrupted. Smooth scrolling now applies under `html:focus-within`, which keeps
-it for in-page link clicks. The ticker, pulse ratio, and pulse feed also grew by
-up to 277px when quotes arrived. While quotes load, they now reserve their
-loaded height.
+it for in-page link clicks in browsers that focus clicked links. Safari and macOS
+Firefox jump instead. The ticker, pulse ratio, and pulse feed also grew by up to
+277px when quotes arrived. Until quotes first arrive or fail, they now reserve
+their loaded height, and failure messages stay on one line. Below 360px, feed
+rows hide their decorative logo so each row fits on one line like its placeholder.
 
 ## Verification of shareable views (2026-10-12)
 
@@ -81,6 +91,15 @@ Commands ran with Node 22.23.3.
 The cached Playwright Chromium build 1248 was missing locally. The browser suite
 ran against installed Google Chrome through a temporary config with
 `channel: "chrome"`. The project config is unchanged; CI still uses Chromium.
+
+## Review follow-up (2026-10-12)
+
+An independent review of the first three commits found no blocking defects.
+Fixed findings: typed text surviving a link to `/`, the failed-quote layout shift,
+the missing input length limit, duplicate history entries, the misnamed loading
+text, and a viewport assertion that accepted a 1px overlap. The anchor test now
+covers quotes arriving and failing at 320, 360, 375, and 1280px. Before the
+logo change it reproduced a 138px shift at 320px and a 47px shift on failure.
 
 ## Verification of the custom blend (2026-10-12)
 

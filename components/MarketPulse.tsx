@@ -14,7 +14,7 @@ export function MarketPulse({ assets }: { assets: CardData[] }) {
   const available = assets.filter((asset) => quotes[asset.symbol]);
   const advancing = available.filter((asset) => quotes[asset.symbol].changePct >= 0).length;
   const rows = [...available].sort((a, b) => Math.abs(quotes[b.symbol].changePct) - Math.abs(quotes[a.symbol].changePct)).slice(0, FEED_ROWS);
-  // While quotes load, the hidden ratio and pending rows hold the loaded height so #markets links below do not shift.
+  // Until quotes first arrive, the hidden ratio and pending rows hold the loaded height so #markets links below do not shift.
   return (
     <section id="live" className="design-section live-section">
       <div className="container-x">
@@ -23,8 +23,8 @@ export function MarketPulse({ assets }: { assets: CardData[] }) {
         </div>
         <div className="card feed-card">
           <div className="feed-head"><span className="eyebrow"><span className="dot" />Desk activity</span><span className="feed-meta">Largest daily moves · market and simulated quotes</span></div>
-          {error && <p className="feed-state" role="status">{ready ? "Updates unavailable. Showing last received quotes." : "Market quotes unavailable. Retrying automatically…"}</p>}
-          {!ready && !error && <div className="feed-list" role="status">{Array.from({ length: FEED_ROWS }, (_, index) => <div key={index} className="feed-row feed-row-pending"><span className="asset-mark asset-mark-small" aria-hidden="true" />{index === 0 && "Loading the research desk…"}</div>)}</div>}
+          {error && ready && <p className="feed-state" role="status">Updates unavailable. Showing last received quotes.</p>}
+          {!ready && <div className="feed-list" role="status">{Array.from({ length: FEED_ROWS }, (_, index) => <div key={index} className="feed-row feed-row-pending"><span className="asset-mark asset-mark-small" aria-hidden="true" />{index === 0 && <span className="feed-pending-text">{error ? "Quotes unavailable. Retrying…" : "Loading desk activity…"}</span>}</div>)}</div>}
           <div className="feed-list">{rows.map((asset) => {
             const quote = quotes[asset.symbol];
             const up = quote.changePct >= 0;

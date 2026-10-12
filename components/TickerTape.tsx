@@ -16,7 +16,7 @@ export function TickerTape() {
 
   return (
     <div className="market-tape" aria-label="Market quotes">
-      {error && <p className="tape-status" role="status">{ready ? "Quote updates unavailable. Showing last received prices." : "Market quotes unavailable."} Retrying automatically…</p>}
+      {error && ready && <p className="tape-status" role="status">Quote updates unavailable. Showing last received prices. Retrying automatically…</p>}
       {row.length ? (
         <div className="tape-row" style={paused ? { animationPlayState: "paused" } : undefined}>
           {row.map((quote, index) => (
@@ -27,7 +27,7 @@ export function TickerTape() {
             </Link>
           ))}
         </div>
-      ) : !error ? <div className="tape-row tape-row-pending"><p className="tape-item"><span className="asset-mark asset-mark-small" aria-hidden="true" />Loading market data…</p></div> : null}
+      ) : <div className="tape-row tape-row-pending"><p className="tape-item" role={error ? "status" : undefined}><span className="asset-mark asset-mark-small" aria-hidden="true" /><span className="feed-pending-text">{error ? "Quotes unavailable. Retrying…" : "Loading market data…"}</span></p></div>}
       {row.length > 0 && <button className="ticker-control" aria-label={paused ? "Resume ticker" : "Pause ticker"} onClick={() => setPaused(!paused)}>{paused ? <Play size={15} /> : <Pause size={15} />}</button>}
     </div>
   );

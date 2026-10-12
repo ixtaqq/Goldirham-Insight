@@ -64,9 +64,42 @@ test("search updates the link without adding a history entry per keystroke", asy
   await expect(desk(page).getByRole("status")).toHaveText("1 asset matching “microsoft”");
 });
 
+test("a link back to the homepage clears a typed search", async ({ page }) => {
+  await page.goto("/?category=crypto#markets");
+  const search = desk(page).getByRole("searchbox", { name: "Filter the desk" });
+  await search.fill("bitcoin");
+  await expect(page).toHaveURL("/?q=bitcoin&category=crypto#markets");
+  await page.getByRole("link", { name: "Goldirham Insight home" }).click();
+  await expect(page).toHaveURL("/");
+  await expect(search).toHaveValue("");
+  await expect(desk(page).getByRole("status")).toHaveText("26 assets to explore");
+  await page.waitForTimeout(400);
+  await expect(page).toHaveURL("/");
+});
+
+test("choices keep text typed just before them and repeated choices add no history", async ({ page }) => {
+  await page.goto("/");
+  await desk(page).getByRole("searchbox", { name: "Filter the desk" }).fill("bit");
+  await control(page, "Rank research", "Top upside").click();
+  await expect(page).toHaveURL("/?q=bit&rank=upside#markets");
+  await control(page, "Rank research", "Top upside").click();
+  await page.goBack();
+  await expect(page).not.toHaveURL(/rank=upside/);
+  await expect(control(page, "Rank research", "Featured")).toHaveAttribute("aria-pressed", "true");
+});
+
+test("search text stops at the link limit without a notice", async ({ page }) => {
+  await page.goto("/");
+  const search = desk(page).getByRole("searchbox", { name: "Filter the desk" });
+  await search.fill("x".repeat(100));
+  await expect(search).toHaveValue("x".repeat(80));
+  await expect(page).toHaveURL("/?q=" + "x".repeat(80) + "#markets");
+  await expect(desk(page).getByText("Some settings in this link were not recognized")).toHaveCount(0);
+});
+
 test("a shared link opens the desk with its view", async ({ page }) => {
   await page.goto("/?q=a&category=ai-utilities&rank=ai#markets");
-  await expect(desk(page)).toBeInViewport();
+  await expect.poll(() => desk(page).evaluate((element) => element.getBoundingClientRect().top)).toBeLessThanOrEqual(100);
   await expect(desk(page).getByRole("searchbox", { name: "Filter the desk" })).toHaveValue("a");
   await expect(control(page, "Rank research", "Top AI exposure")).toHaveAttribute("aria-pressed", "true");
   await expect(cards(page).nth(0)).toHaveAttribute("href", "/asset/CEG");
