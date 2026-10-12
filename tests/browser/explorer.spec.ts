@@ -110,3 +110,47 @@ for (const width of [320, 768, 1001, 1440]) {
     expect(overflow).toBe(0);
   });
 }
+
+test("a custom blend ranks by its weights and is restored by reload and Back", async ({ page }) => {
+  await page.goto("/");
+  await control(page, "Rank research", "Safest").click();
+  await control(page, "Rank research", "Custom").click();
+  await expect(page).toHaveURL("/?rank=custom&w=3-3-3#markets");
+  const blend = desk(page).getByRole("group", { name: "Custom blend" });
+  await expect(blend.getByText("Blends weight editorial scores that have not been reviewed.", { exact: false })).toBeVisible();
+  await expect(cards(page).first().getByText("Your blend", { exact: false })).toBeVisible();
+
+  await blend.getByRole("slider", { name: "Safety" }).press("Home");
+  await blend.getByRole("slider", { name: "AI exposure" }).press("Home");
+  await expect(page).toHaveURL("/?rank=custom&w=3-0-0#markets");
+  await expect(cards(page).nth(0)).toHaveAttribute("href", "/asset/VST");
+  await expect(cards(page).nth(1)).toHaveAttribute("href", "/asset/SOL");
+  await expect(cards(page).nth(0).locator(".asset-blend")).toHaveText("Your blend 8.5");
+
+  const upside = blend.getByRole("slider", { name: "Upside" });
+  await upside.press("Home");
+  await expect(upside).toHaveValue("1");
+  await expect(page).toHaveURL("/?rank=custom&w=1-0-0#markets");
+
+  await page.reload();
+  await expect(blend.getByRole("slider", { name: "Upside" })).toHaveValue("1");
+  await expect(blend.getByRole("slider", { name: "Safety" })).toHaveValue("0");
+  await expect(cards(page).nth(0)).toHaveAttribute("href", "/asset/VST");
+
+  await page.goBack();
+  await expect(page).toHaveURL("/?rank=safety#markets");
+  await expect(blend).toHaveCount(0);
+  await expect(cards(page).first().getByText("Your blend", { exact: false })).toHaveCount(0);
+  await expect(cards(page).nth(0)).toHaveAttribute("href", "/asset/NEE");
+});
+
+for (const width of [320, 1440]) {
+  test(`the custom blend fits without page overflow at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/?rank=custom&w=1-2-3#markets");
+    await expect(desk(page).getByRole("slider", { name: "AI exposure" })).toHaveValue("3");
+    await expect(desk(page).getByRole("slider", { name: "AI exposure" })).toBeVisible();
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow).toBe(0);
+  });
+}

@@ -8,10 +8,12 @@ A link that carries a view opens at the desk.
 | --- | --- | --- |
 | `q` | Search text, at most 80 characters | Empty |
 | `category` | A catalog category slug | All themes |
-| `rank` | `upside`, `safety`, `ai` | Featured order |
+| `rank` | `upside`, `safety`, `ai`, `custom` | Featured order |
 | `tier` | `1` | All tiers |
+| `w` | Upside, safety, and AI exposure weights from 0 to 5, such as `3-1-2`; only with `rank=custom` | `3-3-3` |
 
-Example: `/?category=crypto&rank=safety&tier=1#markets`.
+Examples: `/?category=crypto&rank=safety&tier=1#markets` and
+`/?rank=custom&w=1-0-2#markets`.
 
 ## Design decisions
 
@@ -35,8 +37,21 @@ keystrokes. A `popstate` listener restores typed text after Back and Forward.
 Ranking and filtering are separate controls. The former Crypto ranking button
 duplicated the Crypto theme, and Tier 1 could not combine with a ranking.
 
+## Custom blend
+
+**Custom** ranks by a weighted average of the three editorial scores. Each preset
+is a fixed weight table, so presets and blends share one ranking function, and a
+blend of `0-4-0` orders assets exactly as **Safest** does. Weights must sum to more
+than zero. The parser rejects `0-0-0`, and the last weighted slider cannot reach
+zero. Slider changes update the URL the same way typing does.
+
+Each card shows its blend beside the existing review status. The control states
+that blends weight unreviewed editorial scores and are not recommendations.
+Presets show no blend because it would repeat a score already on the card.
+
 Invalid parameter values fall back to their defaults and show a notice until
-the next change. Unknown parameters, such as campaign tags, are ignored.
+the next change. Weights without `rank=custom` count as invalid. Unknown
+parameters, such as campaign tags, are ignored.
 
 ## Anchor and layout fix
 
@@ -47,7 +62,7 @@ it for in-page link clicks. The ticker, pulse ratio, and pulse feed also grew by
 up to 277px when quotes arrived. While quotes load, they now reserve their
 loaded height.
 
-## Verification (2026-10-12)
+## Verification of shareable views (2026-10-12)
 
 Commands ran with Node 22.23.3.
 
@@ -66,3 +81,12 @@ Commands ran with Node 22.23.3.
 The cached Playwright Chromium build 1248 was missing locally. The browser suite
 ran against installed Google Chrome through a temporary config with
 `channel: "chrome"`. The project config is unchanged; CI still uses Chromium.
+
+## Verification of the custom blend (2026-10-12)
+
+- `tsc`, lint, build, and smoke passed; `/` remains static.
+- `npm.cmd test`: 53 passed, 0 failed. New cases cover weighted order, scale
+  invariance, preset equivalence, URL round trips, and seven malformed weights.
+- Browser suite: 40 passed, 0 failed. The blend test drives the sliders with the
+  keyboard and checks the URL, card order, blend text, the nonzero floor,
+  reload, and Back. Overflow checks cover 320 and 1440px.

@@ -42,7 +42,7 @@ test("the default view links to the bare homepage", () => {
 });
 
 test("explorer links survive sharing in a stable parameter order", () => {
-  const view = { query: "power & grid", category: "ai-utilities", ranking: "safety", tier1: true };
+  const view = { ...DEFAULT_VIEW, query: "power & grid", category: "ai-utilities", ranking: "safety", tier1: true };
   const href = explorerHref(view);
   assert.equal(href, "/?q=power+%26+grid&category=ai-utilities&rank=safety&tier=1#markets");
   assert.deepEqual(parse(new URL(href, "https://example.com").search), { view, adjusted: false });
@@ -57,4 +57,28 @@ test("unusable link values fall back to defaults and are reported", () => {
   assert.equal(long.view.query.length, MAX_QUERY_LENGTH);
   assert.equal(long.adjusted, true);
   assert.deepEqual(parse("utm_source=newsletter"), { view: DEFAULT_VIEW, adjusted: false });
+});
+
+test("custom weights rank by the weighted average and match the equivalent preset", () => {
+  assert.deepEqual(symbols({ ranking: "custom", weights: { upside: 1, safety: 0, aiExposure: 1 } }).slice(0, 4), ["NVDA", "CEG", "VST", "PLTR"]);
+  assert.deepEqual(
+    symbols({ ranking: "custom", weights: { upside: 5, safety: 0, aiExposure: 5 } }),
+    symbols({ ranking: "custom", weights: { upside: 1, safety: 0, aiExposure: 1 } }),
+  );
+  assert.deepEqual(symbols({ ranking: "custom", weights: { upside: 0, safety: 4, aiExposure: 0 } }), symbols({ ranking: "safety" }));
+});
+
+test("custom weights survive sharing and are omitted for presets", () => {
+  const view = { ...DEFAULT_VIEW, ranking: "custom", weights: { upside: 1, safety: 0, aiExposure: 5 } };
+  assert.equal(explorerHref(view), "/?rank=custom&w=1-0-5#markets");
+  assert.deepEqual(parse("rank=custom&w=1-0-5"), { view, adjusted: false });
+  assert.equal(explorerHref({ ...view, ranking: "safety" }), "/?rank=safety#markets");
+  assert.deepEqual(parse("rank=custom"), { view: { ...DEFAULT_VIEW, ranking: "custom" }, adjusted: false });
+});
+
+test("unusable weights fall back to the default blend and are reported", () => {
+  for (const weights of ["0-0-0", "6-1-1", "1-1", "a-b-c", "1-1-1-1", "-1-1-1", "1.5-1-1"]) {
+    assert.deepEqual(parse("rank=custom&w=" + weights), { view: { ...DEFAULT_VIEW, ranking: "custom" }, adjusted: true }, weights);
+  }
+  assert.deepEqual(parse("rank=safety&w=1-2-3"), { view: { ...DEFAULT_VIEW, ranking: "safety" }, adjusted: true });
 });

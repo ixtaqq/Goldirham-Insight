@@ -11,7 +11,7 @@ import { ResearchStatus } from "./ResearchStatus";
 
 const CLASS_LABEL = { stock: "Stock", etf: "ETF", crypto: "Crypto" };
 
-export function AssetCard({ data }: { data: CardData }) {
+export function AssetCard({ data, blend }: { data: CardData; blend?: number }) {
   const quote = useQuote(data.symbol);
   const { error } = useMarket();
   return (
@@ -21,6 +21,7 @@ export function AssetCard({ data }: { data: CardData }) {
       <div className="px-row"><span className="px">{quote ? formatPrice(quote.price) : error ? "Unavailable" : "—"}</span><span className="sim">{quote ? sourceLabel(quote.source) : error ? "Quote unavailable" : "Loading quote…"}{error && quote ? " · Stale" : ""}</span></div>
       <div><Sparkline data={data.spark} up={data.spark.at(-1)! >= data.spark[0]} width={340} height={52} className="spark" /><span className="spark-caption">Illustrative trend · simulated</span></div>
       <dl className="scores"><div><dt className="l">Upside</dt><dd className="v">{data.scores.upside.toFixed(1)}</dd></div><div><dt className="l">Safety</dt><dd className="v">{data.scores.safety.toFixed(1)}</dd></div><div><dt className="l">AI exposure</dt><dd className="v">{data.scores.aiExposure.toFixed(1)}</dd></div></dl>
+      {blend !== undefined && <p className="asset-blend">Your blend <strong>{blend.toFixed(1)}</strong></p>}
       <ResearchStatus review={data.review} />
       <div className="foot"><span className="tier">{data.tier ? "Tier " + data.tier + " research" : "Research"}</span><span className="btn btn-secondary btn-xs">Read thesis <ArrowUpRight size={13} /></span></div>
     </Link>
