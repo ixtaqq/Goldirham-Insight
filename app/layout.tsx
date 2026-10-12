@@ -6,6 +6,7 @@ import { LiveMarketProvider } from "@/components/LiveMarketProvider";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ASSETS } from "@/lib/assets";
+import { SITE_URL } from "@/lib/site";
 
 const sans = localFont({
   src: "./fonts/inter-variable.ttf",
@@ -22,6 +23,7 @@ const mono = localFont({
 });
 
 export const metadata: Metadata = {
+  metadataBase: SITE_URL,
   title: {
     default: "Goldirham Insight — AI-era investment research",
     template: "%s · Goldirham Insight",
@@ -37,6 +39,7 @@ export const metadata: Metadata = {
     "research",
     "live charts",
   ],
+  twitter: { card: "summary_large_image" },
 };
 
 export default function RootLayout({

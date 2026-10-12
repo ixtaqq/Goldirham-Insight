@@ -4,7 +4,7 @@
 
 Goldirham Insight is an educational research and demonstration platform that tracks the companies and assets powering the AI build-out. It combines deep-dive theses, a consistent 3-factor scoring model, and market or simulated prices across five categories. Each quote and chart identifies its source.
 
-🔗 **Live site:** https://goldirham-insight.vercel.app//
+🔗 **Live site:** https://goldirham-insight.vercel.app/
 
 ---
 
@@ -65,6 +65,9 @@ cross-listed assets), a Tier 1 filter, and ranking by upside, safety, AI exposur
 custom blend of the three editorial scores.
 The URL records the search, filters, and ranking, so reloads, shared links, and Back
 restore the same results. See [shareable research views](docs/shareable-views.md).
+Shared links to the site, an asset, or a comparison show generated preview images
+with editorial scores and review status, never prices. See
+[share previews](docs/share-previews.md).
 The radar and framework scorecard switch between researched assets. The desk feed
 uses source-labeled quotes, and the market ticker includes a pause control. Header search opens
 asset research directly; type a name or ticker and press Enter, or select a result.

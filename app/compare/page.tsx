@@ -6,11 +6,26 @@ import { ResearchRecord } from "@/components/ResearchRecord";
 import { ASSETS } from "@/lib/assets";
 import { getCategory } from "@/lib/categories";
 import { comparisonHref, MAX_COMPARISON_ASSETS, resolveComparison } from "@/lib/compare";
+import { SHARE_IMAGE_SIZE } from "@/lib/share-image";
 
-export const metadata: Metadata = {
-  title: "Compare assets",
-  description: "Compare up to three assets by editorial scores, thesis, risks, and research review status.",
-};
+const DESCRIPTION = "Compare up to three assets by editorial scores, thesis, risks, and research review status.";
+
+export async function generateMetadata({ searchParams }: {
+  searchParams: Promise<{ symbols?: string | string[] }>;
+}): Promise<Metadata> {
+  const symbols = resolveComparison((await searchParams).symbols).assets.map((asset) => asset.symbol);
+  if (!symbols.length) return { title: "Compare assets", description: DESCRIPTION };
+  const title = symbols.join(" vs ");
+  return {
+    title,
+    description: DESCRIPTION,
+    openGraph: {
+      title,
+      description: DESCRIPTION,
+      images: [{ url: comparisonHref(symbols).replace("/compare?", "/compare/preview?"), ...SHARE_IMAGE_SIZE, alt: `${title}: editorial scores and review status` }],
+    },
+  };
+}
 
 const SCORE_ROWS = [
   { key: "upside", label: "Upside" },

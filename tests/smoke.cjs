@@ -59,6 +59,25 @@ test("production pages, review disclosures and market routes", { timeout: 60_000
     assert.ok(comparisonHtml.includes(`id="research-record-${symbol}"`), symbol);
     assert.ok(comparisonHtml.replace(/<!--.*?-->/g, "").includes(`Read ${symbol} research`), symbol);
   }
+  const shares = [
+    ["/", "/opengraph-image"],
+    ["/asset/NVDA", "/asset/NVDA/opengraph-image"],
+    ["/compare?symbols=NVDA&symbols=CEG&symbols=BTC", "/compare/preview?symbols=NVDA&symbols=CEG&symbols=BTC"],
+  ];
+  for (const [page, imagePath] of shares) {
+    const html = await (await fetch(base + page)).text();
+    const imageUrl = html.match(/<meta property="og:image" content="([^"]+)"/)?.[1]?.replaceAll("&amp;", "&");
+    assert.ok(imageUrl?.startsWith("https://goldirham-insight.vercel.app" + imagePath), `${page} og:image ${imageUrl}`);
+    assert.match(html, /<meta name="twitter:card" content="summary_large_image"/, page);
+    const { pathname, search } = new URL(imageUrl);
+    const image = await fetch(base + pathname + search);
+    assert.equal(image.status, 200, imageUrl);
+    assert.equal(image.headers.get("content-type"), "image/png", imageUrl);
+    const png = Buffer.from(await image.arrayBuffer());
+    assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], [1200, 630], imageUrl);
+  }
+  assert.doesNotMatch(await (await fetch(`${base}/compare`)).text(), /compare\/preview/);
+  assert.equal((await fetch(`${base}/compare/preview?symbols=unknown`)).status, 404);
   for (const asset of ASSETS) {
     const response = await fetch(`${base}/asset/${asset.symbol}`);
     assert.equal(response.status, 200, asset.symbol);
