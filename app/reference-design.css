@@ -362,6 +362,7 @@ button,a,input,select { -webkit-tap-highlight-color:transparent; }
 .chips { gap:8px; }
 .chip { min-height:36px; height:auto; padding-block:7px; }
 .desk-results { color:var(--ink-3); font-size:12px; margin-bottom:16px; }
+.desk-notice { margin:0 0 12px; }
 .asset-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
 .asset-card { min-width:0; padding:18px; }
 .asset-identity { min-width:0; }

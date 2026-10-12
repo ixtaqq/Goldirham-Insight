@@ -61,7 +61,9 @@ green accents, interactive research radar, and dark framework panels.
 Inter and JetBrains Mono are bundled locally in `app/fonts/` with their licenses,
 so builds do not depend on Google Fonts being reachable.
 The research library supports company/ticker search, category filters (including
-cross-listed assets), and ranking by upside, safety, or AI exposure, plus Tier 1 and crypto filters.
+cross-listed assets), a Tier 1 filter, and ranking by upside, safety, or AI exposure.
+The URL records the search, filters, and ranking, so reloads, shared links, and Back
+restore the same results. See [shareable research views](docs/shareable-views.md).
 The radar and framework scorecard switch between researched assets. The desk feed
 uses source-labeled quotes, and the market ticker includes a pause control. Header search opens
 asset research directly; type a name or ticker and press Enter, or select a result.

@@ -1,4 +1,5 @@
 import type { CardData } from "@/lib/card";
+import { CATEGORIES } from "@/lib/categories";
 import type { CategorySlug, Scores } from "@/lib/types";
 
 export type Weights = Record<keyof Scores, number>;
@@ -20,6 +21,49 @@ export interface ExplorerView {
 }
 
 export const DEFAULT_VIEW: ExplorerView = { query: "", category: "all", ranking: "featured", tier1: false };
+
+export const MAX_QUERY_LENGTH = 80;
+
+/** Reads a view from the homepage query string; unusable values fall back to defaults and set `adjusted`. */
+export function parseExplorerView(params: URLSearchParams) {
+  const view = { ...DEFAULT_VIEW };
+  let adjusted = false;
+
+  const query = params.get("q");
+  if (query !== null) {
+    view.query = query.slice(0, MAX_QUERY_LENGTH);
+    adjusted ||= query.length > MAX_QUERY_LENGTH;
+  }
+  const category = params.get("category");
+  if (category !== null) {
+    const match = CATEGORIES.find((item) => item.slug === category);
+    if (match) view.category = match.slug;
+    else adjusted = true;
+  }
+  const ranking = params.get("rank");
+  if (ranking !== null) {
+    const match = RANKINGS.find((item) => item.id === ranking);
+    if (match) view.ranking = match.id;
+    else adjusted = true;
+  }
+  const tier = params.get("tier");
+  if (tier !== null) {
+    if (tier === "1") view.tier1 = true;
+    else adjusted = true;
+  }
+
+  return { view, adjusted };
+}
+
+/** Serializes a view as a homepage link; the default view is the bare homepage. */
+export function explorerHref(view: ExplorerView) {
+  const params = new URLSearchParams();
+  if (view.query.trim()) params.set("q", view.query);
+  if (view.category !== "all") params.set("category", view.category);
+  if (view.ranking !== "featured") params.set("rank", view.ranking);
+  if (view.tier1) params.set("tier", "1");
+  return params.size ? `/?${params}#markets` : "/";
+}
 
 export function inCategory(asset: CardData, category: CategorySlug) {
   return asset.category === category || Boolean(asset.alsoIn?.includes(category));
