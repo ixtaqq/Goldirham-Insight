@@ -162,11 +162,13 @@ test("a custom blend ranks by its weights and is restored by reload and Back", a
 
   const upside = blend.getByRole("slider", { name: "Upside" });
   await upside.press("Home");
-  await expect(upside).toHaveValue("1");
-  await expect(page).toHaveURL("/?rank=custom&w=1-0-0#markets");
+  await expect(upside).toHaveValue("3");
+  await expect(blend.getByText("At least one factor keeps a weight.", { exact: false })).toBeVisible();
+  await upside.press("ArrowLeft");
+  await expect(page).toHaveURL("/?rank=custom&w=2-0-0#markets");
 
   await page.reload();
-  await expect(blend.getByRole("slider", { name: "Upside" })).toHaveValue("1");
+  await expect(blend.getByRole("slider", { name: "Upside" })).toHaveValue("2");
   await expect(blend.getByRole("slider", { name: "Safety" })).toHaveValue("0");
   await expect(cards(page).nth(0)).toHaveAttribute("href", "/asset/VST");
 
@@ -187,3 +189,22 @@ for (const width of [320, 1440]) {
     expect(overflow).toBe(0);
   });
 }
+
+test("quick consecutive choices combine instead of replacing each other", async ({ page }) => {
+  await page.goto("/");
+  await control(page, "Rank research", "Safest").click({ noWaitAfter: true });
+  await desk(page).getByRole("group", { name: "Filter by theme" }).getByRole("button", { name: /^Crypto/ }).click({ noWaitAfter: true });
+  await desk(page).getByRole("group", { name: "Filter by tier" }).getByRole("button", { name: /^Tier 1 only/ }).click({ noWaitAfter: true });
+  await expect(page).toHaveURL("/?category=crypto&rank=safety&tier=1#markets");
+  await expect(cards(page)).toHaveCount(2);
+});
+
+test("a slider step just before a preset stays in the entry Back returns to", async ({ page }) => {
+  await page.goto("/?rank=custom&w=3-3-3#markets");
+  await desk(page).getByRole("slider", { name: "Upside" }).press("ArrowRight");
+  await control(page, "Rank research", "Safest").click();
+  await expect(page).toHaveURL("/?rank=safety#markets");
+  await page.goBack();
+  await expect(page).toHaveURL("/?rank=custom&w=4-3-3#markets");
+  await expect(desk(page).getByRole("slider", { name: "Upside" })).toHaveValue("4");
+});

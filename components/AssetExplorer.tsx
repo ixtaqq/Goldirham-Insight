@@ -13,10 +13,6 @@ const DRAFT_SYNC_DELAY = 250;
 /** Values that change on every keystroke or slider step; the URL catches up after a pause. */
 type Draft = Pick<ExplorerView, "query" | "weights">;
 
-function draftOf({ query, weights }: ExplorerView): Draft {
-  return { query, weights };
-}
-
 // The homepage is prerendered, so the default desk is the static HTML until search params are read on the client.
 export function AssetExplorer({ assets }: { assets: CardData[] }) {
   return <Suspense fallback={<ExplorerDesk assets={assets} view={DEFAULT_VIEW} />}><LinkedExplorer assets={assets} /></Suspense>;
@@ -25,37 +21,38 @@ export function AssetExplorer({ assets }: { assets: CardData[] }) {
 function LinkedExplorer({ assets }: { assets: CardData[] }) {
   const { view: linked, adjusted } = parseExplorerView(useSearchParams());
   const linkedHref = explorerHref(linked);
-  // Drafts stay local so inputs never wait on the router. When the URL changes to one this component
-  // did not write (Back, Forward, or a link to "/"), it replaces them. Next applies history writes in a
-  // transition, so a render can still see the old URL; only an actual URL change is compared.
-  const [draft, setDraft] = useState(() => draftOf(linked));
-  const [sync, setSync] = useState({ seen: linkedHref, written: linkedHref });
-  if (linkedHref !== sync.seen) {
-    setSync({ seen: linkedHref, written: linkedHref });
-    if (linkedHref !== sync.written) setDraft(draftOf(linked));
+  // The view lives here and the URL follows it. Next applies history writes in a transition, so
+  // useSearchParams lags them; it replaces the view only when the URL changes to one this component
+  // did not write (Back, Forward, or a link elsewhere on the page).
+  const [state, setState] = useState(() => ({ view: linked, seen: linkedHref, written: linkedHref }));
+  if (linkedHref !== state.seen) {
+    setState({ view: linkedHref === state.written ? state.view : linked, seen: linkedHref, written: linkedHref });
   }
-  const view = { ...linked, ...draft };
+  const { view, written } = state;
   const href = explorerHref(view);
 
   useEffect(() => {
-    if (href === linkedHref) return;
+    if (href === written) return;
     const timer = setTimeout(() => {
-      setSync((current) => ({ ...current, written: href }));
+      setState((current) => ({ ...current, written: href }));
       history.replaceState(null, "", href);
     }, DRAFT_SYNC_DELAY);
     return () => clearTimeout(timer);
-  }, [href, linkedHref]);
+  }, [href, written]);
 
   const change = (next: Partial<ExplorerView>) => {
     const target = { ...view, ...next };
     const targetHref = explorerHref(target);
     if (targetHref === href) return;
-    setDraft(draftOf(target));
-    setSync((current) => ({ ...current, written: targetHref }));
+    // Settle a pending keystroke or slider step into the current entry so Back returns to it.
+    if (href !== written) history.replaceState(null, "", href);
+    setState((current) => ({ ...current, view: target, written: targetHref }));
     history.pushState(null, "", targetHref);
   };
 
-  return <ExplorerDesk assets={assets} view={view} adjusted={adjusted} onDraft={(next) => setDraft({ ...draft, ...next })} onChange={change} />;
+  const draft = (next: Partial<Draft>) => setState((current) => ({ ...current, view: { ...current.view, ...next } }));
+
+  return <ExplorerDesk assets={assets} view={view} adjusted={adjusted && linkedHref === written} onDraft={draft} onChange={change} />;
 }
 
 function ExplorerDesk({ assets, view, adjusted = false, onDraft = () => {}, onChange = () => {} }: {
@@ -85,7 +82,7 @@ function ExplorerDesk({ assets, view, adjusted = false, onDraft = () => {}, onCh
             <div className="chips" role="group" aria-label="Filter by tier"><button className="chip" data-on={view.tier1} aria-pressed={view.tier1} onClick={() => onChange({ tier1: !view.tier1 })}>Tier 1 only<span className="n">{assets.filter((asset) => asset.tier === 1).length}</span></button></div>
           </div>
         </div>
-        {view.ranking === "custom" && <BlendControl weights={view.weights} onWeights={(weights) => onDraft({ weights })} />}
+        {view.ranking === "custom" && <BlendControl weights={view.weights} reviewed={assets.some((asset) => asset.review.status === "reviewed")} onWeights={(weights) => onDraft({ weights })} />}
         {adjusted && <p className="compare-notice desk-notice">Some settings in this link were not recognized, so their defaults are shown.</p>}
         <p className="desk-results" role="status">{filtered.length} {filtered.length === 1 ? "asset" : "assets"}{term ? " matching “" + term + "”" : " to explore"}</p>
         {filtered.length ? <div className="asset-grid">{filtered.slice(0, showAll ? filtered.length : 9).map((asset) => <AssetCard key={asset.symbol} data={asset} blend={view.ranking === "custom" ? composite(asset.scores, view.weights) : undefined} />)}</div> : <div className="card catalog-empty"><Search size={28} /><h3>No matching research.</h3><p>Try another company, ticker, or theme.</p><button className="btn btn-primary" onClick={() => onChange(DEFAULT_VIEW)}>Clear filters</button></div>}
@@ -95,24 +92,24 @@ function ExplorerDesk({ assets, view, adjusted = false, onDraft = () => {}, onCh
   );
 }
 
-function BlendControl({ weights, onWeights }: { weights: Weights; onWeights: (weights: Weights) => void }) {
-  const total = weights.upside + weights.safety + weights.aiExposure;
+function BlendControl({ weights, reviewed, onWeights }: { weights: Weights; reviewed: boolean; onWeights: (weights: Weights) => void }) {
   return (
-    <fieldset className="blend">
+    <fieldset className="blend" aria-describedby="blend-note">
       <legend className="label">Custom blend</legend>
       <div className="blend-sliders">{FACTORS.map((factor) => {
         const id = "blend-" + factor.key;
-        const value = weights[factor.key];
         return (
           <div key={factor.key} className="blend-slider">
             <label htmlFor={id}>{factor.label}</label>
-            {/* The last weighted factor cannot drop to zero, so the blend always has a denominator. */}
-            <input id={id} type="range" min={value === total ? 1 : 0} max={MAX_WEIGHT} step={1} value={value} onChange={(event) => onWeights({ ...weights, [factor.key]: Number(event.target.value) })} />
-            <output htmlFor={id}>{value}</output>
+            <input id={id} type="range" min={0} max={MAX_WEIGHT} step={1} value={weights[factor.key]} onChange={(event) => {
+              const next = { ...weights, [factor.key]: Number(event.target.value) };
+              if (next.upside + next.safety + next.aiExposure > 0) onWeights(next);
+            }} />
+            <span className="blend-value" aria-hidden="true">{weights[factor.key]}</span>
           </div>
         );
       })}</div>
-      <p className="blend-note">Blends weight editorial scores that have not been reviewed. A blend is a lens on those opinions, not a recommendation.</p>
+      <p id="blend-note" className="blend-note">At least one factor keeps a weight. {reviewed ? "Blends weight editorial scores; each card shows its review status." : "Blends weight editorial scores that have not been reviewed."} A blend is a lens on those opinions, not a recommendation.</p>
     </fieldset>
   );
 }

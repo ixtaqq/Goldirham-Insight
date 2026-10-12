@@ -2,7 +2,7 @@ const assert = require("node:assert/strict");
 const { test } = require("node:test");
 const load = require("./load-ts.cjs");
 
-const { DEFAULT_VIEW, explorerHref, exploreAssets, MAX_QUERY_LENGTH, parseExplorerView } = load("lib/explorer.ts");
+const { composite, DEFAULT_VIEW, explorerHref, exploreAssets, MAX_QUERY_LENGTH, parseExplorerView } = load("lib/explorer.ts");
 const { ASSETS } = load("lib/assets.ts");
 const { toCardData } = load("lib/card.ts");
 
@@ -81,4 +81,11 @@ test("unusable weights fall back to the default blend and are reported", () => {
     assert.deepEqual(parse("rank=custom&w=" + weights), { view: { ...DEFAULT_VIEW, ranking: "custom" }, adjusted: true }, weights);
   }
   assert.deepEqual(parse("rank=safety&w=1-2-3"), { view: { ...DEFAULT_VIEW, ranking: "safety" }, adjusted: true });
+});
+
+test("a blend is the weighted average of the three scores", () => {
+  const scores = { upside: 8, safety: 6, aiExposure: 3 };
+  assert.equal(composite(scores, { upside: 1, safety: 0, aiExposure: 1 }), 5.5);
+  assert.equal(composite(scores, { upside: 2, safety: 1, aiExposure: 0 }), 22 / 3);
+  assert.equal(composite(scores, { upside: 0, safety: 5, aiExposure: 0 }), 6);
 });

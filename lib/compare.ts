@@ -23,8 +23,17 @@ export function resolveComparison(value: string | string[] | undefined) {
   return { assets, adjusted };
 }
 
-export function comparisonHref(symbols: readonly string[]) {
+function symbolsQuery(symbols: readonly string[]) {
   const query = new URLSearchParams();
   for (const symbol of symbols) query.append("symbols", symbol);
-  return query.size ? `/compare?${query}` : "/compare";
+  return query.toString();
+}
+
+export function comparisonHref(symbols: readonly string[]) {
+  const query = symbolsQuery(symbols);
+  return query ? `/compare?${query}` : "/compare";
+}
+
+export function comparisonPreviewHref(symbols: readonly string[]) {
+  return `/compare/preview?${symbolsQuery(symbols)}`;
 }

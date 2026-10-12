@@ -370,7 +370,7 @@ button,a,input,select { -webkit-tap-highlight-color:transparent; }
 .blend-sliders { clear:both; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
 .blend-slider { display:grid; grid-template-columns:1fr auto; align-items:center; gap:4px 10px; font-size:13px; font-weight:600; color:var(--ink-2); }
 .blend-slider input { grid-column:1 / -1; width:100%; min-height:28px; accent-color:var(--ink); }
-.blend-slider output { grid-row:1; grid-column:2; font-family:var(--font-mono); color:var(--ink); }
+.blend-slider .blend-value { grid-row:1; grid-column:2; font-family:var(--font-mono); color:var(--ink); }
 .blend-note { margin-top:10px; font-size:12px; color:var(--ink-3); }
 .asset-blend { margin-top:10px; font-size:12px; color:var(--ink-2); }
 .asset-blend strong { font-family:var(--font-mono); color:var(--ink); }

@@ -77,6 +77,13 @@ test("production pages, review disclosures and market routes", { timeout: 60_000
     assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], [1200, 630], imageUrl);
   }
   assert.doesNotMatch(await (await fetch(`${base}/compare`)).text(), /compare\/preview/);
+  const comparisonHead = await (await fetch(`${base}/compare?symbols=NVDA,CEG`)).text();
+  assert.match(comparisonHead, /<meta property="og:title" content="NVDA vs CEG · Goldirham Insight"/);
+  const preview = await fetch(`${base}/compare/preview?symbols=NVDA&symbols=CEG`);
+  assert.equal(preview.headers.get("cache-control"), "public, max-age=300, s-maxage=3600");
+  const alias = await fetch(`${base}/compare/preview?symbols=nvda,NVDA,ceg&utm=x`, { redirect: "manual" });
+  assert.equal(alias.status, 308);
+  assert.equal(new URL(alias.headers.get("location"), base).pathname + new URL(alias.headers.get("location"), base).search, "/compare/preview?symbols=NVDA&symbols=CEG");
   assert.equal((await fetch(`${base}/compare/preview?symbols=unknown`)).status, 404);
   for (const asset of ASSETS) {
     const response = await fetch(`${base}/asset/${asset.symbol}`);

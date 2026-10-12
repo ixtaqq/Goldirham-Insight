@@ -98,7 +98,9 @@ export function explorerHref(view: ExplorerView) {
   if (view.ranking !== "featured") params.set("rank", view.ranking);
   if (view.tier1) params.set("tier", "1");
   if (view.ranking === "custom") params.set("w", FACTORS.map((factor) => view.weights[factor.key]).join("-"));
-  return params.size ? `/?${params}#markets` : "/";
+  // URLSearchParams.size is missing in Safari 16.4 and Chrome 111, which Next 16 supports.
+  const query = params.toString();
+  return query ? `/?${query}#markets` : "/";
 }
 
 export function inCategory(asset: CardData, category: CategorySlug) {

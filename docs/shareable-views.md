@@ -29,18 +29,29 @@ between the URL and the view; `exploreAssets` filters and ranks. Rankings are a
 table of score weights, so each preset ranks by the same composite function.
 Ties keep the featured order.
 
+The explorer keeps the whole view in local state, and the URL follows it.
 Theme, tier, and ranking changes push a history entry with
-`history.pushState`, which Next.js syncs into `useSearchParams`. Choosing the
-active ranking again adds no entry. Typing stays in local state and replaces the
-current entry after a 250ms pause, so Back skips keystrokes. The explorer records
-each URL it writes. When the URL changes to one it did not write, such as after
-Back, Forward, or a link to `/`, the URL replaces the typed text. Next.js applies
-history writes in a transition, so the comparison runs only when the URL itself
-changes. The search box stops at the 80-character link limit.
+`history.pushState`. Choosing the active ranking again adds no entry. Typing and
+slider steps replace the current entry after a 250ms pause, so Back skips them. A
+choice made during that pause first settles the pending text or weights into the
+current entry.
 
-Known limit: a card opened within 250ms of the last keystroke leaves the previous
-search in that history entry. Writing the URL during unmount would overwrite the
-asset page's new entry instead.
+Next.js applies history writes in a transition, so `useSearchParams` lags them.
+The explorer records each URL it writes and replaces its view only when the URL
+changes to one it did not write, such as after Back or Forward. Building choices
+from local state keeps two quick choices from replacing each other.
+`explorerHref` uses `toString()` rather than `URLSearchParams.size`, which
+Safari 16.4 and Chrome 111 lack. The search box stops at the 80-character link
+limit.
+
+Known limits:
+
+- A card opened within 250ms of the last keystroke leaves the previous search in
+  that history entry. Writing the URL during unmount would overwrite the asset
+  page's new entry instead.
+- A link to the same normalized URL, such as the home link clicked within 250ms
+  of typing on `/`, does not change `useSearchParams`, so the typed text stays and
+  is then written to the new entry. A link to `/` from a filtered view resets it.
 
 Ranking and filtering are separate controls. The former Crypto ranking button
 duplicated the Crypto theme, and Tier 1 could not combine with a ranking.
@@ -50,11 +61,14 @@ duplicated the Crypto theme, and Tier 1 could not combine with a ranking.
 **Custom** ranks by a weighted average of the three editorial scores. Each preset
 is a fixed weight table, so presets and blends share one ranking function, and a
 blend of `0-4-0` orders assets exactly as **Safest** does. Weights must sum to more
-than zero. The parser rejects `0-0-0`, and the last weighted slider cannot reach
-zero. Slider changes update the URL the same way typing does.
+than zero. The parser rejects `0-0-0`. Sliders keep a 0 minimum so their thumbs
+stay put, ignore the one step that would zero every weight, and say why. Slider
+values are hidden from assistive technology because each range input already
+reports its value. Slider changes update the URL the same way typing does.
 
-Each card shows its blend beside the existing review status. The control states
-that blends weight unreviewed editorial scores and are not recommendations.
+Each card shows its blend beside the existing review status. The control says
+blends are not recommendations. Its review wording comes from the catalog: it
+says the scores are unreviewed only while no asset has a review.
 Presets show no blend because it would repeat a score already on the card.
 
 Invalid parameter values fall back to their defaults and show a notice until
@@ -109,3 +123,15 @@ logo change it reproduced a 138px shift at 320px and a 47px shift on failure.
 - Browser suite: 40 passed, 0 failed. The blend test drives the sliders with the
   keyboard and checks the URL, card order, blend text, the nonzero floor,
   reload, and Back. Overflow checks cover 320 and 1440px.
+
+## Second review follow-up (2026-10-12)
+
+A second independent review found no blocking defects. Fixed: the
+`URLSearchParams.size` incompatibility, choices built from a lagging URL, a
+slider step lost before a preset, slider floors that moved thumbs, review wording
+that would go stale, uncached-immutable comparison previews, and comparison share
+titles missing the site name. A browser test reproduced the lost slider step
+3 of 3 times before the fix. The quick-choice test passed before the fix too,
+because Playwright does not click inside Next's transition. That fix rests on the
+code change, not the test. Final run: 55 unit tests, smoke, and 51 browser tests
+passed; the explorer suite also passed three repeated runs.

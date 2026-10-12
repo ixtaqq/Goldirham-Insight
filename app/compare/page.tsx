@@ -5,7 +5,7 @@ import { AssetMark } from "@/components/AssetMark";
 import { ResearchRecord } from "@/components/ResearchRecord";
 import { ASSETS } from "@/lib/assets";
 import { getCategory } from "@/lib/categories";
-import { comparisonHref, MAX_COMPARISON_ASSETS, resolveComparison } from "@/lib/compare";
+import { comparisonHref, comparisonPreviewHref, MAX_COMPARISON_ASSETS, resolveComparison } from "@/lib/compare";
 import { SHARE_IMAGE_SIZE } from "@/lib/share-image";
 
 const DESCRIPTION = "Compare up to three assets by editorial scores, thesis, risks, and research review status.";
@@ -20,9 +20,9 @@ export async function generateMetadata({ searchParams }: {
     title,
     description: DESCRIPTION,
     openGraph: {
-      title,
+      title: `${title} · Goldirham Insight`,
       description: DESCRIPTION,
-      images: [{ url: comparisonHref(symbols).replace("/compare?", "/compare/preview?"), ...SHARE_IMAGE_SIZE, alt: `${title}: editorial scores and review status` }],
+      images: [{ url: comparisonPreviewHref(symbols), ...SHARE_IMAGE_SIZE, alt: `${title}: editorial scores and review status` }],
     },
   };
 }

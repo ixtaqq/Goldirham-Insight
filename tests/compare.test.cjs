@@ -2,7 +2,7 @@ const assert = require("node:assert/strict");
 const { test } = require("node:test");
 const load = require("./load-ts.cjs");
 
-const { resolveComparison, comparisonHref } = load("lib/compare.ts");
+const { resolveComparison, comparisonHref, comparisonPreviewHref } = load("lib/compare.ts");
 
 test("comparison starts empty and ignores blank form slots", () => {
   for (const input of [undefined, "", ["", " ", ""]]) {
@@ -31,4 +31,8 @@ test("comparison links survive sharing and preserve order with repeated query pa
   assert.equal(href, "/compare?symbols=BTC&symbols=NVDA&symbols=CEG");
   const params = new URL(href, "https://example.com").searchParams;
   assert.deepEqual(resolveComparison(params.getAll("symbols")).assets.map((asset) => asset.symbol), ["BTC", "NVDA", "CEG"]);
+});
+
+test("comparison previews use the same canonical symbol order", () => {
+  assert.equal(comparisonPreviewHref(["NVDA", "CEG"]), "/compare/preview?symbols=NVDA&symbols=CEG");
 });
