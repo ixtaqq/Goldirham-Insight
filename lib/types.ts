@@ -1,3 +1,5 @@
+import type { CatalogEntry } from "./catalog";
+
 export type CategorySlug =
   | "ai-utilities"
   | "ai-companies"
@@ -48,7 +50,8 @@ export interface Asset {
   stage: string;
   /** Risks to keep honest */
   risks: string[];
-  scores: Scores;
+  scores: Scores | null;
+  catalog?: CatalogEntry;
   /** Long-form research article (markdown-ish, rendered by ArticleBody) */
   article: string;
   /** Omit until a review and its supporting evidence have been recorded. */

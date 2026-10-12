@@ -14,13 +14,16 @@ test("the default view keeps every asset in its incoming order", () => {
 });
 
 test("theme filtering includes cross-listed assets", () => {
-  assert.deepEqual(symbols({ category: "ai-utilities" }), ["CEG", "VST", "NEE", "AES", "NI", "ICLN"]);
+  const utilities = symbols({ category: "ai-utilities" });
+  assert.deepEqual(utilities.slice(0, 6), ["CEG", "VST", "NEE", "AES", "NI", "ICLN"]);
+  assert.equal(utilities.length, 53);
+  assert.ok(utilities.includes("GEV"));
 });
 
 test("rankings sort by one score and keep incoming order for ties", () => {
   assert.deepEqual(symbols({ ranking: "safety" }).slice(0, 4), ["NEE", "MSFT", "AAPL", "VOO"]);
-  assert.deepEqual(symbols({ category: "crypto", ranking: "safety" }), ["BTC", "ETH", "SOL", "LINK", "RENDER"]);
-  assert.deepEqual(symbols({ category: "crypto", ranking: "ai" }), ["RENDER", "LINK", "ETH", "SOL", "BTC"]);
+  assert.deepEqual(symbols({ category: "crypto", ranking: "safety" }).slice(0, 5), ["BTC", "ETH", "SOL", "LINK", "RENDER"]);
+  assert.deepEqual(symbols({ category: "crypto", ranking: "ai" }).slice(0, 5), ["RENDER", "LINK", "ETH", "SOL", "BTC"]);
 });
 
 test("the Tier 1 filter combines with any theme and ranking", () => {

@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
         };
       }
       // Real stock from Finnhub (only if a key is configured)
-      if (a.assetClass !== "crypto") {
+      if (a.assetClass !== "crypto" && /^[A-Z]+(?:-[A-Z])?$/.test(a.symbol)) {
         const fh = await fetchStockQuote(a.symbol);
         if (fh) {
           return {

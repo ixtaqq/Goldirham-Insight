@@ -55,7 +55,7 @@ export default async function AssetPage(props: { params: Promise<{ symbol: strin
   const cat = getCategory(asset.category);
   const accent = "#008138";
   const related = getRelated(asset).map(toCardData);
-  const overall = avgScore(asset.scores);
+  const overall = asset.scores ? avgScore(asset.scores) : null;
 
   return (
     <div className="site-container research-page">
@@ -104,6 +104,7 @@ export default async function AssetPage(props: { params: Promise<{ symbol: strin
               {asset.theme} — {asset.tagline}
             </p>
             <Link href={comparisonHref([asset.symbol])} className="compare-text-link mt-3 inline-flex">Compare this asset</Link>
+            {asset.catalog && <p className="mt-3 max-w-xl text-sm text-muted">{asset.catalog.marketCap ? `Reference market cap: ${asset.catalog.marketCap} · 12 Oct 2026 · supplied list, not independently verified.` : "ETF theme list · not ranked by AUM; fund size and fees not assessed."}{asset.catalog.country ? ` Country: ${asset.catalog.country}.` : ""}</p>}
           </div>
 
           <div className="shrink-0 lg:text-right">
@@ -125,7 +126,7 @@ export default async function AssetPage(props: { params: Promise<{ symbol: strin
             <ResearchRecord review={asset.research} />
             <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-pine">
               <Waypoints size={14} />
-              Investment thesis
+              {asset.scores ? "Investment thesis" : "Catalog reference"}
             </div>
             <ArticleBody markdown={asset.article} />
           </div>
@@ -142,7 +143,7 @@ export default async function AssetPage(props: { params: Promise<{ symbol: strin
               </div>
               <div className="flex items-baseline gap-1">
                 <span className="font-mono text-2xl font-bold text-ink-950">
-                  {overall.toFixed(1)}
+                  {overall?.toFixed(1) ?? "—"}
                 </span>
                 <span className="text-xs text-muted">/10</span>
               </div>

@@ -121,5 +121,9 @@ export function exploreAssets(assets: readonly CardData[], view: ExplorerView) {
     (asset.name + " " + asset.symbol + " " + asset.theme).toLowerCase().includes(term)
   );
   const weights = rankingWeights(view);
-  return weights ? matches.sort((a, b) => composite(b.scores, weights) - composite(a.scores, weights)) : matches;
+  return weights ? matches.sort((a, b) => {
+    if (!a.scores) return b.scores ? 1 : 0;
+    if (!b.scores) return -1;
+    return composite(b.scores, weights) - composite(a.scores, weights);
+  }) : matches;
 }

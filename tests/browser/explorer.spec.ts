@@ -38,13 +38,13 @@ test("ranking, theme, and tier choices are restored by reload and Back", async (
 
   await page.goBack();
   await expect(page).toHaveURL("/?category=crypto&rank=safety#markets");
-  await expect(cards(page)).toHaveCount(5);
+  await expect(cards(page)).toHaveCount(9);
   await expect(desk(page).getByRole("button", { name: /^Tier 1 only/ })).toHaveAttribute("aria-pressed", "false");
   await page.goBack();
   await page.goBack();
   await expect(page).toHaveURL("/");
   await expect(control(page, "Rank research", "Featured")).toHaveAttribute("aria-pressed", "true");
-  await expect(desk(page).getByRole("status")).toHaveText("26 assets to explore");
+  await expect(desk(page).getByRole("status")).toHaveText("234 assets to explore");
 });
 
 test("search updates the link without adding a history entry per keystroke", async ({ page }) => {
@@ -58,7 +58,7 @@ test("search updates the link without adding a history entry per keystroke", asy
   await page.goBack();
   await expect(page).toHaveURL("/");
   await expect(search).toHaveValue("");
-  await expect(desk(page).getByRole("status")).toHaveText("26 assets to explore");
+  await expect(desk(page).getByRole("status")).toHaveText("234 assets to explore");
   await page.goForward();
   await expect(search).toHaveValue("microsoft");
   await expect(desk(page).getByRole("status")).toHaveText("1 asset matching “microsoft”");
@@ -72,7 +72,7 @@ test("a link back to the homepage clears a typed search", async ({ page }) => {
   await page.getByRole("link", { name: "Goldirham Insight home" }).click();
   await expect(page).toHaveURL("/");
   await expect(search).toHaveValue("");
-  await expect(desk(page).getByRole("status")).toHaveText("26 assets to explore");
+  await expect(desk(page).getByRole("status")).toHaveText("234 assets to explore");
   await page.waitForTimeout(400);
   await expect(page).toHaveURL("/");
 });
@@ -109,7 +109,7 @@ test("a shared link opens the desk with its view", async ({ page }) => {
 test("unrecognized link settings show defaults with a notice that clears on change", async ({ page }) => {
   await page.goto("/?category=bonds&rank=cheapest&tier=2");
   await expect(desk(page).getByText("Some settings in this link were not recognized, so their defaults are shown.")).toBeVisible();
-  await expect(desk(page).getByRole("status")).toHaveText("26 assets to explore");
+  await expect(desk(page).getByRole("status")).toHaveText("234 assets to explore");
   await control(page, "Rank research", "Safest").click();
   await expect(page).toHaveURL("/?rank=safety#markets");
   await expect(desk(page).getByText("Some settings in this link were not recognized")).toHaveCount(0);
@@ -128,7 +128,7 @@ test("the prerendered desk lists research without JavaScript", async ({ browser 
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
   await page.goto("http://127.0.0.1:3101/");
-  await expect(desk(page).getByRole("status")).toHaveText("26 assets to explore");
+  await expect(desk(page).getByRole("status")).toHaveText("234 assets to explore");
   await expect(cards(page)).toHaveCount(9);
   await context.close();
 });

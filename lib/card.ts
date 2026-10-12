@@ -26,7 +26,8 @@ export interface CardData {
   theme: string;
   tagline: string;
   entryRange: string;
-  scores: Scores;
+  scores: Scores | null;
+  catalog?: Asset["catalog"];
   review: ReviewStatus;
   accent: string;
   spark: number[];
@@ -45,6 +46,7 @@ export function toCardData(a: Asset): CardData {
     tagline: a.tagline,
     entryRange: a.entryRange,
     scores: a.scores,
+    catalog: a.catalog,
     review: toReviewStatus(a.research),
     accent: a.accent ?? "#598bff",
     spark: sparkline(a.symbol, a.basePrice, a.vol),

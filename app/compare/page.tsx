@@ -108,7 +108,7 @@ export default async function ComparePage({ searchParams }: {
                 {SCORE_ROWS.map(({ key, label }) => (
                   <tr key={key}>
                     <th scope="row">{label}</th>
-                    {assets.map((asset) => <td key={asset.symbol}><span className="compare-score">{asset.scores[key].toFixed(1)}</span><span className="compare-score-scale"> / 10</span></td>)}
+                    {assets.map((asset) => <td key={asset.symbol}><span className="compare-score">{asset.scores?.[key].toFixed(1) ?? "Not assessed"}</span>{asset.scores && <span className="compare-score-scale"> / 10</span>}</td>)}
                   </tr>
                 ))}
                 <tr>

@@ -19,7 +19,7 @@ export function FrameworkPreview({ assets }: { assets: Example[] }) {
     <div className="score-card">
       <div className="segmented score-segments" role="group" aria-label="Scorecard example">{assets.map((item) => <button key={item.symbol} data-active={selected === item.symbol} aria-pressed={selected === item.symbol} onClick={() => setSelected(item.symbol)}>{item.symbol}</button>)}</div>
       <div className="score-name"><AssetMark symbol={asset.symbol} /><span>{asset.name}</span></div>
-      <div className="big"><span className="score">{avgScore(asset.scores).toFixed(1)}</span><span className="of">/10 · composite</span></div>
+      <div className="big"><span className="score">{asset.scores ? avgScore(asset.scores).toFixed(1) : "—"}</span><span className="of">/10 · composite</span></div>
       <ScoreBars scores={asset.scores} />
       <ResearchStatus review={asset.review} />
       <div className="val-pill">{asset.entryRange}</div>

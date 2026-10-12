@@ -18,10 +18,11 @@ export function ScoreBars({
   className,
   compact = false,
 }: {
-  scores: Scores;
+  scores: Scores | null;
   className?: string;
   compact?: boolean;
 }) {
+  if (!scores) return <p className={cn("text-sm text-muted", className)}>Scores pending research</p>;
   return (
     <div className={cn("space-y-2.5", className)}>
       {ROWS.map(({ key, label }) => {

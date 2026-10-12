@@ -17,7 +17,7 @@
 
 </div>
 
-Goldirham Insight is an educational research and demonstration platform covering the companies and assets behind the AI build-out. It pairs written investment theses with a consistent three-factor scoring model, and every price and chart states whether it comes from a market feed or a simulation.
+Goldirham Insight is an educational research and demonstration platform covering 234 assets across the AI build-out, growth funds, and crypto. It combines a broader reference catalog with 26 scored research assets, and every price and chart states whether it comes from a market feed or a simulation.
 
 > [!IMPORTANT]
 > This is an educational project, not financial advice. See the [disclaimer](#disclaimer).
@@ -40,16 +40,17 @@ Goldirham Insight is an educational research and demonstration platform covering
 | Feature | Description |
 | --- | --- |
 | **Research desk** | Search by company or ticker, filter by theme or Tier 1, and rank by upside, safety, or AI exposure. Assets listed in more than one theme appear under each. |
-| **Custom blend** | Weight the three scores from 0 to 5 to rank assets your way. Each card shows its blended score next to its review status. |
+| **Custom blend** | Weight the three scores from 0 to 5 to rank scored assets your way. Catalog entries awaiting scores appear after scored assets and show no invented blend. |
 | **Shareable views** | The URL stores search, filters, ranking, and blend weights, so reloads, shared links, and the Back button restore the same results. |
 | **Asset comparison** | Compare up to three assets side by side on scores, thesis, risks, and review status at [`/compare`](https://goldirham-insight.vercel.app/compare). |
-| **Asset research pages** | A full thesis, tier rating, research record, source-labeled quote, and historical chart for every asset. |
+| **Asset pages** | Research assets show their thesis, scores, and tier. New catalog entries show reference details and pending assessments. Every page includes a research record, source-labeled quote, and chart. |
+| **Asset logos** | Local company, fund, and crypto marks on cards, search results, asset pages, comparisons, and share previews, with source URLs recorded for every asset. |
 | **Share previews** | Generated link previews for the site, every asset, and every comparison. They show scores and review status, never prices. |
 | **Live desk** | A market ticker with a pause control, a feed of the day's largest moves, an interactive research radar, a framework scorecard, and header search that opens any asset's research directly. |
 
 ## Scoring model
 
-Every asset, from a regulated utility to a volatile token, is scored from 0 to 10 on the same three factors, so very different opportunities can be compared like-for-like.
+The 26 scored research assets use the same three factors, each rated from 0 to 10. The 208 new catalog entries show **Scores pending research** until an assessment is recorded. Score rankings place those entries after scored assets.
 
 | Factor | Question | Considers |
 | --- | --- | --- |
@@ -63,24 +64,30 @@ Scores are editorial opinions. An asset is shown as **Reviewed** only when its r
 
 | Category | Assets | Focus |
 | --- | :---: | --- |
-| **AI Utilities** | 6 | Nuclear, gas, and renewable operators signing power deals with hyperscalers |
-| **AI Companies** | 12 | GPUs, foundries, HBM memory, and analytics platforms |
-| **Mega Stocks** | 8 | Trillion-dollar compounders turning AI into durable earnings growth |
-| **AI & Growth ETFs** | 4 | One-ticket thematic exposure without single-stock risk |
-| **Crypto** | 5 | Bitcoin, Ethereum, and decentralized-compute tokens |
+| **AI Utilities** | 53 | Power producers, utilities, grid equipment, and data-center infrastructure |
+| **AI Companies** | 53 | AI platforms, GPUs, foundries, memory, networking, and software |
+| **Mega Stocks** | 51 | Global large-cap companies and existing research selections |
+| **AI & Growth ETFs** | 52 | Growth, technology, chips, AI, robotics, and infrastructure funds |
+| **Crypto** | 51 | Digital assets from the filtered reference list and existing research |
 
-**26 assets** across **5 categories**. All 26 have local brand logos in `public/logos/`, with provenance recorded in [`sources.json`](public/logos/sources.json).
+**234 distinct symbols** across **5 categories**. Category counts overlap because assets can appear in more than one theme. All 234 have local brand logos in `public/logos/`, with provenance recorded in [`sources.json`](public/logos/sources.json).
+
+The [12 October 2026 reference list](docs/catalog-2026-10-12.md) supplies 50 entries per category, covering 228 distinct symbols. The import adds 208 assets while preserving the original research selections, including the 16 existing Tier 1 assignments. Alphabet's `GOOG` and `GOOGL` remain separate share-class symbols.
+
+Reference market caps retain the supplied date and are labeled unverified. ETF entries retain their thematic grouping and are **not ranked by AUM**. The crypto reference excludes stablecoins and tokenized funds or real-world assets. The import does not assign research scores, tiers, reviewers, review dates, or investment recommendations.
 
 ## Data and provenance
 
 | Data | Source | Fallback |
 | --- | --- | --- |
 | Crypto quotes and charts | [CoinGecko](https://www.coingecko.com/) public API | Labeled simulation |
-| Stock and ETF quotes | [Finnhub](https://finnhub.io/) (optional key) | Labeled simulation |
+| Supported US-listed stock and ETF quotes | [Finnhub](https://finnhub.io/) (optional key) | Labeled simulation |
 | Stock and ETF chart history, card sparklines | Simulated illustrations | None needed |
 | Charts | [TradingView Lightweight Charts](https://github.com/tradingview/lightweight-charts) | — |
 
 Every quote and chart identifies its source. Simulated quotes show their generation time and an explicit illustration label. Asset pages show quote observation times in UTC. Historical charts keep their own source data; current quotes never overwrite past chart points.
+
+New catalog entries use a generic **$100 demo seed** when live data is unavailable. That seed is not an observed price. International exchange-suffixed tickers currently use simulation rather than presenting an unconverted local-currency quote as USD. CoinGecko identifiers are recorded for all 50 crypto entries in the supplied list.
 
 **Reliability**
 
@@ -156,7 +163,7 @@ Never expose either key through a `NEXT_PUBLIC_` variable.
 | `npm run test:smoke` | All content routes, review disclosures, simulated market routes, and share-preview metadata against a temporary production server |
 | `npm run test:browser` | Playwright interaction suite against a production server on port 3101 |
 
-Build before running the smoke or browser suites. Install the browser once with `npx playwright install chromium` (set `PLAYWRIGHT_SKIP_BROWSER_GC=1` to keep other cached browsers). The browser suite blocks external requests and serves fixture APIs. It covers search, filters, shareable views, custom blends, comparisons, menu breakpoints, anchor stability while quotes load, chart recovery, and quote polling.
+Build before running the smoke or browser suites. Install the browser once with `npx playwright install chromium` (set `PLAYWRIGHT_SKIP_BROWSER_GC=1` to keep other cached browsers). The browser suite uses fixture APIs. It covers search, filters, shareable views, custom blends, comparisons, menu breakpoints, anchor stability while quotes load, chart recovery, quote polling, new catalog logos, and mobile layouts. Unit checks verify all 50 entries per imported category, pending scores, retained tiers, and decodable logos with recorded sources.
 
 [GitHub Actions](.github/workflows/ci.yml) runs lint, tests, build, typecheck, smoke tests, and the Chromium suite on every push and pull request. A separate job audits the full dependency tree and runs every Monday at 01:00 UTC.
 
@@ -168,7 +175,7 @@ components/       UI components: research desk, cards, charts, ticker, live mark
 lib/              Catalog (assets, categories), explorer and comparison logic, market adapters
 public/logos/     Asset logos with provenance records
 tests/            Node unit and smoke tests; tests/browser holds the Playwright suite
-tools/            Log summarizer and the scoped ESLint glob adapter
+tools/            Catalog importer, logo downloader, log summarizer, and ESLint glob adapter
 docs/             Design notes, reviews, and operational guides
 ```
 
@@ -180,6 +187,7 @@ docs/             Design notes, reviews, and operational guides
 | [Shareable research views](docs/shareable-views.md) | URL parameters, history behavior, and the custom blend |
 | [Share previews](docs/share-previews.md) | Preview image routes, caching, and metadata |
 | [Asset comparison](docs/asset-comparison.md) | Comparison design and verification |
+| [Imported catalog reference](docs/catalog-2026-10-12.md) | Supplied category lists, ranks, market caps, and source notes |
 | [Dependency advisory](docs/security/dependency-advisory.md) | Dependency remediation and the remaining security limitation |
 
 ## Disclaimer

@@ -18,7 +18,7 @@ export function ResearchStrip({ assets }: { assets: CardData[] }) {
           <div className="r1"><AssetMark symbol={asset.symbol} /><div><h3 className="nm">{asset.name}</h3><p className="tk">{asset.symbol}</p></div></div>
           <div className="r2"><span className="px">{quote ? formatPrice(quote.price) : "—"}</span>{quote && <span className={"chg " + (quote.changePct >= 0 ? "up" : "down")}>{formatPct(quote.changePct)}</span>}</div>
           <p className="strip-source">{quote ? sourceLabel(quote.source) : error ? "Quote unavailable" : "Loading quote…"}{error && quote ? " · Stale" : ""}</p>
-          <div className="r3"><span>Score {avgScore(asset.scores).toFixed(1)}/10</span><span className="text-up">Read <ArrowUpRight size={13} /></span></div>
+          <div className="r3"><span>{asset.scores ? `Score ${avgScore(asset.scores).toFixed(1)}/10` : "Scores pending"}</span><span className="text-up">Read <ArrowUpRight size={13} /></span></div>
           <ResearchStatus review={asset.review} />
         </Link>;
       })}

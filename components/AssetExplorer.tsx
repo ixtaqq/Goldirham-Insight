@@ -15,7 +15,10 @@ type Draft = Pick<ExplorerView, "query" | "weights">;
 
 // The homepage is prerendered, so the default desk is the static HTML until search params are read on the client.
 export function AssetExplorer({ assets }: { assets: CardData[] }) {
-  return <Suspense fallback={<ExplorerDesk assets={assets} view={DEFAULT_VIEW} />}><LinkedExplorer assets={assets} /></Suspense>;
+  useEffect(() => {
+    if (window.location.hash === "#markets") document.getElementById("markets")?.scrollIntoView();
+  }, []);
+  return <section id="markets" className="design-section research-section" aria-labelledby="research-heading"><Suspense fallback={<ExplorerDesk assets={assets} view={DEFAULT_VIEW} />}><LinkedExplorer assets={assets} /></Suspense></section>;
 }
 
 function LinkedExplorer({ assets }: { assets: CardData[] }) {
@@ -69,7 +72,6 @@ function ExplorerDesk({ assets, view, adjusted = false, onDraft = () => {}, onCh
   const term = view.query.trim();
 
   return (
-    <section id="markets" className="design-section research-section" aria-labelledby="research-heading">
       <div className="container-x">
         <div className="sec-head">
           <div><p className="eyebrow">The research desk</p><h2 id="research-heading" className="display">Find your next conviction.</h2><p className="sec-sub">Real businesses. Clear theses. The risks included. Prices identify their source — scores are editorial.</p></div>
@@ -85,10 +87,9 @@ function ExplorerDesk({ assets, view, adjusted = false, onDraft = () => {}, onCh
         {view.ranking === "custom" && <BlendControl weights={view.weights} reviewed={assets.some((asset) => asset.review.status === "reviewed")} onWeights={(weights) => onDraft({ weights })} />}
         {adjusted && <p className="compare-notice desk-notice">Some settings in this link were not recognized, so their defaults are shown.</p>}
         <p className="desk-results" role="status">{filtered.length} {filtered.length === 1 ? "asset" : "assets"}{term ? " matching “" + term + "”" : " to explore"}</p>
-        {filtered.length ? <div className="asset-grid">{filtered.slice(0, showAll ? filtered.length : 9).map((asset) => <AssetCard key={asset.symbol} data={asset} blend={view.ranking === "custom" ? composite(asset.scores, view.weights) : undefined} />)}</div> : <div className="card catalog-empty"><Search size={28} /><h3>No matching research.</h3><p>Try another company, ticker, or theme.</p><button className="btn btn-primary" onClick={() => onChange(DEFAULT_VIEW)}>Clear filters</button></div>}
+        {filtered.length ? <div className="asset-grid">{filtered.slice(0, showAll ? filtered.length : 9).map((asset) => <AssetCard key={asset.symbol} data={asset} blend={view.ranking === "custom" && asset.scores ? composite(asset.scores, view.weights) : undefined} />)}</div> : <div className="card catalog-empty"><Search size={28} /><h3>No matching research.</h3><p>Try another company, ticker, or theme.</p><button className="btn btn-primary" onClick={() => onChange(DEFAULT_VIEW)}>Clear filters</button></div>}
         {filtered.length > 9 && <div className="center"><button className="btn btn-secondary" onClick={() => setExpandedFor(showAll ? null : href)} aria-expanded={showAll}>{showAll ? "Show fewer" : "Explore all " + filtered.length + " assets"}{showAll ? <ArrowUp size={16} /> : <ArrowDown size={16} />}</button></div>}
       </div>
-    </section>
   );
 }
 

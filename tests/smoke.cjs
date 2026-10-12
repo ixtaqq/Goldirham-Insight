@@ -105,5 +105,11 @@ test("production pages, review disclosures and market routes", { timeout: 60_000
     assert.ok(chart.points.length > 1 && chart.points.every((p) => p.value > 0));
   }
   assert.equal((await fetch(`${base}/api/chart?symbol=UNKNOWN`)).status, 404);
+  for (const symbol of ["GEV", "TAQA.AE"]) {
+    const chart = await (await fetch(`${base}/api/chart?symbol=${symbol}&range=3M`)).json();
+    assert.equal(chart.source, "simulated", symbol);
+    assert.equal(chart.symbol, symbol);
+    assert.ok(chart.points.length > 1 && chart.points.every((point) => point.value > 0), symbol);
+  }
   t.diagnostic(`${ASSETS.length + CATEGORIES.length + 2} pages including comparison, empty and selected comparison states, ${ASSETS.length} asset review disclosures, five chart ranges and quote deduplication passed.`);
 });

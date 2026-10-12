@@ -72,7 +72,7 @@ test("the real catalog has unique symbols, valid categories and complete recorde
   for (const asset of ASSETS) {
     assert.ok(categories.has(asset.category), asset.symbol);
     for (const slug of asset.alsoIn ?? []) assert.ok(categories.has(slug), asset.symbol);
-    for (const value of Object.values(asset.scores)) assert.ok(value >= 0 && value <= 10, asset.symbol);
+    for (const value of Object.values(asset.scores ?? {})) assert.ok(value >= 0 && value <= 10, asset.symbol);
     if (!asset.research) {
       assert.match(render(ResearchRecord, { review: asset.research }), /Not reviewed/);
       continue;

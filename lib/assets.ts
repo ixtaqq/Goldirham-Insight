@@ -1,4 +1,5 @@
 import type { Asset, CategorySlug } from "./types";
+import { mergeCatalog } from "./catalog";
 
 /**
  * Curated research universe for Goldirham.
@@ -6,7 +7,7 @@ import type { Asset, CategorySlug } from "./types";
  * Editorial, educational research — NOT investment advice. Prices are seeds
  * for the live feed; crypto is overridden with real CoinGecko data at runtime.
  */
-export const ASSETS: Asset[] = [
+const RESEARCH_ASSETS: Asset[] = [
   // ───────────────────────────── AI UTILITIES ─────────────────────────────
   {
     symbol: "CEG",
@@ -1317,6 +1318,8 @@ The reality check: decentralised compute must compete with the **brutal economic
 Upside **8.5/10** · Safety **3.5/10** · AI exposure **8/10**. The highest-risk, highest-narrative pick on the board.`,
   },
 ];
+
+export const ASSETS: Asset[] = mergeCatalog(RESEARCH_ASSETS);
 
 // ─────────────────────────────── helpers ───────────────────────────────
 export function getAsset(symbol: string): Asset | undefined {

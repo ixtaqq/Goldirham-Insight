@@ -74,10 +74,10 @@ export async function renderAssetImage(asset: Asset) {
           <div key={factor.key} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 28 }}>
               <span style={{ color: MUTED }}>{factor.label}</span>
-              <span>{asset.scores[factor.key].toFixed(1)}</span>
+              <span>{asset.scores?.[factor.key].toFixed(1) ?? "Pending"}</span>
             </div>
             <div style={{ display: "flex", height: 14, borderRadius: 7, background: LINE }}>
-              <div style={{ width: `${asset.scores[factor.key] * 10}%`, borderRadius: 7, background: GREEN }} />
+              <div style={{ width: `${(asset.scores?.[factor.key] ?? 0) * 10}%`, borderRadius: 7, background: GREEN }} />
             </div>
           </div>
         ))}
@@ -104,7 +104,7 @@ export async function renderComparisonImage(assets: readonly Asset[]) {
             {FACTORS.map((factor) => (
               <div key={factor.key} style={{ display: "flex", justifyContent: "space-between", fontSize: 24 }}>
                 <span style={{ color: MUTED }}>{factor.label}</span>
-                <span>{asset.scores[factor.key].toFixed(1)}</span>
+                <span>{asset.scores?.[factor.key].toFixed(1) ?? "Pending"}</span>
               </div>
             ))}
             <ReviewBadge asset={asset} />

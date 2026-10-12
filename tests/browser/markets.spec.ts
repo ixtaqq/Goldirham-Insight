@@ -102,15 +102,15 @@ test("desktop navigation returns above the menu breakpoint", async ({ page }) =>
 
 test("theme filtering includes cross-listed assets and clears empty results", async ({ page }) => {
   await page.goto("/");
-  await expect(desk(page).getByRole("status")).toHaveText("26 assets to explore");
+  await expect(desk(page).getByRole("status")).toHaveText("234 assets to explore");
   await desk(page).getByRole("button", { name: "AI Utilities" }).click();
-  await expect(desk(page).getByRole("status")).toHaveText("6 assets to explore");
-  await expect(cards(page)).toHaveCount(6);
+  await expect(desk(page).getByRole("status")).toHaveText("53 assets to explore");
+  await expect(cards(page)).toHaveCount(9);
   await expect(cards(page).filter({ hasText: "ICLN" })).toBeVisible();
   await expect(cards(page).filter({ hasText: "NVDA" })).toHaveCount(0);
   await desk(page).getByRole("button", { name: "AI Companies" }).click();
-  await expect(desk(page).getByRole("status")).toHaveText("12 assets to explore");
-  await desk(page).getByRole("button", { name: "Explore all 12 assets" }).click();
+  await expect(desk(page).getByRole("status")).toHaveText("53 assets to explore");
+  await desk(page).getByRole("button", { name: "Explore all 53 assets" }).click();
   await expect(cards(page).filter({ hasText: "LINK" })).toBeVisible();
   await expect(cards(page).filter({ hasText: "RENDER" })).toBeVisible();
   await desk(page).getByRole("searchbox", { name: "Filter the desk" }).fill("not-a-company");
@@ -118,7 +118,7 @@ test("theme filtering includes cross-listed assets and clears empty results", as
   await expect(desk(page).getByRole("heading", { name: "No matching research." })).toBeVisible();
   await desk(page).getByRole("button", { name: "Clear filters" }).click();
   await expect(desk(page).getByRole("searchbox")).toHaveValue("");
-  await expect(desk(page).getByRole("status")).toHaveText("26 assets to explore");
+  await expect(desk(page).getByRole("status")).toHaveText("234 assets to explore");
   await expect(cards(page)).toHaveCount(9);
   await expect(desk(page).getByRole("button", { name: "AI Companies" })).toHaveAttribute("aria-pressed", "false");
 });
@@ -132,7 +132,7 @@ test("ranking orders filtered research by the selected score", async ({ page }) 
   await expect(cards(page).nth(2)).toHaveAttribute("href", "/asset/AAPL");
   await desk(page).getByRole("group", { name: "Filter by theme" }).getByRole("button", { name: "Crypto" }).click();
   await rank.getByRole("button", { name: "Top upside", exact: true }).click();
-  await expect(cards(page)).toHaveCount(5);
+  await expect(cards(page)).toHaveCount(9);
   await expect(cards(page).nth(0)).toHaveAttribute("href", "/asset/SOL");
   await expect(cards(page).nth(1)).toHaveAttribute("href", "/asset/RENDER");
   await expect(cards(page).nth(0).getByText("8.5", { exact: true })).toBeVisible();
@@ -143,15 +143,15 @@ test("ranking orders filtered research by the selected score", async ({ page }) 
 
 test("all catalog and ranked cards disclose missing human review", async ({ page }) => {
   await page.goto("/");
-  await desk(page).getByRole("button", { name: "Explore all 26 assets" }).click();
-  await expect(cards(page)).toHaveCount(26);
-  await expect(cards(page).getByText("Not reviewed", { exact: true })).toHaveCount(26);
+  await desk(page).getByRole("button", { name: "Explore all 234 assets" }).click();
+  await expect(cards(page)).toHaveCount(234);
+  await expect(cards(page).getByText("Not reviewed", { exact: true })).toHaveCount(234);
   await desk(page).getByRole("button", { name: "Safest", exact: true }).click();
   await expect(cards(page).getByText("Not reviewed", { exact: true })).toHaveCount(9);
   await page.goto("/category/mega-stocks");
   const categoryCards = page.locator('main a.asset-card');
-  await expect(categoryCards).toHaveCount(8);
-  await expect(categoryCards.getByText("Not reviewed", { exact: true })).toHaveCount(8);
+  await expect(categoryCards).toHaveCount(51);
+  await expect(categoryCards.getByText("Not reviewed", { exact: true })).toHaveCount(51);
 });
 
 for (const width of [320, 360, 375, 1280]) {
@@ -170,6 +170,7 @@ for (const width of [320, 360, 375, 1280]) {
       await page.goto("/#markets");
       const top = () => desk(page).evaluate((element) => Math.round(element.getBoundingClientRect().top));
       await expect(page.getByText("Loading desk activity…")).toBeAttached();
+      await expect.poll(top).toBeLessThanOrEqual(100);
       const before = await top();
       expect(before).toBeLessThanOrEqual(100);
       release();
