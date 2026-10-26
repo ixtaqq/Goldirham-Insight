@@ -46,7 +46,7 @@ Goldirham Insight is an educational research and demonstration platform covering
 | **Asset pages** | Research assets show their thesis, scores, and tier. New catalog entries show reference details and pending assessments. Every page includes a research record, source-labeled quote, and chart. |
 | **Asset logos** | Local company, fund, and crypto marks on cards, search results, asset pages, comparisons, and share previews, with source URLs recorded for every asset. |
 | **Share previews** | Generated link previews for the site, every asset, and every comparison. They show scores and review status, never prices. |
-| **Live desk** | A market ticker with a pause control, a feed of the day's largest moves, an interactive research radar, a framework scorecard, and header search that opens any asset's research directly. |
+| **Live desk** | A market quote band where observed prices flash when they move, a feed of the day's largest moves, a featured-asset specimen panel, a framework scorecard, and header search (press `/`) that opens any asset's research directly. |
 
 ## Scoring model
 
@@ -116,14 +116,14 @@ Failure logs contain only structured provider, operation, reason, and status fie
 | --- | --- |
 | Framework | [Next.js 16](https://nextjs.org/) App Router, React 19 |
 | Language | TypeScript (strict) |
-| Styling | Tailwind CSS 4 via PostCSS, theme in `tailwind.config.ts` |
+| Styling | Tailwind CSS 4 via PostCSS; design tokens, light and dark themes in `app/globals.css` (see [DESIGN.md](DESIGN.md)) |
 | Charts | TradingView Lightweight Charts 4 |
 | Icons | Lucide |
 | Share images | `next/og` `ImageResponse` |
 | Testing | Node test runner, Playwright (Chromium) |
 | Hosting | Vercel |
 
-Inter, JetBrains Mono, and Manrope are bundled in `app/fonts/` with their licenses, so builds never depend on an external font service. Supported browsers are Safari 16.4+, Chrome 111+, and Firefox 128+, following [Tailwind's requirements](https://tailwindcss.com/docs/upgrade-guide#browser-requirements).
+Manrope (interface and figures) and JetBrains Mono (tickers and timestamps) are loaded from `app/fonts/` with their licenses, so builds never depend on an external font service. Supported browsers are Safari 16.4+, Chrome 111+, and Firefox 128+, following [Tailwind's requirements](https://tailwindcss.com/docs/upgrade-guide#browser-requirements).
 
 ## Getting started
 

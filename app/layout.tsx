@@ -1,7 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import "./reference-design.css";
 import { LiveMarketProvider } from "@/components/LiveMarketProvider";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -9,8 +8,8 @@ import { ASSETS } from "@/lib/assets";
 import { SITE_URL } from "@/lib/site";
 
 const sans = localFont({
-  src: "./fonts/inter-variable.ttf",
-  weight: "100 900",
+  src: "./fonts/manrope-latin-variable.woff2",
+  weight: "200 800",
   variable: "--font-sans",
   display: "swap",
 });
@@ -42,6 +41,14 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image" },
 };
 
+export const viewport: Viewport = {
+  colorScheme: "light dark",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f2f7f4" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a1310" },
+  ],
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -49,10 +56,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${sans.variable} ${mono.variable}`}>
-      <body className="min-h-screen font-sans">
+      <body>
         <LiveMarketProvider>
           <a href="#main-content" className="skip-link">Skip to content</a>
-          <div className="topbar"><div className="container-x"><div className="left"><span className="dot" /><span>Independent research desk</span><span className="mono topbar-detail"> · clearly sourced</span></div><div className="right"><span className="mono">{ASSETS.length} assets · 5 themes · 3 factors</span></div></div></div>
           <Navbar assets={ASSETS.map(({ symbol, name }) => ({ symbol, name }))} />
           <main id="main-content">{children}</main>
           <Footer />

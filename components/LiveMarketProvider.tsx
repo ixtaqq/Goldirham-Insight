@@ -138,3 +138,18 @@ export function useQuote(symbol: string): Quote | undefined {
 export function useMarket(): MarketState {
   return useContext(MarketContext);
 }
+
+/**
+ * Direction of the latest move in an observed quote, with a count that changes on every move so a keyed
+ * element can replay its flash. Simulated quotes wander on their own and never tick.
+ */
+export function usePriceTick(symbol: string, quote: Quote | undefined) {
+  const price = quote && quote.source !== "simulated" ? quote.price : undefined;
+  const [tick, setTick] = useState<{ symbol: string; price?: number; dir?: "up" | "down"; count: number }>({ symbol, price, count: 0 });
+  if (tick.symbol !== symbol || tick.price !== price) {
+    const previous = tick.symbol === symbol ? tick.price : undefined;
+    const dir = previous === undefined || price === undefined ? undefined : price > previous ? "up" : "down";
+    setTick({ symbol, price, dir, count: dir ? tick.count + 1 : tick.count });
+  }
+  return tick;
+}

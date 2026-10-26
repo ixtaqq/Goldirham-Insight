@@ -1,4 +1,3 @@
-import { sparkline } from "./market";
 import type { Asset, AssetClass, CategorySlug, ResearchReview, Scores } from "./types";
 
 export type ReviewStatus =
@@ -30,7 +29,6 @@ export interface CardData {
   catalog?: Asset["catalog"];
   review: ReviewStatus;
   accent: string;
-  spark: number[];
 }
 
 export function toCardData(a: Asset): CardData {
@@ -49,6 +47,5 @@ export function toCardData(a: Asset): CardData {
     catalog: a.catalog,
     review: toReviewStatus(a.research),
     accent: a.accent ?? "#598bff",
-    spark: sparkline(a.symbol, a.basePrice, a.vol),
   };
 }

@@ -6,7 +6,6 @@ import {
   ArrowLeft,
   Check,
   Coins,
-  Gauge,
   Target,
   Waypoints,
 } from "lucide-react";
@@ -53,181 +52,103 @@ export default async function AssetPage(props: { params: Promise<{ symbol: strin
   if (!asset) notFound();
 
   const cat = getCategory(asset.category);
-  const accent = "#008138";
   const related = getRelated(asset).map(toCardData);
   const overall = asset.scores ? avgScore(asset.scores) : null;
 
   return (
-    <div className="site-container research-page">
-      {/* breadcrumb */}
-      <div className="mb-6 flex items-center gap-2 text-sm text-muted">
-        <Link href="/" className="hover:text-ink-950">
-          Home
-        </Link>
-        <span>/</span>
-        {cat && (
-          <>
-            <Link href={`/category/${cat.slug}`} className="hover:text-ink-950">
-              {cat.name}
-            </Link>
-            <span>/</span>
-          </>
-        )}
-        <span className="text-muted">{asset.symbol}</span>
-      </div>
+    <div className="asset-page" data-denom={asset.category}>
+      <div className="container-x">
+        <nav className="crumbs" aria-label="Breadcrumb">
+          <Link href="/">Home</Link>
+          <span aria-hidden="true">/</span>
+          {cat && (
+            <>
+              <Link href={`/category/${cat.slug}`}>{cat.name}</Link>
+              <span aria-hidden="true">/</span>
+            </>
+          )}
+          <span className="ticker" aria-current="page">{asset.symbol}</span>
+        </nav>
 
-      {/* header */}
-      <div className="surface p-6 sm:p-8">
-        <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-start">
+        <header className="asset-header">
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <span
-                className="rounded-lg px-2 py-0.5 text-xs font-semibold uppercase tracking-wider"
-                style={{ background: `${accent}1a`, color: accent }}
-              >
-                {CLASS_LABEL[asset.assetClass]}
-              </span>
-              {asset.tierLabel && (
-                <span className="rounded-lg border border-line px-2 py-0.5 text-xs text-muted">
-                  {asset.tierLabel}
-                </span>
-              )}
+            <div className="asset-tags">
+              <span className="tag">{CLASS_LABEL[asset.assetClass]}</span>
+              {asset.tierLabel && <span className="tag">{asset.tierLabel}</span>}
+              {cat && <Link href={`/category/${cat.slug}`} className="tag tag-denom">{cat.name}</Link>}
             </div>
             <div className="asset-heading">
               <AssetMark symbol={asset.symbol} className="asset-mark-large" />
-              <h1 className="min-w-0 flex flex-wrap items-baseline gap-x-3 text-3xl font-bold tracking-tight text-ink-950 sm:text-4xl">
+              <h1>
                 {asset.name}
-                <span className="font-mono text-xl text-muted">{asset.symbol}</span>
+                <span className="ticker">{asset.symbol}</span>
               </h1>
             </div>
-            <p className="mt-2 max-w-xl text-base leading-relaxed text-muted">
-              {asset.theme} — {asset.tagline}
-            </p>
-            <Link href={comparisonHref([asset.symbol])} className="compare-text-link mt-3 inline-flex">Compare this asset</Link>
-            {asset.catalog && <p className="mt-3 max-w-xl text-sm text-muted">{asset.catalog.marketCap ? `Reference market cap: ${asset.catalog.marketCap} · 12 Oct 2026 · supplied list, not independently verified.` : "ETF theme list · not ranked by AUM; fund size and fees not assessed."}{asset.catalog.country ? ` Country: ${asset.catalog.country}.` : ""}</p>}
+            <p className="asset-lede">{asset.theme} — {asset.tagline}</p>
+            <div className="asset-links"><Link href={comparisonHref([asset.symbol])} className="text-link">Compare this asset</Link></div>
+            {asset.catalog && <p className="asset-catalog">{asset.catalog.marketCap ? `Reference market cap: ${asset.catalog.marketCap} · 12 Oct 2026 · supplied list, not independently verified.` : "ETF theme list · not ranked by AUM; fund size and fees not assessed."}{asset.catalog.country ? ` Country: ${asset.catalog.country}.` : ""}</p>}
           </div>
-
-          <div className="shrink-0 lg:text-right">
+          <div className="asset-quote">
             <LivePrice symbol={asset.symbol} basePrice={asset.basePrice} />
           </div>
-        </div>
-      </div>
+        </header>
 
-      {/* chart */}
-      <div className="mt-6 rounded-3xl border border-line bg-white p-5 sm:p-6">
-        <LiveChart key={asset.symbol} symbol={asset.symbol} accent={accent} />
-      </div>
-
-      {/* body grid */}
-      <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        {/* article */}
-        <div className="lg:col-span-2">
-          <div className="rounded-3xl border border-line bg-white p-6 sm:p-8">
-            <ResearchRecord review={asset.research} />
-            <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-pine">
-              <Waypoints size={14} />
-              {asset.scores ? "Investment thesis" : "Catalog reference"}
-            </div>
-            <ArticleBody markdown={asset.article} />
-          </div>
-        </div>
-
-        {/* sidebar */}
-        <div className="space-y-6">
-          {/* scores */}
-          <div className="rounded-3xl border border-line bg-white p-6">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm font-semibold text-ink-950">
-                <Gauge size={16} className="text-pine" />
-                Score
-              </div>
-              <div className="flex items-baseline gap-1">
-                <span className="font-mono text-2xl font-bold text-ink-950">
-                  {overall?.toFixed(1) ?? "—"}
-                </span>
-                <span className="text-xs text-muted">/10</span>
-              </div>
-            </div>
-            <ScoreBars scores={asset.scores} />
-          </div>
-
-          {/* valuation */}
-          <SidebarCard icon={<Coins size={16} />} title="Valuation & entry">
-            <div
-              className="mb-3 rounded-xl px-3 py-2 text-sm font-semibold"
-              style={{ background: `${accent}14`, color: accent }}
-            >
-              {asset.entryRange}
-            </div>
-            <ul className="space-y-2">
-              {asset.valuationNotes.map((n, i) => (
-                <li key={i} className="flex gap-2 text-sm leading-relaxed text-muted">
-                  <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-muted" />
-                  {n}
-                </li>
-              ))}
-            </ul>
-          </SidebarCard>
-
-          {/* why it wins */}
-          <SidebarCard icon={<Check size={16} />} title="Why it wins">
-            <ul className="space-y-2.5">
-              {asset.whyItWins.map((w, i) => (
-                <li key={i} className="flex gap-2.5 text-sm leading-relaxed text-muted">
-                  <Check size={15} className="mt-0.5 shrink-0 text-gain" />
-                  {w}
-                </li>
-              ))}
-            </ul>
-          </SidebarCard>
-
-          {/* stage */}
-          <SidebarCard icon={<Target size={16} />} title="Stage of the cycle">
-            <p className="text-sm leading-relaxed text-muted">{asset.stage}</p>
-          </SidebarCard>
-
-          {/* risks */}
-          <SidebarCard icon={<AlertTriangle size={16} />} title="Key risks">
-            <ul className="space-y-2.5">
-              {asset.risks.map((r, i) => (
-                <li key={i} className="flex gap-2.5 text-sm leading-relaxed text-muted">
-                  <AlertTriangle size={15} className="mt-0.5 shrink-0 text-gold" />
-                  {r}
-                </li>
-              ))}
-            </ul>
-          </SidebarCard>
-        </div>
-      </div>
-
-      {/* related */}
-      {related.length > 0 && (
-        <section className="mt-14">
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-xl font-bold tracking-tight text-ink-950">
-              Related in {cat?.name}
-            </h2>
-            {cat && (
-              <Link
-                href={`/category/${cat.slug}`}
-                className="flex items-center gap-1 text-sm text-pine hover:text-pine"
-              >
-                <ArrowLeft size={14} /> Back to {cat.name}
-              </Link>
-            )}
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {related.map((c) => (
-              <AssetCard key={c.symbol} data={c} />
-            ))}
-          </div>
+        <section className="score-band" aria-label="Editorial scores">
+          {overall !== null && <div className="score-total"><span className="score-big">{overall.toFixed(1)}</span><span className="score-of">/10 composite</span></div>}
+          <ScoreBars scores={asset.scores} variant="triad" size="lg" />
         </section>
-      )}
+
+        <section className="chart-panel" aria-label="Price history">
+          <LiveChart key={asset.symbol} symbol={asset.symbol} />
+        </section>
+
+        <div className="asset-body">
+          <article className="thesis">
+            <ResearchRecord review={asset.research} />
+            <h2 className="thesis-title"><Waypoints size={20} aria-hidden="true" />{asset.scores ? "Investment thesis" : "Catalog reference"}</h2>
+            <ArticleBody markdown={asset.article} />
+          </article>
+
+          <aside className="asset-rail" aria-label="Research notes">
+            <RailSection icon={<Coins size={16} aria-hidden="true" />} title="Valuation & entry">
+              <p className="entry-range">{asset.entryRange}</p>
+              <ul className="rail-list rail-list-dots">
+                {asset.valuationNotes.map((n, i) => <li key={i}>{n}</li>)}
+              </ul>
+            </RailSection>
+            <RailSection icon={<Check size={16} aria-hidden="true" />} title="Why it wins">
+              <ul className="rail-list">
+                {asset.whyItWins.map((w, i) => <li key={i}><Check size={15} className="icon-gain" aria-hidden="true" />{w}</li>)}
+              </ul>
+            </RailSection>
+            <RailSection icon={<Target size={16} aria-hidden="true" />} title="Stage of the cycle">
+              <p>{asset.stage}</p>
+            </RailSection>
+            <RailSection icon={<AlertTriangle size={16} aria-hidden="true" />} title="Key risks">
+              <ul className="rail-list">
+                {asset.risks.map((r, i) => <li key={i}><AlertTriangle size={15} className="icon-warn" aria-hidden="true" />{r}</li>)}
+              </ul>
+            </RailSection>
+          </aside>
+        </div>
+
+        {related.length > 0 && (
+          <section className="related" aria-labelledby="related-heading">
+            <div className="section-head">
+              <h2 id="related-heading">Related in {cat?.name}</h2>
+              {cat && <Link href={`/category/${cat.slug}`} className="text-link"><ArrowLeft size={14} aria-hidden="true" /> Back to {cat.name}</Link>}
+            </div>
+            <div className="asset-grid">
+              {related.map((c) => <AssetCard key={c.symbol} data={c} />)}
+            </div>
+          </section>
+        )}
+      </div>
     </div>
   );
 }
 
-function SidebarCard({
+function RailSection({
   icon,
   title,
   children,
@@ -237,12 +158,9 @@ function SidebarCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-3xl border border-line bg-white p-6">
-      <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-ink-950">
-        <span className="text-pine">{icon}</span>
-        {title}
-      </div>
+    <section className="rail-section">
+      <h2>{icon}{title}</h2>
       {children}
-    </div>
+    </section>
   );
 }

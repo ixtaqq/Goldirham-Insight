@@ -1,25 +1,30 @@
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowDown } from "lucide-react";
 import type { CardData } from "@/lib/card";
+import { GuillocheField } from "./GuillocheField";
 import { HeroShowcase } from "./HeroShowcase";
 
-export function Hero({ assetCount, categoryCount, spotlight }: { assetCount: number; categoryCount: number; spotlight: CardData[] }) {
+export function Hero({ assetCount, scoredCount, categoryCount, spotlight }: { assetCount: number; scoredCount: number; categoryCount: number; spotlight: CardData[] }) {
   return (
-    <section className="design-hero" id="top">
-      <div className="glow g1" aria-hidden="true" /><div className="glow g2" aria-hidden="true" /><div className="glow g3" aria-hidden="true" />
-      <div className="container-x design-hero-grid">
+    <section className="hero" id="top" aria-labelledby="hero-heading">
+      <GuillocheField />
+      <div className="container-x hero-grid">
         <div>
-          <div className="pill-row"><span className="pill"><span className="dot" />Independent thinking</span><span className="pill soft">A wider perspective</span><span className="pill soft">Clearly sourced</span></div>
-          <h1 className="display">Big ideas.<br /><span className="accent">Clear conviction.</span></h1>
-          <p className="lede">Understand the companies powering what comes next. Deep research, clear scores, and a considered view of the AI economy — from the power grid to the endpoint.</p>
-          <div className="cta-row"><Link href="#markets" className="btn btn-primary">Explore the research <ArrowRight size={16} /></Link><Link href="#approach" className="btn btn-secondary">How we score <ArrowUpRight size={16} /></Link></div>
-          <p className="foot-note">From the power grid to the next generation of intelligence. Research first. Always.</p>
+          <h1 id="hero-heading" className="hero-title">The AI <span className="whitespace-nowrap">build-out,</span> scored and sourced.</h1>
+          <p className="hero-lede">Upside, safety and AI exposure, rated 0 to 10 the same way on every scored asset, from the power grid and the chip to platforms, funds and tokens. Every price names its source. Every thesis says whether a person has reviewed it.</p>
+          <div className="hero-actions">
+            <Link href="#markets" className="btn btn-primary">Explore the research <ArrowDown size={16} aria-hidden="true" /></Link>
+            <Link href="#approach" className="btn btn-quiet">How we score</Link>
+          </div>
+          <p className="hero-facts">
+            <span><strong>{assetCount}</strong> assets</span>
+            <span><strong>{scoredCount}</strong> with editorial scores</span>
+            <span><strong>{categoryCount}</strong> themes</span>
+            <span>Educational research, not advice</span>
+          </p>
         </div>
         <HeroShowcase assets={spotlight} />
       </div>
-      <div className="stats-band"><dl className="container-x stats-inner">
-        {[{ value: assetCount, label: "Researched assets" }, { value: categoryCount, label: "Connected themes" }, { value: 3, label: "Factors — one lens" }, { value: "100%", label: "Independent. No advice." }].map((stat) => <div className="stat" key={stat.label}><dd className="v">{stat.value}</dd><dt className="l">{stat.label}</dt></div>)}
-      </dl></div>
     </section>
   );
 }

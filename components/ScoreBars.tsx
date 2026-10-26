@@ -1,11 +1,6 @@
+import type { CSSProperties } from "react";
 import type { Scores } from "@/lib/types";
-import { cn, scoreTone } from "@/lib/utils";
-
-const TONE: Record<"high" | "mid" | "low", string> = {
-  high: "from-gain/80 to-gain",
-  mid: "from-gold/80 to-gold",
-  low: "from-loss/80 to-loss",
-};
+import { cn } from "@/lib/utils";
 
 const ROWS: { key: keyof Scores; label: string }[] = [
   { key: "upside", label: "Upside" },
@@ -13,56 +8,30 @@ const ROWS: { key: keyof Scores; label: string }[] = [
   { key: "aiExposure", label: "AI exposure" },
 ];
 
+/** The three editorial scores; bar length is the score on its 0–10 scale, filled in the asset's theme colour. */
 export function ScoreBars({
   scores,
   className,
-  compact = false,
+  variant = "rows",
+  size,
 }: {
   scores: Scores | null;
   className?: string;
-  compact?: boolean;
+  variant?: "rows" | "triad";
+  size?: "lg";
 }) {
-  if (!scores) return <p className={cn("text-sm text-muted", className)}>Scores pending research</p>;
+  if (!scores) return <p className={cn("scores-pending", className)}>Scores pending research</p>;
   return (
-    <div className={cn("space-y-2.5", className)}>
-      {ROWS.map(({ key, label }) => {
-        const value = scores[key];
-        const tone = scoreTone(value);
-        return (
-          <div key={key} className="flex items-center gap-3">
-            <span
-              className={cn(
-                "shrink-0 text-muted",
-                compact ? "w-16 text-[11px]" : "w-24 text-xs"
-              )}
-            >
-              {label}
-            </span>
-            <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-line">
-              <div
-                className={cn(
-                  "absolute inset-y-0 left-0 rounded-full bg-linear-to-r",
-                  TONE[tone]
-                )}
-                style={{ width: `${value * 10}%` }}
-              />
-            </div>
-            <span
-              className={cn(
-                "shrink-0 text-right font-mono tabular-nums",
-                compact ? "w-9 text-[11px]" : "w-12 text-xs",
-                tone === "high"
-                  ? "text-gain"
-                  : tone === "mid"
-                    ? "text-gold"
-                    : "text-loss"
-              )}
-            >
-              {value.toFixed(1)}
-            </span>
-          </div>
-        );
-      })}
-    </div>
+    <dl className={cn("scores", `scores-${variant}`, size && `scores-${size}`, className)}>
+      {ROWS.map(({ key, label }) => (
+        <div key={key} className="score">
+          <dt className="score-label">{label}</dt>
+          <dd className="score-value">
+            <span>{scores[key].toFixed(1)}</span>
+            <span className="score-bar" aria-hidden="true"><i style={{ "--v": scores[key] / 10 } as CSSProperties} /></span>
+          </dd>
+        </div>
+      ))}
+    </dl>
   );
 }

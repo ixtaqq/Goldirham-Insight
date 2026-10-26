@@ -18,7 +18,7 @@ export function AssetExplorer({ assets }: { assets: CardData[] }) {
   useEffect(() => {
     if (window.location.hash === "#markets") document.getElementById("markets")?.scrollIntoView();
   }, []);
-  return <section id="markets" className="design-section research-section" aria-labelledby="research-heading"><Suspense fallback={<ExplorerDesk assets={assets} view={DEFAULT_VIEW} />}><LinkedExplorer assets={assets} /></Suspense></section>;
+  return <section id="markets" className="research-section" aria-labelledby="research-heading"><Suspense fallback={<ExplorerDesk assets={assets} view={DEFAULT_VIEW} />}><LinkedExplorer assets={assets} /></Suspense></section>;
 }
 
 function LinkedExplorer({ assets }: { assets: CardData[] }) {
@@ -70,25 +70,29 @@ function ExplorerDesk({ assets, view, adjusted = false, onDraft = () => {}, onCh
   const showAll = expandedFor === href;
   const filtered = exploreAssets(assets, view);
   const term = view.query.trim();
+  // A new ranking or filter re-deals the cards; typing and blend steps update them in place.
+  const dealKey = `${view.ranking}:${view.category}:${view.tier1}`;
+  const [deal, setDeal] = useState({ key: dealKey, changed: false });
+  if (deal.key !== dealKey) setDeal({ key: dealKey, changed: true });
 
   return (
       <div className="container-x">
-        <div className="sec-head">
-          <div><p className="eyebrow">The research desk</p><h2 id="research-heading" className="display">Find your next conviction.</h2><p className="sec-sub">Real businesses. Clear theses. The risks included. Prices identify their source — scores are editorial.</p></div>
-          <div className="desk-search"><label htmlFor="library-search" className="label">Filter the desk</label><div className="desk-input"><Search size={16} aria-hidden="true" /><input id="library-search" className="input" type="search" placeholder="Company or ticker…" maxLength={MAX_QUERY_LENGTH} value={view.query} onChange={(event) => onDraft({ query: event.target.value })} /></div></div>
+        <div className="section-head">
+          <div><h2 id="research-heading" className="section-title">Find your next conviction.</h2><p className="section-lede">Real businesses, clear theses and the risks that come with them. Scores are editorial opinions; every price names its source.</p></div>
+          <div className="desk-search"><label htmlFor="library-search" className="field-label">Filter the desk</label><div className="field-input"><Search size={16} aria-hidden="true" /><input id="library-search" className="input" type="search" placeholder="Company or ticker…" maxLength={MAX_QUERY_LENGTH} value={view.query} onChange={(event) => onDraft({ query: event.target.value })} /></div></div>
         </div>
-        <div className="toolbar">
-          <div className="segmented research-segments" role="group" aria-label="Rank research">{RANKINGS.map((item) => <button key={item.id} data-active={view.ranking === item.id} aria-pressed={view.ranking === item.id} onClick={() => onChange({ ranking: item.id })}>{item.label}</button>)}</div>
-          <div className="chips">
-            <div className="chips" role="group" aria-label="Filter by theme">{CATEGORIES.map((item) => <button key={item.slug} className="chip" data-on={view.category === item.slug} aria-pressed={view.category === item.slug} onClick={() => onChange({ category: view.category === item.slug ? "all" : item.slug })}>{item.name}<span className="n">{assets.filter((asset) => inCategory(asset, item.slug)).length}</span></button>)}</div>
-            <div className="chips" role="group" aria-label="Filter by tier"><button className="chip" data-on={view.tier1} aria-pressed={view.tier1} onClick={() => onChange({ tier1: !view.tier1 })}>Tier 1 only<span className="n">{assets.filter((asset) => asset.tier === 1).length}</span></button></div>
+        <div className="desk-controls">
+          <div className="segmented" role="group" aria-label="Rank research">{RANKINGS.map((item) => <button key={item.id} aria-pressed={view.ranking === item.id} onClick={() => onChange({ ranking: item.id })}>{item.label}</button>)}</div>
+          <div className="chip-row">
+            <div className="chips" role="group" aria-label="Filter by theme">{CATEGORIES.map((item) => <button key={item.slug} className="chip" data-denom={item.slug} aria-pressed={view.category === item.slug} onClick={() => onChange({ category: view.category === item.slug ? "all" : item.slug })}>{item.name}<span className="n">{assets.filter((asset) => inCategory(asset, item.slug)).length}</span></button>)}</div>
+            <div className="chips" role="group" aria-label="Filter by tier"><button className="chip" aria-pressed={view.tier1} onClick={() => onChange({ tier1: !view.tier1 })}>Tier 1 only<span className="n">{assets.filter((asset) => asset.tier === 1).length}</span></button></div>
           </div>
         </div>
         {view.ranking === "custom" && <BlendControl weights={view.weights} reviewed={assets.some((asset) => asset.review.status === "reviewed")} onWeights={(weights) => onDraft({ weights })} />}
-        {adjusted && <p className="compare-notice desk-notice">Some settings in this link were not recognized, so their defaults are shown.</p>}
+        {adjusted && <p className="notice">Some settings in this link were not recognized, so their defaults are shown.</p>}
         <p className="desk-results" role="status">{filtered.length} {filtered.length === 1 ? "asset" : "assets"}{term ? " matching “" + term + "”" : " to explore"}</p>
-        {filtered.length ? <div className="asset-grid">{filtered.slice(0, showAll ? filtered.length : 9).map((asset) => <AssetCard key={asset.symbol} data={asset} blend={view.ranking === "custom" && asset.scores ? composite(asset.scores, view.weights) : undefined} />)}</div> : <div className="card catalog-empty"><Search size={28} /><h3>No matching research.</h3><p>Try another company, ticker, or theme.</p><button className="btn btn-primary" onClick={() => onChange(DEFAULT_VIEW)}>Clear filters</button></div>}
-        {filtered.length > 9 && <div className="center"><button className="btn btn-secondary" onClick={() => setExpandedFor(showAll ? null : href)} aria-expanded={showAll}>{showAll ? "Show fewer" : "Explore all " + filtered.length + " assets"}{showAll ? <ArrowUp size={16} /> : <ArrowDown size={16} />}</button></div>}
+        {filtered.length ? <div className="asset-grid" key={dealKey} data-dealt={deal.changed || undefined}>{filtered.slice(0, showAll ? filtered.length : 9).map((asset) => <AssetCard key={asset.symbol} data={asset} blend={view.ranking === "custom" && asset.scores ? composite(asset.scores, view.weights) : undefined} />)}</div> : <div className="catalog-empty"><Search size={28} aria-hidden="true" /><h3>No matching research.</h3><p>Try another company, ticker, or theme.</p><button className="btn btn-primary" onClick={() => onChange(DEFAULT_VIEW)}>Clear filters</button></div>}
+        {filtered.length > 9 && <div className="desk-more"><button className="btn btn-quiet" onClick={() => setExpandedFor(showAll ? null : href)} aria-expanded={showAll}>{showAll ? "Show fewer" : "Explore all " + filtered.length + " assets"}{showAll ? <ArrowUp size={16} aria-hidden="true" /> : <ArrowDown size={16} aria-hidden="true" />}</button></div>}
       </div>
   );
 }
@@ -96,7 +100,7 @@ function ExplorerDesk({ assets, view, adjusted = false, onDraft = () => {}, onCh
 function BlendControl({ weights, reviewed, onWeights }: { weights: Weights; reviewed: boolean; onWeights: (weights: Weights) => void }) {
   return (
     <fieldset className="blend" aria-describedby="blend-note">
-      <legend className="label">Custom blend</legend>
+      <legend>Custom blend</legend>
       <div className="blend-sliders">{FACTORS.map((factor) => {
         const id = "blend-" + factor.key;
         return (

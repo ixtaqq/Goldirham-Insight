@@ -40,9 +40,8 @@ export default async function ComparePage({ searchParams }: {
   const symbols = assets.map((asset) => asset.symbol);
 
   return (
-    <div className="site-container compare-page">
+    <div className="container-x compare-page">
       <header className="compare-intro">
-        <p className="eyebrow">Research workspace</p>
         <h1>Compare assets.</h1>
         <p>Put up to three investment theses side by side. Look beyond the scores to the evidence and risks behind each one.</p>
       </header>
@@ -54,25 +53,25 @@ export default async function ComparePage({ searchParams }: {
               <label htmlFor={`compare-asset-${index}`}>Asset {index + 1}</label>
               <select id={`compare-asset-${index}`} name="symbols" defaultValue={symbols[index] ?? ""}>
                 <option value="">Choose an asset</option>
-                {ASSETS.map((asset) => <option key={asset.symbol} value={asset.symbol}>{asset.symbol} — {asset.name}</option>)}
+                {ASSETS.map((asset) => <option key={asset.symbol} value={asset.symbol}>{asset.symbol} · {asset.name}</option>)}
               </select>
             </div>
           ))}
         </div>
         <div className="compare-form-actions">
-          <button type="submit" className="button button-dark">Compare assets</button>
-          {assets.length > 0 && <Link href="/compare" className="compare-text-link">Clear comparison</Link>}
+          <button type="submit" className="btn btn-primary">Compare assets</button>
+          {assets.length > 0 && <Link href="/compare" className="text-link">Clear comparison</Link>}
           <p>Selections are saved in the URL. Copy the address to share.</p>
         </div>
       </form>
 
-      {adjusted && <p className="compare-notice" role="status">Only the first three distinct, available assets are shown. Duplicate, unknown, or extra selections were omitted.</p>}
+      {adjusted && <p className="notice compare-notice" role="status">Only the first three distinct, available assets are shown. Duplicate, unknown, or extra selections were omitted.</p>}
 
       {assets.length === 0 ? (
         <section className="compare-empty" aria-labelledby="compare-empty-heading">
           <h2 id="compare-empty-heading">Start with an asset you know.</h2>
           <p>Choose two or three assets above to compare their research. You can also start a comparison from any asset page.</p>
-          <Link href="/#markets" className="compare-text-link">Explore the research library</Link>
+          <Link href="/#markets" className="text-link">Explore the research library</Link>
         </section>
       ) : (
         <section aria-labelledby="comparison-heading" className="compare-results">
@@ -91,7 +90,7 @@ export default async function ComparePage({ searchParams }: {
                 <tr>
                   <th scope="col">Research factor</th>
                   {assets.map((asset) => (
-                    <th scope="col" key={asset.symbol}>
+                    <th scope="col" key={asset.symbol} data-denom={asset.category}>
                       <div className="compare-asset-heading"><AssetMark symbol={asset.symbol} /><span>{asset.symbol}</span></div>
                       <Link href={`/asset/${asset.symbol}`} className="compare-asset-name">{asset.name}</Link>
                       <p className="compare-category">{getCategory(asset.category)?.name}</p>
@@ -108,7 +107,7 @@ export default async function ComparePage({ searchParams }: {
                 {SCORE_ROWS.map(({ key, label }) => (
                   <tr key={key}>
                     <th scope="row">{label}</th>
-                    {assets.map((asset) => <td key={asset.symbol}><span className="compare-score">{asset.scores?.[key].toFixed(1) ?? "Not assessed"}</span>{asset.scores && <span className="compare-score-scale"> / 10</span>}</td>)}
+                    {assets.map((asset) => <td key={asset.symbol} data-denom={asset.category}><span className="compare-score">{asset.scores?.[key].toFixed(1) ?? "Not assessed"}</span>{asset.scores && <><span className="compare-score-scale"> / 10</span><span className="compare-score-bar" aria-hidden="true"><i style={{ "--v": asset.scores[key] / 10 } as CSSProperties} /></span></>}</td>)}
                   </tr>
                 ))}
                 <tr>
@@ -129,7 +128,7 @@ export default async function ComparePage({ searchParams }: {
                 </tr>
                 <tr>
                   <th scope="row">Full research</th>
-                  {assets.map((asset) => <td key={asset.symbol}><Link href={`/asset/${asset.symbol}`} className="compare-text-link">Read {asset.symbol} research</Link></td>)}
+                  {assets.map((asset) => <td key={asset.symbol}><Link href={`/asset/${asset.symbol}`} className="text-link">Read {asset.symbol} research</Link></td>)}
                 </tr>
               </tbody>
             </table>

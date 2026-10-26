@@ -13,12 +13,46 @@ import { cn, sourceLabel } from "@/lib/utils";
 
 const RANGES: ChartRange[] = ["1D", "1W", "1M", "3M", "1Y"];
 
-function rgba(hex: string, a: number): string {
-  const h = hex.replace("#", "");
-  const r = parseInt(h.slice(0, 2), 16);
-  const g = parseInt(h.slice(2, 4), 16);
-  const b = parseInt(h.slice(4, 6), 16);
-  return `rgba(${r}, ${g}, ${b}, ${a})`;
+// The chart library parses only hex and rgb() colours, so theme tokens (oklch) are resolved through a canvas.
+function tokenColors(element: Element) {
+  const styles = getComputedStyle(element);
+  const context = document.createElement("canvas").getContext("2d", { willReadFrequently: true });
+  const rgb = (name: string, fallback: string) => {
+    if (!context) return fallback;
+    context.clearRect(0, 0, 1, 1);
+    context.fillStyle = fallback;
+    context.fillStyle = styles.getPropertyValue(name).trim() || fallback;
+    context.fillRect(0, 0, 1, 1);
+    const [r, g, b] = context.getImageData(0, 0, 1, 1).data;
+    return [r, g, b].join(", ");
+  };
+  return {
+    line: rgb("--denom", "#41514c"),
+    text: rgb("--ink-3", "#596762"),
+    grid: rgb("--rule", "#d2dcd8"),
+    ink: rgb("--ink", "#0e231c"),
+  };
+}
+
+function applyTheme(element: Element, chart: IChartApi, series: ISeriesApi<"Area">) {
+  const color = tokenColors(element);
+  chart.applyOptions({
+    layout: { textColor: `rgb(${color.text})` },
+    grid: { vertLines: { color: `rgba(${color.grid}, 0.45)` }, horzLines: { color: `rgb(${color.grid})` } },
+    rightPriceScale: { borderColor: `rgb(${color.grid})` },
+    timeScale: { borderColor: `rgb(${color.grid})` },
+    crosshair: {
+      vertLine: { color: `rgba(${color.text}, 0.7)`, labelBackgroundColor: `rgb(${color.ink})` },
+      horzLine: { color: `rgba(${color.text}, 0.7)`, labelBackgroundColor: `rgb(${color.ink})` },
+    },
+  });
+  series.applyOptions({
+    lineColor: `rgb(${color.line})`,
+    topColor: `rgba(${color.line}, 0.26)`,
+    bottomColor: `rgba(${color.line}, 0.01)`,
+    crosshairMarkerBorderColor: `rgb(${color.line})`,
+    crosshairMarkerBackgroundColor: `rgb(${color.line})`,
+  });
 }
 
 function dedupe(points: LinePoint[]): LinePoint[] {
@@ -36,13 +70,7 @@ function dedupe(points: LinePoint[]): LinePoint[] {
   return out;
 }
 
-export function LiveChart({
-  symbol,
-  accent = "#008138",
-}: {
-  symbol: string;
-  accent?: string;
-}) {
+export function LiveChart({ symbol }: { symbol: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<"Area"> | null>(null);
@@ -53,11 +81,11 @@ export function LiveChart({
     status: "ready" | "empty" | "error";
     source?: ChartResponse["source"];
   } | null>(null);
-  const requestKey = `${symbol}:${range}:${accent}:${attempt}`;
+  const requestKey = `${symbol}:${range}:${attempt}`;
   const current = result?.key === requestKey ? result : null;
   const loading = current === null;
 
-  // Recreate the chart when its accent changes.
+  // Create the chart once; colours follow the page's theme tokens, including light/dark switches.
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -66,47 +94,35 @@ export function LiveChart({
       autoSize: true,
       layout: {
         background: { type: ColorType.Solid, color: "transparent" },
-        textColor: "#626979",
         fontFamily: "var(--font-sans), system-ui, sans-serif",
         fontSize: 11,
       },
-      grid: {
-        vertLines: { color: "#f3f4f7" },
-        horzLines: { color: "#e6e8ec" },
-      },
-      rightPriceScale: { borderColor: "#e6e8ec" },
-      timeScale: {
-        borderColor: "#e6e8ec",
-        secondsVisible: false,
-      },
-      crosshair: {
-        mode: 1,
-        vertLine: { color: "#8a8f9c", labelBackgroundColor: "#0b0c10" },
-        horzLine: { color: "#8a8f9c", labelBackgroundColor: "#0b0c10" },
-      },
+      timeScale: { secondsVisible: false },
+      crosshair: { mode: 1 },
       handleScale: { mouseWheel: false },
     });
 
     const series = chart.addAreaSeries({
-      lineColor: accent,
-      topColor: rgba(accent, 0.32),
-      bottomColor: rgba(accent, 0.01),
       lineWidth: 2,
       priceLineVisible: false,
       lastValueVisible: true,
-      crosshairMarkerBorderColor: accent,
-      crosshairMarkerBackgroundColor: accent,
     });
+    applyTheme(el, chart, series);
 
     chartRef.current = chart;
     seriesRef.current = series;
 
+    const scheme = window.matchMedia("(prefers-color-scheme: dark)");
+    const retheme = () => applyTheme(el, chart, series);
+    scheme.addEventListener("change", retheme);
+
     return () => {
+      scheme.removeEventListener("change", retheme);
       chart.remove();
       chartRef.current = null;
       seriesRef.current = null;
     };
-  }, [accent]);
+  }, []);
 
   // Load / reload data when symbol or range changes.
   useEffect(() => {
@@ -162,14 +178,9 @@ export function LiveChart({
 
   return (
     <div>
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2 text-xs text-muted" role="status">
-          <span
-            className={cn(
-              "inline-block h-1.5 w-1.5 rounded-full",
-              current?.source === "simulated" ? "bg-gold" : "bg-line"
-            )}
-          />
+      <div className="chart-head">
+        <div className="chart-status" role="status">
+          <span className="live-dot" data-state={current?.source === "simulated" ? "simulated" : current?.source ? "observed" : undefined} aria-hidden="true" />
           {loading
             ? "Loading chart…"
             : current.source
@@ -177,7 +188,7 @@ export function LiveChart({
               : "Chart unavailable"}
         </div>
 
-        <div className="inline-flex rounded-lg border border-line bg-white p-0.5" role="group" aria-label="Chart time range">
+        <div className="chart-ranges" role="group" aria-label="Chart time range">
           {RANGES.map((r) => (
             <button
               key={r}
@@ -188,12 +199,6 @@ export function LiveChart({
                 }
               }}
               aria-pressed={range === r}
-              className={cn(
-                "rounded-md px-2.5 py-1 text-xs font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-pine",
-                range === r
-                  ? "bg-mint text-ink-950"
-                  : "text-muted hover:text-muted"
-              )}
             >
               {r}
             </button>
@@ -201,36 +206,30 @@ export function LiveChart({
         </div>
       </div>
 
-      <div className="relative" aria-busy={loading}>
+      <div className="chart-stage" aria-busy={loading}>
         <div
           ref={containerRef}
-          className={cn("h-[340px] w-full sm:h-[380px]", current?.status !== "ready" && "invisible")}
+          className={cn("chart-canvas", current?.status !== "ready" && "is-hidden")}
+          data-source={current?.status === "ready" ? current.source : undefined}
           role="img"
           aria-label={`${symbol} ${range} price history${current?.source === "simulated" ? " (simulated)" : ""}`}
         />
-        {loading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white backdrop-blur-[1px]">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-line border-t-pine" />
-          </div>
-        )}
+        {loading && <div className="chart-skeleton" aria-hidden="true" />}
         {current && current.status !== "ready" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center">
-            <p className="text-sm text-muted" role="status">
+          <div className="chart-message">
+            <p role="status">
               {current.status === "empty"
                 ? "No price history available for this range."
                 : "Unable to load price history. Please try again."}
             </p>
-            <button
-              onClick={() => setAttempt((value) => value + 1)}
-              className="rounded-lg border border-line px-4 py-2 text-sm text-ink-950 hover:bg-canvas focus-visible:outline focus-visible:outline-2 focus-visible:outline-pine"
-            >
+            <button onClick={() => setAttempt((value) => value + 1)} className="btn btn-quiet btn-sm">
               Retry chart
             </button>
           </div>
         )}
       </div>
       {current?.source === "simulated" && (
-        <p className="mt-2 text-xs text-muted">
+        <p className="chart-note">
           Illustrative data, not actual historical prices.
         </p>
       )}

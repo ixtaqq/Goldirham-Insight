@@ -1,34 +1,38 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { Pause, Play } from "lucide-react";
+import type { Quote } from "@/lib/types";
 import { TICKER_ORDER } from "@/lib/symbols";
-import { cn, formatPct, formatPrice, sourceLabel } from "@/lib/utils";
-import { useMarket } from "./LiveMarketProvider";
+import { formatPct, formatPrice, sourceLabel } from "@/lib/utils";
+import { useMarket, usePriceTick } from "./LiveMarketProvider";
 import { AssetMark } from "./AssetMark";
 
+// A still band read at a glance or scrolled sideways; only observed prices move, by flashing when they change.
 export function TickerTape() {
-  const [paused, setPaused] = useState(false);
   const { quotes, ready, error } = useMarket();
   const items = TICKER_ORDER.map((symbol) => quotes[symbol]).filter(Boolean);
-  const row = ready && items.length ? [...items, ...items] : [];
 
   return (
-    <div className="market-tape" aria-label="Market quotes">
+    <div className="market-tape" role="region" aria-label="Market quotes">
       {error && ready && <p className="tape-status" role="status">Quote updates unavailable. Showing last received prices. Retrying automatically…</p>}
-      {row.length ? (
-        <div className="tape-row" style={paused ? { animationPlayState: "paused" } : undefined}>
-          {row.map((quote, index) => (
-            <Link key={`${quote.symbol}-${index}`} href={`/asset/${quote.symbol}`} className="tape-item" tabIndex={index >= items.length ? -1 : undefined} aria-hidden={index >= items.length ? true : undefined}>
-              <AssetMark symbol={quote.symbol} className="asset-mark-small" /><strong>{quote.symbol}</strong><span className="tape-price">{formatPrice(quote.price)}</span>
-              <span className={cn(quote.changePct >= 0 ? "text-gain" : "text-loss")}>{formatPct(quote.changePct)}</span>
-              <small>{sourceLabel(quote.source)}{error ? " · Stale" : ""}</small>
-            </Link>
-          ))}
+      {ready && items.length ? (
+        <div className="tape-row">
+          {items.map((quote) => <TapeItem key={quote.symbol} quote={quote} stale={error} />)}
         </div>
       ) : <div className="tape-row tape-row-pending"><p className="tape-item" role={error ? "status" : undefined}><span className="asset-mark asset-mark-small" aria-hidden="true" /><span className="feed-pending-text">{error ? "Quotes unavailable. Retrying…" : "Loading market data…"}</span></p></div>}
-      {row.length > 0 && <button className="ticker-control" aria-label={paused ? "Resume ticker" : "Pause ticker"} onClick={() => setPaused(!paused)}>{paused ? <Play size={15} /> : <Pause size={15} />}</button>}
     </div>
+  );
+}
+
+function TapeItem({ quote, stale }: { quote: Quote; stale: boolean }) {
+  const tick = usePriceTick(quote.symbol, quote);
+  return (
+    <Link href={`/asset/${quote.symbol}`} className="tape-item">
+      <AssetMark symbol={quote.symbol} className="asset-mark-small" />
+      <span className="ticker">{quote.symbol}</span>
+      <span className="quote-figure" key={tick.count} data-source={quote.source} data-tick={tick.dir}>{formatPrice(quote.price)}</span>
+      <span className={quote.changePct >= 0 ? "tape-up" : "tape-down"}>{formatPct(quote.changePct)}</span>
+      <small>{sourceLabel(quote.source)}{stale ? " · Stale" : ""}</small>
+    </Link>
   );
 }

@@ -4,9 +4,7 @@ import { Fragment, type ReactNode } from "react";
 function inline(text: string): ReactNode[] {
   return text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g).map((part, i) =>
     part.startsWith("**") && part.endsWith("**") ? (
-      <strong key={i} className="font-semibold text-ink-950">
-        {part.slice(2, -2)}
-      </strong>
+      <strong key={i}>{part.slice(2, -2)}</strong>
     ) : part.startsWith("*") && part.endsWith("*") && part.length > 2 ? (
       <em key={i}>{part.slice(1, -1)}</em>
     ) : (
@@ -15,6 +13,7 @@ function inline(text: string): ReactNode[] {
   );
 }
 
+// "##" sections sit under the page's "Investment thesis" heading, so they render as h3.
 export function ArticleBody({ markdown }: { markdown: string }) {
   const lines = markdown.split("\n");
   const blocks: ReactNode[] = [];
@@ -23,30 +22,8 @@ export function ArticleBody({ markdown }: { markdown: string }) {
 
   const flush = () => {
     if (!list) return;
-    const items = list.items;
-    blocks.push(
-      list.ordered ? (
-        <ol key={key++} className="my-4 space-y-2 pl-1">
-          {items.map((it, i) => (
-            <li key={i} className="flex gap-3 text-[15px] leading-relaxed text-muted">
-              <span className="mt-0.5 font-mono text-sm font-semibold text-pine">
-                {i + 1}.
-              </span>
-              <span>{inline(it)}</span>
-            </li>
-          ))}
-        </ol>
-      ) : (
-        <ul key={key++} className="my-4 space-y-2">
-          {items.map((it, i) => (
-            <li key={i} className="flex gap-3 text-[15px] leading-relaxed text-muted">
-              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-pine" />
-              <span>{inline(it)}</span>
-            </li>
-          ))}
-        </ul>
-      )
-    );
+    const items = list.items.map((it, i) => <li key={i}><span>{inline(it)}</span></li>);
+    blocks.push(list.ordered ? <ol key={key++}>{items}</ol> : <ul key={key++}>{items}</ul>);
     list = null;
   };
 
@@ -58,14 +35,7 @@ export function ArticleBody({ markdown }: { markdown: string }) {
     }
     if (line.startsWith("## ")) {
       flush();
-      blocks.push(
-        <h2
-          key={key++}
-          className="mt-8 text-lg font-semibold tracking-tight text-ink-950 first:mt-0"
-        >
-          {inline(line.slice(3))}
-        </h2>
-      );
+      blocks.push(<h3 key={key++}>{inline(line.slice(3))}</h3>);
       continue;
     }
     const ol = line.match(/^(\d+)\.\s+(.*)$/);
@@ -86,13 +56,9 @@ export function ArticleBody({ markdown }: { markdown: string }) {
       continue;
     }
     flush();
-    blocks.push(
-      <p key={key++} className="my-4 text-[15px] leading-relaxed text-muted">
-        {inline(line)}
-      </p>
-    );
+    blocks.push(<p key={key++}>{inline(line)}</p>);
   }
   flush();
 
-  return <div className="max-w-none">{blocks}</div>;
+  return <div className="prose">{blocks}</div>;
 }

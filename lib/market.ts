@@ -79,11 +79,6 @@ export function simulateSeries(
   return series;
 }
 
-/** A tiny deterministic sparkline (≈24 pts) for cards — no network needed. */
-export function sparkline(symbol: string, basePrice: number, vol: number): number[] {
-  return simulateSeries(symbol, basePrice, vol, "1M").map((p) => p.value);
-}
-
 /**
  * A live-ish quote: wanders every few seconds around basePrice, with a
  * day-stable previous close so the % change reads sensibly.

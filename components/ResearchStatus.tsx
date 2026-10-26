@@ -2,7 +2,7 @@ import type { ReviewStatus } from "@/lib/card";
 
 export function ResearchStatus({ review }: { review: ReviewStatus }) {
   return (
-    <p className="research-status" aria-label="Research review status">
+    <p className="research-status" data-review={review.status} aria-label="Research review status">
       {review.status === "unreviewed" ? (
         <span>Not reviewed</span>
       ) : (
