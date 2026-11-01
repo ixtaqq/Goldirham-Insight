@@ -311,7 +311,26 @@
   .guilloche[data-ready] canvas:last-child { animation: guilloche-spin 460s linear infinite reverse; }
   .guilloche[data-paused] canvas { animation-play-state: paused; }
 
-  .radar { position: relative; width: 100%; max-width: 460px; margin-inline: auto; padding: 24px; border-radius: var(--radius-lg); background: var(--paper-raised); box-shadow: 0 0 0 1px var(--rule-strong), inset 0 0 0 5px var(--paper-raised), inset 0 0 0 6px var(--rule); }
+  /* The specimen card sits in 3D: a resting lean, layers at their own depth, an idle sway and a mouse-led tilt (HeroShowcase).
+     The sway lives on a wrapper so the tilt composes with it; it holds still under a mouse and off screen. */
+  .radar-stage { perspective: 1200px; }
+  .radar-float { transform-style: preserve-3d; animation: radar-sway 8s cubic-bezier(0.37, 0, 0.63, 1) infinite; }
+  .radar-float[data-paused], .radar-stage:focus-within .radar-float { animation-play-state: paused; }
+  @media (hover: hover) and (pointer: fine) { .radar-stage:hover .radar-float { animation-play-state: paused; } }
+  .radar { position: relative; width: 100%; max-width: 460px; margin-inline: auto; padding: 24px; border-radius: var(--radius-lg); background: var(--paper-raised); box-shadow: 0 0 0 1px var(--rule-strong), inset 0 0 0 5px var(--paper-raised), inset 0 0 0 6px var(--rule), 0 30px 60px -30px hsl(var(--shadow-color) / 0.6); transform: rotateX(4deg) rotateY(-7deg); transform-style: preserve-3d; transition: transform var(--dur-focal) var(--ease-out); }
+  .radar[data-tilt] { transition-duration: var(--dur-fast); }
+  /* A deeper shadow fades in as the card lifts; opacity keeps the change off the paint path. */
+  .radar::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; box-shadow: 0 48px 72px -28px hsl(var(--shadow-color) / 0.45); opacity: 0; translate: 0 0 -1px; transition: opacity var(--dur-base) var(--ease-out); }
+  .radar[data-tilt]::after { opacity: 1; }
+  .radar > .segmented { translate: 0 0 14px; }
+  .radar > .specimen-identity { translate: 0 0 26px; }
+  .radar > .scores, .radar > .scores-pending { translate: 0 0 18px; }
+  .radar > .specimen-quote { translate: 0 0 22px; }
+  .radar > .research-status { translate: 0 0 12px; }
+  .radar > .btn { translate: 0 0 30px; }
+  .radar-sheen { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; pointer-events: none; opacity: 0; translate: 0 0 2px; transition: opacity var(--dur-base) var(--ease-out); }
+  .radar[data-tilt] .radar-sheen { opacity: 1; }
+  .radar-sheen i { position: absolute; inset: -40%; background: radial-gradient(circle at 50% 50%, transparent 18%, color-mix(in srgb, var(--ink) 9%, transparent) 58%); transition: transform var(--dur-fast) var(--ease-out); }
   .radar .segmented { display: flex; width: 100%; }
   .radar .segmented button { flex: 1; }
   .specimen-identity { display: flex; align-items: center; gap: 14px; margin-top: 22px; animation: settle var(--dur-base) var(--ease-out); }
@@ -710,11 +729,19 @@
 @keyframes sweep { to { transform: translateX(100%); } }
 @keyframes guilloche-spin { to { rotate: 360deg; } }
 @keyframes guilloche-bloom { from { opacity: 0; clip-path: circle(0% at 50% 50%); } to { opacity: 1; clip-path: circle(71% at 50% 50%); } }
+@keyframes radar-sway {
+  0%, 100% { transform: translateY(0) rotateX(0deg) rotateY(0deg); }
+  25% { transform: translateY(-6px) rotateX(1.5deg) rotateY(3deg); }
+  50% { transform: translateY(0) rotateX(-2deg) rotateY(0deg); }
+  75% { transform: translateY(-6px) rotateX(1deg) rotateY(-3deg); }
+}
 
 @media (prefers-reduced-motion: reduce) {
   html:focus-within { scroll-behavior: auto; }
   .guilloche[data-ready], .guilloche[data-ready] canvas { animation: none; }
   .asset-grid[data-dealt] > *, .specimen-identity, .radar .research-status::before, .search-results, .chart-skeleton::after { animation: none; }
+  .radar { transition: none; }
+  .radar-float { animation: none; }
   .btn, .asset-card, .strip-card, .card-go, .feed-go, .btn svg, .asset-card::before, .score-bar i, .ratio .track i { transition-property: color, background-color, border-color, box-shadow, opacity; }
   .btn:hover svg, .btn:active, .asset-card:hover, .asset-card:active, .strip-card:hover, .asset-card:hover .card-go, a.feed-row:hover .feed-go { transform: none; }
 }
