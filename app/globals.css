@@ -280,9 +280,16 @@
 
   /* ---------- market tape ---------- */
   .market-tape { position: relative; background: var(--band); color: var(--band-ink); }
-  .market-tape::after { content: ""; position: absolute; top: 0; right: 0; bottom: 0; width: 72px; background: linear-gradient(to left, var(--band), transparent); pointer-events: none; }
+  .market-tape::before, .market-tape::after { content: ""; position: absolute; top: 0; bottom: 0; z-index: 1; width: 72px; pointer-events: none; }
+  .market-tape::before { left: 0; background: linear-gradient(to right, var(--band), transparent); }
+  .market-tape::after { right: 0; background: linear-gradient(to left, var(--band), transparent); }
   .market-tape :focus-visible { outline-color: var(--band-ink); outline-offset: -4px; }
-  .tape-row { display: flex; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; }
+  /* Two identical sets drift left by one set's width, so the loop has no seam (TickerTape). */
+  .tape-row { display: flex; overflow: hidden; scrollbar-width: none; }
+  .tape-track, .tape-set { display: flex; flex: none; }
+  .tape-track { animation: tape-drift calc(var(--tape-count) * 4s) linear infinite; }
+  .market-tape[data-paused] .tape-track, .market-tape:focus-within .tape-track { animation-play-state: paused; }
+  @media (hover: hover) and (pointer: fine) { .market-tape:hover .tape-track { animation-play-state: paused; } }
   .tape-row::-webkit-scrollbar { display: none; }
   .tape-item { display: flex; flex: none; align-items: center; gap: 10px; height: 50px; padding: 0 20px; border-right: 1px solid var(--band-rule); font-size: var(--text-meta); scroll-snap-align: start; transition: background-color var(--dur-fast); }
   a.tape-item:hover { background: var(--band-raised); }
@@ -662,6 +669,7 @@
 @keyframes sweep { to { transform: translateX(100%); } }
 @keyframes guilloche-spin { to { rotate: 360deg; } }
 @keyframes guilloche-bloom { from { opacity: 0; clip-path: circle(0% at 50% 50%); } to { opacity: 1; clip-path: circle(71% at 50% 50%); } }
+@keyframes tape-drift { to { transform: translateX(-50%); } }
 @keyframes radar-sway {
   0%, 100% { transform: translateY(0) rotateX(0deg) rotateY(0deg); }
   25% { transform: translateY(-6px) rotateX(1.5deg) rotateY(3deg); }
@@ -675,6 +683,9 @@
   .asset-grid[data-dealt] > *, .specimen-identity, .radar .research-status::before, .search-results, .chart-skeleton::after { animation: none; }
   .radar { transition: none; }
   .radar-float { animation: none; }
+  .tape-track { animation: none; }
+  .tape-set[inert] { display: none; }
+  .tape-row { overflow-x: auto; scroll-snap-type: x proximity; }
   .btn, .asset-card, .strip-card, .card-go, .feed-go, .btn svg, .asset-card::before, .score-bar i, .ratio .track i { transition-property: color, background-color, border-color, box-shadow, opacity; }
   .btn:hover svg, .btn:active, .asset-card:hover, .asset-card:active, .strip-card:hover, .asset-card:hover .card-go, a.feed-row:hover .feed-go { transform: none; }
 }
