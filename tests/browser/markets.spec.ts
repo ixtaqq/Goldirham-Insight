@@ -47,20 +47,20 @@ async function setVisibility(page: Page, state: "hidden" | "visible") {
 
 test("desktop search reopens after Escape and after Enter navigation", async ({ page }) => {
   await page.goto("/");
-  const search = page.getByRole("searchbox", { name: "Search assets" });
+  const search = page.getByRole("combobox", { name: "Search assets" });
   await search.fill("nvda");
   await expect(page.getByRole("status", { name: "" }).filter({ hasText: "Research library" })).toBeVisible();
   await search.press("Escape");
   await expect(search).toHaveValue("");
   await expect(search).toBeFocused();
   await search.fill("nvda");
-  await expect(page.locator(".search-results").getByRole("link", { name: /NVDA/ })).toBeVisible();
+  await expect(page.locator(".search-results").getByRole("option", { name: /NVDA/ })).toBeVisible();
   await search.press("Enter");
   await expect(page).toHaveURL("/asset/NVDA");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/^NVIDIA\s*NVDA$/);
   await expect(search).toHaveValue("");
   await search.fill("btc");
-  await expect(page.locator(".search-results").getByRole("link", { name: /BTC/ })).toBeVisible();
+  await expect(page.locator(".search-results").getByRole("option", { name: /BTC/ })).toBeVisible();
   await search.press("Enter");
   await expect(page).toHaveURL("/asset/BTC");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/^Bitcoin\s*BTC$/);
@@ -76,16 +76,16 @@ for (const width of [850, 900, 1000]) {
     const menu = page.locator("#mobile-navigation");
     await expect(menu).toBeVisible();
     await expect(menu.getByRole("link", { name: "Research", exact: true })).toBeVisible();
-    const search = menu.getByRole("searchbox", { name: "Search assets" });
+    const search = menu.getByRole("combobox", { name: "Search assets" });
     await search.fill("nvda");
-    await expect(menu.getByRole("link", { name: /NVDA/ })).toBeVisible();
+    await expect(menu.getByRole("option", { name: /NVDA/ })).toBeVisible();
     await search.press("Escape");
     await expect(menu).toBeHidden();
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
     await expect(toggle).toBeFocused();
     await toggle.click();
-    await menu.getByRole("searchbox").fill("btc");
-    await menu.getByRole("searchbox").press("Enter");
+    await menu.getByRole("combobox").fill("btc");
+    await menu.getByRole("combobox").press("Enter");
     await expect(page).toHaveURL("/asset/BTC");
     await expect(menu).toBeHidden();
   });
@@ -97,7 +97,7 @@ test("desktop navigation returns above the menu breakpoint", async ({ page }) =>
   const nav = page.getByRole("navigation", { name: "Main navigation" });
   await expect(nav.getByRole("button", { name: "Toggle menu" })).toBeHidden();
   await expect(nav.getByRole("link", { name: "Research", exact: true })).toBeVisible();
-  await expect(nav.getByRole("searchbox", { name: "Search assets" })).toBeVisible();
+  await expect(nav.getByRole("combobox", { name: "Search assets" })).toBeVisible();
 });
 
 test("theme filtering includes cross-listed assets and clears empty results", async ({ page }) => {
@@ -376,4 +376,25 @@ test("an asset page requests quotes only for the assets it shows", async ({ page
   await expect(page).toHaveURL("/compare?symbols=GEV");
   await page.goto("/");
   await expect.poll(() => requested.at(-1)?.length).toBe(234);
+});
+
+test("search results work as a combobox with arrow keys", async ({ page }) => {
+  await page.goto("/");
+  const search = page.getByRole("combobox", { name: "Search assets" });
+  await expect(search).toHaveAttribute("aria-expanded", "false");
+  await search.fill("micro");
+  await expect(search).toHaveAttribute("aria-expanded", "true");
+  const options = page.getByRole("listbox", { name: "Matching assets" }).getByRole("option");
+  await expect(options.nth(0)).toHaveAttribute("aria-selected", "true");
+  const second = await options.nth(1).getAttribute("href");
+  await search.press("ArrowDown");
+  await expect(options.nth(1)).toHaveAttribute("aria-selected", "true");
+  await expect(search).toHaveAttribute("aria-activedescendant", (await options.nth(1).getAttribute("id"))!);
+  await search.press("ArrowUp");
+  await search.press("ArrowUp");
+  await expect(options.last()).toHaveAttribute("aria-selected", "true");
+  await search.press("ArrowDown");
+  await search.press("ArrowDown");
+  await search.press("Enter");
+  await expect(page).toHaveURL(second!);
 });
