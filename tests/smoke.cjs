@@ -108,13 +108,11 @@ test("production pages, review disclosures and market routes", { timeout: 60_000
   for (const category of CATEGORIES) {
     assert.equal((await fetch(`${base}/category/${category.slug}`)).status, 200, category.slug);
   }
-  // NTFS lookups ignore case, so on Windows `next start` serves the prerendered NVDA page before the redirect runs.
+  // NTFS lookups ignore case, so on Windows `next start` serves the prerendered NVDA page for /asset/nvda.
   if (process.platform === "win32") {
-    t.diagnostic("Skipped the /asset/nvda redirect check on Windows.");
+    t.diagnostic("Skipped the /asset/nvda 404 check on Windows.");
   } else {
-    const caseAlias = await fetch(`${base}/asset/nvda`, { redirect: "manual" });
-    assert.equal(caseAlias.status, 308);
-    assert.equal(new URL(caseAlias.headers.get("location"), base).pathname, "/asset/NVDA");
+    assert.equal((await fetch(`${base}/asset/nvda`, { redirect: "manual" })).status, 404);
   }
   const { quotes } = await (await fetch(`${base}/api/quotes?symbols=nvda,NVDA`)).json();
   assert.equal(quotes.length, 1);

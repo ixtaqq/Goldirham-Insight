@@ -33,7 +33,7 @@ regression suite, and `npm.cmd run build` for the production build.
 After building, run `npm.cmd run test:smoke` for production routes and disclosures,
 and `npm.cmd run test:browser` for the Playwright suite. After a Playwright upgrade,
 install its browser with `node node_modules/@playwright/test/cli.js install chromium`.
-On Windows, the smoke test skips the `/asset/nvda` redirect check because NTFS
+On Windows, the smoke test skips the `/asset/nvda` 404 check because NTFS
 serves the prerendered page case-insensitively; Linux CI runs it.
 For UI changes, also exercise the affected page and interactions; lint and
 TypeScript checks do not establish that the UI works.
