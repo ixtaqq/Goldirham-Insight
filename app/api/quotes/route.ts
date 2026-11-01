@@ -6,9 +6,12 @@ import type { Asset, Quote } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
+// The homepage requests every catalog symbol; the full list is about 1,200 characters.
+const MAX_SYMBOLS_LENGTH = 4096;
+
 export async function GET(req: NextRequest) {
   const param = req.nextUrl.searchParams.get("symbols");
-  if (param && param.length > 1024) {
+  if (param && param.length > MAX_SYMBOLS_LENGTH) {
     return NextResponse.json({ error: "Symbols query is too long" }, { status: 400 });
   }
   const requested = param

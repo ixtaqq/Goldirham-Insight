@@ -9,7 +9,7 @@ import { QuoteChange } from "./QuoteChange";
 import { ResearchStatus } from "./ResearchStatus";
 
 export function ResearchStrip({ assets }: { assets: CardData[] }) {
-  const { quotes, error } = useMarket();
+  const { quotes, error } = useMarket(assets.map((asset) => asset.symbol));
   return (
     <div className="strip" role="region" aria-label="More research to explore" tabIndex={0}>
       {assets.map((asset) => {

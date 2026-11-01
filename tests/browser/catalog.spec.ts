@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
-  await page.route("**/api/quotes", (route) => route.fulfill({ json: { quotes: [] } }));
+  await page.route("**/api/quotes?**", (route) => route.fulfill({ json: { quotes: [] } }));
   await page.route("**/api/chart?**", (route) => {
     const url = new URL(route.request().url());
     return route.fulfill({ json: { symbol: url.searchParams.get("symbol"), range: url.searchParams.get("range"), source: "simulated", points: [{ time: 1791504000, value: 100 }, { time: 1791590400, value: 101 }] } });

@@ -92,7 +92,8 @@ New catalog entries use a generic **$100 demo seed** when live data is unavailab
 **Reliability**
 
 - External requests time out after 5 seconds and fall back to labeled simulation.
-- Quotes are polled 6 seconds after each completed request. Hidden tabs cancel pending requests and pause polling, and returning to the tab refreshes immediately.
+- Quotes are polled 6 seconds after each completed request, for only the assets the current page shows. Navigating to another page requests its assets immediately. Hidden tabs cancel pending requests and pause polling, and returning to the tab refreshes immediately.
+- "Today's largest moves" ranks observed quotes only. Simulated prices are left out of the ranking.
 - If the quote endpoint fails, the interface keeps the last prices, marks them stale, and retries automatically. Chart failures show an explicit retry action.
 
 **Provider limits (per server process)**
