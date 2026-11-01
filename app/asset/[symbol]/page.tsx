@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound, permanentRedirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import {
   AlertTriangle,
@@ -26,6 +26,11 @@ export function generateStaticParams() {
   return ASSETS.map((a) => ({ symbol: a.symbol }));
 }
 
+// Only the canonical symbols exist, so case variants such as /asset/nvda return 404 rather than rendering on
+// demand. A redirect from this page is not used: Next 16.4.3 repeats its Location header when the on-demand
+// render is cached, sending /asset/NVDA twice.
+export const dynamicParams = false;
+
 export async function generateMetadata(
   props: {
     params: Promise<{ symbol: string }>;
@@ -51,7 +56,6 @@ export default async function AssetPage(props: { params: Promise<{ symbol: strin
   const params = await props.params;
   const asset = getAsset(params.symbol);
   if (!asset) notFound();
-  if (params.symbol !== asset.symbol) permanentRedirect(`/asset/${asset.symbol}`);
 
   const cat = getCategory(asset.category);
   const related = getRelated(asset).map(toCardData);
