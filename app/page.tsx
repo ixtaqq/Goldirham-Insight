@@ -76,8 +76,8 @@ export default function HomePage() {
             <div className="legend-row">
               <div className="legend-sample" aria-hidden="true"><span className="denom-stripe">{CATEGORIES.map((category) => <i key={category.slug} data-denom={category.slug} />)}</span></div>
               <div>
-                <h3 className="legend-term">Five themes, one colour each</h3>
-                <p className="legend-text">Energy, compute, platforms, baskets and crypto. Follow the whole value chain; the colour on every card names its theme.</p>
+                <h3 className="legend-term">Five themes, named on every card</h3>
+                <p className="legend-text">Energy, compute, platforms, baskets and crypto. Follow the whole value chain; every card names its theme.</p>
                 <div className="legend-themes">{CATEGORIES.map((category) => <Link key={category.slug} href={`/category/${category.slug}`} className="theme-link" data-denom={category.slug}>{category.name}<span className="sr-only"> ({assets.filter((asset) => inCategory(asset, category.slug)).length} assets)</span></Link>)}</div>
               </div>
             </div>

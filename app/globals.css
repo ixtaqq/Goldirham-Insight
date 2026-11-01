@@ -7,61 +7,46 @@
 /* Specimen & Seal. Security-paper ground, intaglio ink, one denomination colour per theme.
    Observed quotes print solid; simulated figures carry the specimen hatch; reviews carry a seal. */
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
 
-  --paper: oklch(0.972 0.007 165);
-  --paper-raised: oklch(0.993 0.003 165);
-  --paper-sunken: oklch(0.948 0.009 168);
-  --ink: oklch(0.235 0.03 172);
-  --ink-2: oklch(0.42 0.022 172);
-  --ink-3: oklch(0.5 0.018 172);
-  --rule: oklch(0.885 0.011 170);
-  --rule-strong: oklch(0.79 0.016 170);
+  /* Monochrome: white paper, black ink, neutral greys. Only gains and losses keep colour. */
+  --paper: oklch(1 0 0);
+  --paper-raised: oklch(1 0 0);
+  --paper-sunken: oklch(0.965 0 0);
+  --ink: oklch(0 0 0);
+  --ink-2: oklch(0.36 0 0);
+  --ink-3: oklch(0.47 0 0);
+  --rule: oklch(0.89 0 0);
+  --rule-strong: oklch(0.76 0 0);
   --on-deep: var(--paper-raised);
   --card-on-band: var(--paper-raised);
 
-  --band: oklch(0.235 0.03 172);
-  --band-raised: oklch(0.285 0.032 172);
-  --band-ink: oklch(0.95 0.008 165);
-  --band-ink-2: oklch(0.8 0.018 168);
-  --band-rule: oklch(0.37 0.026 172);
+  --band: oklch(0 0 0);
+  --band-raised: oklch(0.2 0 0);
+  --band-ink: oklch(1 0 0);
+  --band-ink-2: oklch(0.8 0 0);
+  --band-rule: oklch(0.3 0 0);
   --band-gain: oklch(0.82 0.13 152);
   --band-loss: oklch(0.8 0.12 25);
 
-  --gold: oklch(0.72 0.13 80);
-  --gold-ink: oklch(0.5 0.1 75);
+  --gold: oklch(0.6 0 0);
+  --gold-ink: var(--ink);
   --gain: oklch(0.5 0.13 152);
   --gain-tint: oklch(0.945 0.035 152);
   --loss: oklch(0.53 0.18 27);
   --loss-tint: oklch(0.95 0.025 25);
-  --hatch: oklch(0.235 0.03 172 / 0.24);
-  --band-hatch: oklch(0.95 0.008 165 / 0.32);
-  --guilloche-ink: oklch(0.36 0.05 172 / 0.42);
-  --guilloche-ink-2: oklch(0.6 0.11 80 / 0.4);
-  --selection: oklch(0.9 0.07 85);
-  --shadow-color: 172 30% 12%;
+  --hatch: oklch(0 0 0 / 0.22);
+  --band-hatch: oklch(1 0 0 / 0.32);
+  --guilloche-ink: oklch(0.25 0 0 / 0.34);
+  --guilloche-ink-2: oklch(0.55 0 0 / 0.32);
+  --selection: oklch(0.88 0 0);
+  --shadow-color: 0 0% 0%;
 
-  --mark-top: #72dbb0;
-  --mark-mid: #1c7855;
+  --mark-top: #b8b8b8;
+  --mark-mid: #5c5c5c;
   --mark-base: var(--ink);
-  --mark-tile: oklch(0.993 0.003 165);
-  --mark-tile-dark: oklch(0.235 0.03 172);
-
-  --denom-ai-utilities: oklch(0.6 0.135 68);
-  --denom-ai-utilities-tint: oklch(0.94 0.04 75);
-  --denom-ai-utilities-deep: oklch(0.37 0.075 62);
-  --denom-ai-companies: oklch(0.55 0.17 264);
-  --denom-ai-companies-tint: oklch(0.94 0.03 264);
-  --denom-ai-companies-deep: oklch(0.33 0.12 266);
-  --denom-mega-stocks: oklch(0.53 0.15 308);
-  --denom-mega-stocks-tint: oklch(0.945 0.03 308);
-  --denom-mega-stocks-deep: oklch(0.32 0.11 308);
-  --denom-etf: oklch(0.56 0.1 198);
-  --denom-etf-tint: oklch(0.94 0.03 198);
-  --denom-etf-deep: oklch(0.33 0.06 200);
-  --denom-crypto: oklch(0.6 0.15 48);
-  --denom-crypto-tint: oklch(0.945 0.035 50);
-  --denom-crypto-deep: oklch(0.37 0.09 45);
+  --mark-tile: oklch(1 0 0);
+  --mark-tile-dark: oklch(0 0 0);
 
   --text-micro: 0.75rem;
   --text-meta: 0.8125rem;
@@ -89,63 +74,11 @@
 
   --hatch-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6' viewBox='0 0 6 6'%3E%3Cpath d='M-1.5 1.5l3-3M0 6l6-6M4.5 7.5l3-3' stroke='%23000' stroke-width='1.1'/%3E%3C/svg%3E");
   --seal-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 1l2.2 2.3 3.1-.6.9 3 3 .9-.6 3.1L23 12l-2.3 2.2.6 3.1-3 .9-.9 3-3.1-.6L12 23l-2.2-2.3-3.1.6-.9-3-3-.9.6-3.1L1 12l2.3-2.2-.6-3.1 3-.9.9-3 3.1.6zm-1.2 13.7l6.1-6.1-1.4-1.4-4.7 4.7-2.3-2.3-1.4 1.4z'/%3E%3C/svg%3E");
-  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.16 0 0 0 0 0.14 0 0 0 .045 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: oklch(0.175 0.015 172);
-    --paper-raised: oklch(0.212 0.017 172);
-    --paper-sunken: oklch(0.155 0.013 172);
-    --ink: oklch(0.945 0.008 165);
-    --ink-2: oklch(0.8 0.013 168);
-    --ink-3: oklch(0.69 0.014 168);
-    --rule: oklch(0.3 0.015 172);
-    --rule-strong: oklch(0.385 0.017 172);
-    --on-deep: var(--ink);
-    --card-on-band: var(--paper);
-
-    --band-raised: oklch(0.29 0.032 172);
-    --band-rule: oklch(0.38 0.026 172);
-
-    --gold: oklch(0.8 0.12 85);
-    --gold-ink: oklch(0.82 0.11 85);
-    --gain: oklch(0.77 0.14 152);
-    --gain-tint: oklch(0.29 0.05 152);
-    --loss: oklch(0.74 0.14 25);
-    --loss-tint: oklch(0.29 0.05 25);
-    --hatch: oklch(0.945 0.008 165 / 0.22);
-    --guilloche-ink: oklch(0.78 0.04 170 / 0.2);
-    --guilloche-ink-2: oklch(0.8 0.1 85 / 0.18);
-    --selection: oklch(0.42 0.08 85);
-    --shadow-color: 172 40% 3%;
-
-    --denom-ai-utilities: oklch(0.78 0.13 75);
-    --denom-ai-utilities-tint: oklch(0.3 0.05 70);
-    --denom-ai-utilities-deep: oklch(0.32 0.06 65);
-    --denom-ai-companies: oklch(0.74 0.12 264);
-    --denom-ai-companies-tint: oklch(0.29 0.06 264);
-    --denom-ai-companies-deep: oklch(0.3 0.08 264);
-    --denom-mega-stocks: oklch(0.74 0.12 308);
-    --denom-mega-stocks-tint: oklch(0.29 0.06 308);
-    --denom-mega-stocks-deep: oklch(0.3 0.08 308);
-    --denom-etf: oklch(0.76 0.09 195);
-    --denom-etf-tint: oklch(0.29 0.04 198);
-    --denom-etf-deep: oklch(0.3 0.05 200);
-    --denom-crypto: oklch(0.78 0.12 52);
-    --denom-crypto-tint: oklch(0.3 0.05 50);
-    --denom-crypto-deep: oklch(0.32 0.07 48);
-
-    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.9 0 0 0 0 0.95 0 0 0 0 0.93 0 0 0 .035 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  }
-}
-
-[data-denom] { --denom: var(--ink-2); --denom-tint: var(--paper-sunken); --denom-deep: var(--band); }
-[data-denom="ai-utilities"] { --denom: var(--denom-ai-utilities); --denom-tint: var(--denom-ai-utilities-tint); --denom-deep: var(--denom-ai-utilities-deep); }
-[data-denom="ai-companies"] { --denom: var(--denom-ai-companies); --denom-tint: var(--denom-ai-companies-tint); --denom-deep: var(--denom-ai-companies-deep); }
-[data-denom="mega-stocks"] { --denom: var(--denom-mega-stocks); --denom-tint: var(--denom-mega-stocks-tint); --denom-deep: var(--denom-mega-stocks-deep); }
-[data-denom="etf"] { --denom: var(--denom-etf); --denom-tint: var(--denom-etf-tint); --denom-deep: var(--denom-etf-deep); }
-[data-denom="crypto"] { --denom: var(--denom-crypto); --denom-tint: var(--denom-crypto-tint); --denom-deep: var(--denom-crypto-deep); }
+/* Every theme prints in the same black ink; cards name their theme in text. */
+[data-denom] { --denom: var(--ink); --denom-tint: var(--paper-sunken); --denom-deep: var(--band); }
 
 @layer base {
   *, ::before, ::after { border-color: var(--rule); }
@@ -263,7 +196,7 @@
   .research-status::before { content: ""; flex: none; width: 14px; height: 14px; border: 1.5px dashed var(--ink-3); border-radius: 50%; }
   .research-status > span:first-child { font-weight: 700; color: var(--ink); }
   .research-status[data-review="reviewed"]::before { border: 0; background: var(--gold-ink); -webkit-mask: var(--seal-tile) center / contain no-repeat; mask: var(--seal-tile) center / contain no-repeat; }
-  .asset-mark { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 38px; height: 38px; padding: 6px; border: 1px solid oklch(0.885 0.011 170); border-radius: var(--radius-md); background: var(--mark-tile); }
+  .asset-mark { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 38px; height: 38px; padding: 6px; border: 1px solid var(--rule); border-radius: var(--radius-md); background: var(--mark-tile); }
   .asset-mark img { width: 100%; height: 100%; object-fit: contain; }
   .asset-mark-ceg, .asset-mark-amzn, .asset-mark-qqq, .asset-mark-smh, .asset-mark-axia3\.sa, .asset-mark-anet, .asset-mark-mrvl, .asset-mark-ibm, .asset-mark-cdns, .asset-mark-abbv, .asset-mark-cat, .asset-mark-unh, .asset-mark-arkq, .asset-mark-arkk { border-color: var(--mark-tile-dark); background: var(--mark-tile-dark); }
   .asset-mark-small { width: 28px; height: 28px; padding: 4px; border-radius: var(--radius-sm); }
@@ -482,7 +415,7 @@
   .legend-term { font-size: var(--text-lead); font-weight: 750; letter-spacing: -0.01em; }
   .legend-text { max-width: 64ch; margin-top: 4px; color: var(--ink-2); }
   .legend-themes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
-  .denom-stripe { display: flex; width: 100%; max-width: 13rem; height: 34px; overflow: hidden; border-radius: var(--radius-sm); }
+  .denom-stripe { display: flex; gap: 3px; width: 100%; max-width: 13rem; height: 34px; overflow: hidden; border-radius: var(--radius-sm); }
   .denom-stripe > i { flex: 1; background: var(--denom); }
   .theme-link { display: inline-flex; align-items: center; gap: 8px; min-height: 34px; padding: 0 12px; border-radius: var(--radius-pill); background: var(--denom-tint); color: var(--ink); font-size: var(--text-meta); font-weight: 700; transition: box-shadow var(--dur-fast); }
   .theme-link::before { content: ""; width: 9px; height: 9px; border-radius: 2px; background: var(--denom); }
@@ -522,7 +455,7 @@
   .live-price-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; margin-top: 8px; color: var(--ink-3); font-size: var(--text-meta); }
   .live-price-meta > span { display: inline-flex; align-items: center; gap: 6px; }
   .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--rule-strong); }
-  .live-dot[data-state="observed"] { background: var(--gain); }
+  .live-dot[data-state="observed"] { background: var(--ink); }
   .live-dot[data-state="simulated"] { background: var(--gold); }
   .quote-freshness { max-width: 36ch; margin-top: 10px; color: var(--ink-3); font-size: var(--text-meta); line-height: 1.55; }
   .quote-freshness p + p { margin-top: 2px; }

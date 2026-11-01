@@ -77,8 +77,6 @@ export function GuillocheField() {
       resizeTimer = setTimeout(paint, 160);
     });
     resize.observe(field);
-    const scheme = window.matchMedia("(prefers-color-scheme: dark)");
-    scheme.addEventListener("change", paint);
     // Rotation is a compositor animation; pausing it off screen keeps the GPU idle.
     const visibility = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) delete field.dataset.paused;
@@ -90,7 +88,6 @@ export function GuillocheField() {
       clearTimeout(resizeTimer);
       resize.disconnect();
       visibility.disconnect();
-      scheme.removeEventListener("change", paint);
     };
   }, []);
 
