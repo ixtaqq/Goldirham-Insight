@@ -188,6 +188,8 @@ for (const width of [320, 360, 375, 1280]) {
 
 for (const width of [320, 768, 1440]) {
   test(`score disclosures remain visible at ${width}px`, async ({ page }, testInfo) => {
+    // This checks disclosure text, so the hero card's idle sway is held still.
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/");
     const radar = page.locator(".radar");
@@ -397,4 +399,24 @@ test("search results work as a combobox with arrow keys", async ({ page }) => {
   await search.press("ArrowDown");
   await search.press("Enter");
   await expect(page).toHaveURL(second!);
+});
+
+test("the hero card sways at rest and holds still under a mouse, focus or reduced motion", async ({ page }) => {
+  const sway = page.locator(".radar-float");
+  const state = () => sway.evaluate((element) => getComputedStyle(element).animationPlayState);
+  const transform = () => sway.evaluate((element) => getComputedStyle(element).transform);
+  await page.goto("/");
+  await page.mouse.move(5, 850);
+  const start = await transform();
+  await expect.poll(transform).not.toBe(start);
+  const card = await page.locator(".radar").boundingBox();
+  await page.mouse.move(card!.x + card!.width / 2, card!.y + card!.height / 2);
+  await expect.poll(state).toBe("paused");
+  await expect(page.locator(".radar")).toHaveAttribute("data-tilt", "follow");
+  await page.mouse.move(5, 850);
+  await expect.poll(state).toBe("running");
+  await page.locator(".radar").getByRole("button", { name: "CEG", exact: true }).focus();
+  await expect.poll(state).toBe("paused");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect.poll(() => sway.evaluate((element) => getComputedStyle(element).animationName)).toBe("none");
 });
