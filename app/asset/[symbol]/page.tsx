@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import {
   AlertTriangle,
@@ -50,6 +50,7 @@ export default async function AssetPage(props: { params: Promise<{ symbol: strin
   const params = await props.params;
   const asset = getAsset(params.symbol);
   if (!asset) notFound();
+  if (params.symbol !== asset.symbol) permanentRedirect(`/asset/${asset.symbol}`);
 
   const cat = getCategory(asset.category);
   const related = getRelated(asset).map(toCardData);
