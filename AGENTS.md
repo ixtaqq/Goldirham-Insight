@@ -23,14 +23,18 @@ strict TypeScript, Tailwind CSS 4, and lightweight-charts 4.
 Run from this repository in PowerShell with dependencies installed:
 
 ```powershell
-& 'E:\Workspace\Project\Use-Node22.ps1'
 npm.cmd run lint
 & '.\node_modules\.bin\tsc.cmd' --noEmit --incremental false
 ```
 
-Both checks passed during setup. Run `npm.cmd test` for the mocked market-data
+CI uses Node 22. This machine has no Node 22 switcher; the checks also pass on its
+system Node (v26). Run `npm.cmd test` for the mocked market-data
 regression suite, and `npm.cmd run build` for the production build.
-After building, run `npm.cmd run test:smoke` for production routes and disclosures.
+After building, run `npm.cmd run test:smoke` for production routes and disclosures,
+and `npm.cmd run test:browser` for the Playwright suite. After a Playwright upgrade,
+install its browser with `node node_modules/@playwright/test/cli.js install chromium`.
+On Windows, the smoke test skips the `/asset/nvda` redirect check because NTFS
+serves the prerendered page case-insensitively; Linux CI runs it.
 For UI changes, also exercise the affected page and interactions; lint and
 TypeScript checks do not establish that the UI works.
 
