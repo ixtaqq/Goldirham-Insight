@@ -17,7 +17,7 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
   const params = await props.params;
   const category = getCategory(params.slug);
   if (!category) return { title: "Not found" };
-  return { title: category.name, description: category.blurb };
+  return { title: category.name, description: category.blurb, alternates: { canonical: `/category/${category.slug}` } };
 }
 
 const TIER_BLURB: Record<number, string> = {

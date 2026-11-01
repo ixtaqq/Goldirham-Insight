@@ -37,6 +37,7 @@ export async function generateMetadata(
   return {
     title: `${asset.name} (${asset.symbol})`,
     description: asset.tagline,
+    alternates: { canonical: `/asset/${asset.symbol}` },
   };
 }
 

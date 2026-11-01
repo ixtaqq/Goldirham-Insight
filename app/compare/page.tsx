@@ -14,11 +14,12 @@ export async function generateMetadata({ searchParams }: {
   searchParams: Promise<{ symbols?: string | string[] }>;
 }): Promise<Metadata> {
   const symbols = resolveComparison((await searchParams).symbols).assets.map((asset) => asset.symbol);
-  if (!symbols.length) return { title: "Compare assets", description: DESCRIPTION };
+  if (!symbols.length) return { title: "Compare assets", description: DESCRIPTION, alternates: { canonical: "/compare" } };
   const title = symbols.join(" vs ");
   return {
     title,
     description: DESCRIPTION,
+    alternates: { canonical: comparisonHref(symbols) },
     openGraph: {
       title: `${title} · Goldirham Insight`,
       description: DESCRIPTION,
