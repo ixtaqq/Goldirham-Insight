@@ -37,6 +37,11 @@ function cards(page: Page) {
   return desk(page).locator('a[href^="/asset/"]');
 }
 
+// Pauses the installed clock a second ahead of the page's time; a fixed instant can already be past on a slow runner.
+async function pauseClock(page: Page) {
+  await page.clock.pauseAt(new Date((await page.evaluate(() => Date.now())) + 1000));
+}
+
 async function setVisibility(page: Page, state: "hidden" | "visible") {
   await page.evaluate((next) => {
     Object.defineProperty(document, "visibilityState", { configurable: true, get: () => next });
@@ -272,7 +277,7 @@ test("quote failure retains the last price and recovers on the next poll", async
   await page.goto("/");
   const nvda = cards(page).filter({ hasText: "NVDA" });
   await expect(nvda.getByText("$123.45", { exact: true })).toBeVisible();
-  await page.clock.pauseAt(new Date(CLOCK_START.getTime() + 1000));
+  await pauseClock(page);
   await page.clock.runFor(6100);
   await expect(nvda.getByText("Simulated · Stale", { exact: true })).toBeVisible();
   await expect(nvda.getByText("$123.45", { exact: true })).toBeVisible();
@@ -295,7 +300,7 @@ test("initially hidden tabs fetch once on resume and stop polling while hidden",
   await expect(cards(page).nth(0)).toHaveAttribute("href", "/asset/NEE");
   await desk(page).getByRole("button", { name: "Featured", exact: true }).click();
   await expect(cards(page).filter({ hasText: "NVDA" })).toBeVisible();
-  await page.clock.pauseAt(new Date(CLOCK_START.getTime() + 1000));
+  await pauseClock(page);
   await page.clock.runFor(30000);
   expect(attempts).toBe(0);
   await setVisibility(page, "visible");
@@ -328,7 +333,7 @@ test("hiding aborts an in-flight poll and resume does not create duplicate polli
   await page.goto("/");
   const nvda = cards(page).filter({ hasText: "NVDA" });
   await expect(nvda.getByText("$123.45", { exact: true })).toBeVisible();
-  await page.clock.pauseAt(new Date(CLOCK_START.getTime() + 1000));
+  await pauseClock(page);
   await page.clock.runFor(6100);
   await expect.poll(() => attempts).toBe(2);
   const aborted = page.waitForEvent("requestfailed", { predicate: (request) => new URL(request.url()).pathname === "/api/quotes" });
