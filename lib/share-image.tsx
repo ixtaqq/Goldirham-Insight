@@ -10,10 +10,10 @@ import type { Asset } from "@/lib/types";
 
 export const SHARE_IMAGE_SIZE = { width: 1200, height: 630 };
 
-const INK = "#101510";
-const MUTED = "#5b6b60";
-const GREEN = "#1f8a4c";
-const LINE = "#dfe6dc";
+const INK = "#000000";
+const MUTED = "#5c5c5c";
+const MARK = "#000000";
+const LINE = "#e2e2e2";
 
 async function logo(symbol: string) {
   const data = await readFile(join(process.cwd(), "public/logos", symbol.toLowerCase() + ".png"), "base64");
@@ -23,9 +23,9 @@ async function logo(symbol: string) {
 function render(body: ReactNode) {
   return new ImageResponse(
     (
-      <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", padding: "56px 64px", background: "#f5f8f4", color: INK }}>
+      <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", padding: "56px 64px", background: "#ffffff", color: INK }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 28, letterSpacing: -0.5 }}>
-          <div style={{ width: 18, height: 18, borderRadius: 9, background: GREEN }} />
+          <div style={{ width: 18, height: 18, borderRadius: 9, background: MARK }} />
           Goldirham Insight
         </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>{body}</div>
@@ -77,7 +77,7 @@ export async function renderAssetImage(asset: Asset) {
               <span>{asset.scores?.[factor.key].toFixed(1) ?? "Pending"}</span>
             </div>
             <div style={{ display: "flex", height: 14, borderRadius: 7, background: LINE }}>
-              <div style={{ width: `${(asset.scores?.[factor.key] ?? 0) * 10}%`, borderRadius: 7, background: GREEN }} />
+              <div style={{ width: `${(asset.scores?.[factor.key] ?? 0) * 10}%`, borderRadius: 7, background: MARK }} />
             </div>
           </div>
         ))}

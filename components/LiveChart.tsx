@@ -85,7 +85,7 @@ export function LiveChart({ symbol }: { symbol: string }) {
   const current = result?.key === requestKey ? result : null;
   const loading = current === null;
 
-  // Create the chart once; colours follow the page's theme tokens, including light/dark switches.
+  // Create the chart once; colours follow the page's theme tokens.
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -112,12 +112,7 @@ export function LiveChart({ symbol }: { symbol: string }) {
     chartRef.current = chart;
     seriesRef.current = series;
 
-    const scheme = window.matchMedia("(prefers-color-scheme: dark)");
-    const retheme = () => applyTheme(el, chart, series);
-    scheme.addEventListener("change", retheme);
-
     return () => {
-      scheme.removeEventListener("change", retheme);
       chart.remove();
       chartRef.current = null;
       seriesRef.current = null;

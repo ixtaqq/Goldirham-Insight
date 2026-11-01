@@ -9,15 +9,16 @@ provenance you can see: every figure shows what it is before anyone reads its la
 | Hatched figure | Simulated price; never market data | `.quote-figure[data-source="simulated"]` |
 | "Simulated" overprint | Simulated price history | `.chart-canvas[data-source="simulated"]` |
 | Dashed seal | Thesis not reviewed | `.research-status[data-review="unreviewed"]` |
-| Gold seal | Reviewed: named reviewer, date, sources, three rationales | `.research-status[data-review="reviewed"]` |
-| Denomination colour | The asset's primary theme | `[data-denom="<category slug>"]` |
+| Solid seal | Reviewed: named reviewer, date, sources, three rationales | `.research-status[data-review="reviewed"]` |
+| Denomination ink | The asset's primary theme, named in text | `[data-denom="<category slug>"]` |
 
-Only show the gold seal for a record that meets the `Asset.research` rules in `AGENTS.md`.
+Only show the solid seal for a record that meets the `Asset.research` rules in `AGENTS.md`.
 
 ## Colour
 
-All tokens live in `app/globals.css` as OKLCH. Dark theme remaps the same names under
-`prefers-color-scheme: dark`; components never branch on theme.
+All tokens live in `app/globals.css` as OKLCH. The site is monochrome: white paper, black ink
+and neutral greys, whatever the visitor's system setting. Green and red are the only hues, and
+they mean price direction. Components never branch on theme.
 
 | Role | Tokens |
 | --- | --- |
@@ -26,12 +27,10 @@ All tokens live in `app/globals.css` as OKLCH. Dark theme remaps the same names 
 | Lines | `--rule`, `--rule-strong` |
 | Ink band (ticker, framework) | `--band`, `--band-ink`, `--band-ink-2`, `--band-rule` |
 | Market direction | `--gain`, `--gain-tint`, `--loss`, `--loss-tint` |
-| Seal only | `--gold`, `--gold-ink` |
-| Themes | `--denom-<slug>`, `-tint`, `-deep`; read through `--denom`, `--denom-tint`, `--denom-deep` |
+| Seal and simulated status (grey and black despite the name) | `--gold`, `--gold-ink` |
+| Themes | `--denom`, `--denom-tint`, `--denom-deep`, the same ink for every theme |
 
-Theme hues: AI Utilities amber (68), AI Companies ultramarine (264), Mega Stocks violet (308),
-ETFs teal (198), Crypto copper (48). They deliberately avoid the gain/loss hues. Green and red
-mean price direction only; scores are drawn in the theme colour and never tinted good or bad.
+Scores are drawn in black ink and never tinted good or bad.
 
 Mix colours with `transparent` in sRGB, not OKLCH. Chromium shifts the hue toward red otherwise.
 
