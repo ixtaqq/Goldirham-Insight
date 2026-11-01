@@ -15,11 +15,14 @@ function isTyping(target: EventTarget | null) {
 export function AssetSearch({ assets, onNavigate, shortcut = false }: { assets: SearchAsset[]; onNavigate?: () => void; shortcut?: boolean }) {
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
+  const [active, setActive] = useState(0);
   const input = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const id = useId();
   const term = query.trim().toLowerCase();
   const matches = assets.filter((asset) => `${asset.symbol} ${asset.name}`.toLowerCase().includes(term)).slice(0, 6);
+  const expanded = focused && Boolean(term) && matches.length > 0;
+  const current = Math.min(active, matches.length - 1);
 
   useEffect(() => {
     if (!shortcut) return;
@@ -48,35 +51,49 @@ export function AssetSearch({ assets, onNavigate, shortcut = false }: { assets: 
       <input
         ref={input}
         type="search"
+        role="combobox"
         aria-label="Search assets"
         aria-keyshortcuts={shortcut ? "/" : undefined}
-        aria-controls={focused && term ? id : undefined}
+        aria-autocomplete="list"
+        aria-expanded={expanded}
+        aria-controls={expanded ? id : undefined}
+        aria-activedescendant={expanded ? `${id}-${current}` : undefined}
         placeholder="Search assets…"
         value={query}
         onFocus={() => setFocused(true)}
         onChange={(event) => {
           setQuery(event.target.value);
+          setActive(0);
           setFocused(true);
         }}
         onKeyDown={(event) => {
           if (event.key === "Escape") dismiss();
-          if (event.key === "Enter" && term && matches[0]) {
+          if ((event.key === "ArrowDown" || event.key === "ArrowUp") && term && matches.length) {
             event.preventDefault();
-            router.push(`/asset/${matches[0].symbol}`);
+            setFocused(true);
+            setActive((current + (event.key === "ArrowDown" ? 1 : matches.length - 1)) % matches.length);
+          }
+          if (event.key === "Enter" && term && matches[current]) {
+            event.preventDefault();
+            router.push(`/asset/${matches[current].symbol}`);
             dismiss();
           }
         }}
       />
       {query ? <button aria-label="Clear asset search" onClick={() => setQuery("")}><X size={14} /></button> : shortcut && <kbd className="search-kbd" aria-hidden="true">/</kbd>}
       {focused && term && (
-        <div id={id} className="search-results">
+        <div className="search-results">
           <p className="search-results-label" role="status">{matches.length ? "Research library" : "No matching assets"}</p>
-          {matches.map((asset) => (
-            <Link key={asset.symbol} href={`/asset/${asset.symbol}`} onClick={dismiss}>
-              <span className="search-identity"><AssetMark symbol={asset.symbol} className="asset-mark-small" /><span><strong className="ticker">{asset.symbol}</strong><small>{asset.name}</small></span></span>
-              <ArrowUpRight size={16} aria-hidden="true" />
-            </Link>
-          ))}
+          {expanded && (
+            <div id={id} role="listbox" aria-label="Matching assets">
+              {matches.map((asset, index) => (
+                <Link key={asset.symbol} id={`${id}-${index}`} role="option" aria-selected={index === current} tabIndex={-1} href={`/asset/${asset.symbol}`} onClick={dismiss} onMouseEnter={() => setActive(index)}>
+                  <span className="search-identity"><AssetMark symbol={asset.symbol} className="asset-mark-small" /><span><strong className="ticker">{asset.symbol}</strong><small>{asset.name}</small></span></span>
+                  <ArrowUpRight size={16} aria-hidden="true" />
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
