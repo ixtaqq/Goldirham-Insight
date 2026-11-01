@@ -12,6 +12,17 @@ so exploitability here was not demonstrated; the version match alone justified t
 `minimatch` entries in the ESLint toolchain, below CI's `--audit-level=high`. The ESLint
 configuration and plugin remain at 16.3.6 with the scoped adapter unchanged.
 
+The same day, development-only `zod` moved from 4.6.5 to 4.6.7 within its declared range,
+clearing the high-severity [GHSA-mrhx-c7xc-m3w5](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5)
+that failed CI's full audit. A recheck of the lint tooling found:
+
+- `@next/eslint-plugin-next@16.4.3` still depends on `fast-glob` 3.3.1, so moving the lint
+  configuration to 16.4.3 would need the scoped adapter override widened. It stays at 16.3.6.
+- All 16 remaining moderate entries trace to `minimatch` <11.0.1, used at 3.1.5 by ESLint 9
+  and its plugins. npm's suggested fixes are major downgrades (`eslint@4.0.0`,
+  `eslint-config-next@0.2.4`) and were not applied. ESLint 10 is the current major; recheck
+  when `eslint-config-next` supports it.
+
 ## Update on 9 October 2026
 
 Next runtime is now 16.3.8 and `source-map-js` is 1.2.2. The full audit reports
