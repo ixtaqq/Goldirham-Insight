@@ -147,3 +147,24 @@ test("unknown chart symbols return 404 without an external request", async () =>
   assert.equal(response.status, 404);
   assert.deepEqual(await response.json(), { error: "Unknown symbol" });
 });
+
+test("a catalog stock past the first 30 gets a Finnhub quote when requested on its own", async () => {
+  const { ASSETS } = load("lib/assets.ts");
+  const stocks = ASSETS.filter((asset) => asset.assetClass !== "crypto" && /^[A-Z]+(?:-[A-Z])?$/.test(asset.symbol));
+  const late = stocks[stocks.length - 1].symbol;
+  assert.ok(stocks.findIndex((asset) => asset.symbol === late) >= 30);
+  const { GET } = load("app/api/quotes/route.ts", {
+    env: { FINNHUB_API_KEY: "test-only" },
+    fetch: async () => json(stock),
+  });
+  const { quotes } = await (await GET(request(`quotes?symbols=${late}`))).json();
+  assert.deepEqual(quotes.map((q) => [q.symbol, q.source]), [[late, "finnhub"]]);
+});
+
+test("the full catalog fits in one quote request", async () => {
+  const { ASSETS } = load("lib/assets.ts");
+  const { GET } = load("app/api/quotes/route.ts", { fetch: async () => { throw new Error("offline"); } });
+  const response = await GET(request(`quotes?symbols=${ASSETS.map((asset) => asset.symbol).join(",")}`));
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).quotes.length, ASSETS.length);
+});

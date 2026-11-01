@@ -111,7 +111,7 @@ test("an exhausted crypto budget still serves the route's labeled simulated fall
 
 test("oversized symbol inputs return an actionable error without contacting providers", async () => {
   const { api } = setup(async () => { throw new Error("Unexpected fetch"); }, "app/api/quotes/route.ts");
-  const response = await api.GET(new NextRequest(`http://localhost/api/quotes?symbols=${"A".repeat(1025)}`));
+  const response = await api.GET(new NextRequest(`http://localhost/api/quotes?symbols=${"A".repeat(4097)}`));
   assert.equal(response.status, 400);
   assert.deepEqual(await response.json(), { error: "Symbols query is too long" });
 });

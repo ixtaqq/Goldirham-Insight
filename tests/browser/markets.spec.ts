@@ -160,9 +160,9 @@ for (const width of [320, 360, 375, 1280]) {
       let release = () => {};
       const held = new Promise<void>((resolve) => { release = resolve; });
       const quotes = ["NVDA", "CEG", "MSFT", "BTC", "GOOGL", "VST"].map((symbol, index) => ({
-        symbol, price: 100 + index, change: 1, changePct: 1 + index, currency: "USD", source: "simulated", updatedAt: 1791504000000,
+        symbol, price: 100 + index, change: 1, changePct: 1 + index, currency: "USD", source: symbol === "BTC" ? "coingecko" : "finnhub", updatedAt: 1791504000000,
       }));
-      await page.route("**/api/quotes", async (route) => {
+      await page.route("**/api/quotes?**", async (route) => {
         await held;
         await (outcome === "arrive" ? route.fulfill({ json: { quotes } }) : route.fulfill({ status: 503, json: { error: "Fixture unavailable" } }));
       });
@@ -259,7 +259,7 @@ test("rapid chart ranges ignore an older delayed response", async ({ page }) => 
 test("quote failure retains the last price and recovers on the next poll", async ({ page }) => {
   let attempts = 0;
   await page.clock.install({ time: CLOCK_START });
-  await page.route("**/api/quotes", async (route) => {
+  await page.route("**/api/quotes?**", async (route) => {
     attempts++;
     if (attempts === 2) {
       await route.fulfill({ status: 503, json: { error: "Fixture unavailable" } });
@@ -287,7 +287,7 @@ test("initially hidden tabs fetch once on resume and stop polling while hidden",
     Object.defineProperty(document, "visibilityState", { configurable: true, get: () => "hidden" });
     Object.defineProperty(document, "hidden", { configurable: true, get: () => true });
   });
-  await page.route("**/api/quotes", async (route) => { attempts++; await route.fulfill({ json: QUOTES }); });
+  await page.route("**/api/quotes?**", async (route) => { attempts++; await route.fulfill({ json: QUOTES }); });
   await page.goto("/");
   await desk(page).getByRole("button", { name: "Safest", exact: true }).click();
   await expect(cards(page).nth(0)).toHaveAttribute("href", "/asset/NEE");
@@ -317,7 +317,7 @@ test("hiding aborts an in-flight poll and resume does not create duplicate polli
   let release: (() => void) | undefined;
   const delayed = new Promise<void>((resolve) => { release = resolve; });
   await page.clock.install({ time: CLOCK_START });
-  await page.route("**/api/quotes", async (route) => {
+  await page.route("**/api/quotes?**", async (route) => {
     attempts++;
     const attempt = attempts;
     if (attempt === 2) await delayed;
@@ -342,4 +342,38 @@ test("hiding aborts an in-flight poll and resume does not create duplicate polli
   expect(attempts).toBe(3);
   await page.clock.runFor(6100);
   await expect.poll(() => attempts).toBe(4);
+});
+
+test("largest moves rank observed quotes and leave simulated prices out", async ({ page }) => {
+  const quote = (symbol: string, changePct: number, source: string) => ({ symbol, price: 100, change: 1, changePct, currency: "USD", source, updatedAt: 1791504000000 });
+  let observed = true;
+  await page.route("**/api/quotes?**", (route) => route.fulfill({ json: { quotes: observed
+    ? [quote("NVDA", 9, "simulated"), quote("BTC", -2, "coingecko"), quote("CEG", 1, "finnhub")]
+    : [quote("NVDA", 9, "simulated")] } }));
+  await page.goto("/");
+  const feed = page.locator("#live a.feed-row");
+  await expect(feed).toHaveCount(2);
+  await expect(feed.nth(0)).toHaveAttribute("href", "/asset/BTC");
+  await expect(feed.nth(1)).toHaveAttribute("href", "/asset/CEG");
+  await expect(page.locator("#live").getByText("1 advancing")).toBeAttached();
+  observed = false;
+  await page.reload();
+  await expect(page.locator("#live").getByText("No observed quotes to rank. Simulated prices are left out.")).toBeVisible();
+  await expect(feed).toHaveCount(0);
+});
+
+test("an asset page requests quotes only for the assets it shows", async ({ page }) => {
+  const requested: string[][] = [];
+  await page.route("**/api/quotes?**", (route) => {
+    requested.push(new URL(route.request().url()).searchParams.get("symbols")!.split(","));
+    return route.fulfill({ json: QUOTES });
+  });
+  await page.goto("/asset/GEV");
+  await expect.poll(() => requested.length).toBeGreaterThan(0);
+  expect(requested[0]).toContain("GEV");
+  expect(requested[0].length).toBeLessThanOrEqual(4);
+  await page.getByRole("link", { name: "Compare this asset" }).click();
+  await expect(page).toHaveURL("/compare?symbols=GEV");
+  await page.goto("/");
+  await expect.poll(() => requested.at(-1)?.length).toBe(234);
 });

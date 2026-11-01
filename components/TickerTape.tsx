@@ -9,7 +9,7 @@ import { AssetMark } from "./AssetMark";
 
 // A still band read at a glance or scrolled sideways; only observed prices move, by flashing when they change.
 export function TickerTape() {
-  const { quotes, ready, error } = useMarket();
+  const { quotes, ready, error } = useMarket(TICKER_ORDER);
   const items = TICKER_ORDER.map((symbol) => quotes[symbol]).filter(Boolean);
 
   return (

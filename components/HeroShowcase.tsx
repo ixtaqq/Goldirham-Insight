@@ -14,7 +14,7 @@ import { ResearchStatus } from "./ResearchStatus";
 export function HeroShowcase({ assets }: { assets: CardData[] }) {
   const [selected, setSelected] = useState(assets[0].symbol);
   const asset = assets.find((item) => item.symbol === selected)!;
-  const { quotes, error } = useMarket();
+  const { quotes, error } = useMarket(assets.map((item) => item.symbol));
   const quote = quotes[asset.symbol];
   const tick = usePriceTick(asset.symbol, quote);
   return (
