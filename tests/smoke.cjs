@@ -85,15 +85,36 @@ test("production pages, review disclosures and market routes", { timeout: 60_000
   assert.equal(alias.status, 308);
   assert.equal(new URL(alias.headers.get("location"), base).pathname + new URL(alias.headers.get("location"), base).search, "/compare/preview?symbols=NVDA&symbols=CEG");
   assert.equal((await fetch(`${base}/compare/preview?symbols=unknown`)).status, 404);
+  for (const path of ["/", "/api/quotes?symbols=NVDA"]) {
+    const { headers } = await fetch(base + path);
+    assert.match(headers.get("content-security-policy") ?? "", /default-src 'self';.*frame-ancestors 'none'/, path);
+    assert.doesNotMatch(headers.get("content-security-policy"), /unsafe-eval/, path);
+    assert.equal(headers.get("x-content-type-options"), "nosniff", path);
+    assert.equal(headers.get("referrer-policy"), "strict-origin-when-cross-origin", path);
+  }
+  const sitemap = await (await fetch(`${base}/sitemap.xml`)).text();
+  assert.equal(sitemap.match(/<loc>/g).length, ASSETS.length + CATEGORIES.length + 2);
+  assert.ok(sitemap.includes("<loc>https://goldirham-insight.vercel.app/asset/NVDA</loc>"));
+  assert.match(await (await fetch(`${base}/robots.txt`)).text(), /Disallow: \/api\/\s+Sitemap: https:\/\/goldirham-insight\.vercel\.app\/sitemap\.xml/);
+  assert.match(await (await fetch(base)).text(), /<link rel="canonical" href="https:\/\/goldirham-insight\.vercel\.app"\/>/);
   for (const asset of ASSETS) {
     const response = await fetch(`${base}/asset/${asset.symbol}`);
     assert.equal(response.status, 200, asset.symbol);
     const html = await response.text();
     assert.ok(html.includes("Research record"), asset.symbol);
     assert.ok(html.includes(asset.research ? "Reviewed" : "Not reviewed"), asset.symbol);
+    assert.ok(html.includes(`<link rel="canonical" href="https://goldirham-insight.vercel.app/asset/${asset.symbol}"/>`), asset.symbol);
   }
   for (const category of CATEGORIES) {
     assert.equal((await fetch(`${base}/category/${category.slug}`)).status, 200, category.slug);
+  }
+  // NTFS lookups ignore case, so on Windows `next start` serves the prerendered NVDA page before the redirect runs.
+  if (process.platform === "win32") {
+    t.diagnostic("Skipped the /asset/nvda redirect check on Windows.");
+  } else {
+    const caseAlias = await fetch(`${base}/asset/nvda`, { redirect: "manual" });
+    assert.equal(caseAlias.status, 308);
+    assert.equal(new URL(caseAlias.headers.get("location"), base).pathname, "/asset/NVDA");
   }
   const { quotes } = await (await fetch(`${base}/api/quotes?symbols=nvda,NVDA`)).json();
   assert.equal(quotes.length, 1);

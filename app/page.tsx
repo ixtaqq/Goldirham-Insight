@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { ASSETS, getAsset } from "@/lib/assets";
@@ -17,6 +18,8 @@ const FACTORS = [
   { title: "The safety", question: "What could go wrong?", body: "Balance-sheet strength, business-model resilience, and how the asset behaves when the market changes its mind." },
   { title: "The AI exposure", question: "How deep is the connection?", body: "How structurally tied the asset is to the build-out of artificial intelligence." },
 ];
+
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export default function HomePage() {
   const assets = [...ASSETS].sort((a, b) => {
