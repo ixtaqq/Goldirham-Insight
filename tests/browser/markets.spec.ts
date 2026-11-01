@@ -420,3 +420,27 @@ test("the hero card sways at rest and holds still under a mouse, focus or reduce
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect.poll(() => sway.evaluate((element) => getComputedStyle(element).animationName)).toBe("none");
 });
+
+test("the quote band drifts right to left and holds still for hover, focus or reduced motion", async ({ page }) => {
+  await page.route("**/api/quotes?**", (route) => route.fulfill({ json: QUOTES }));
+  await page.goto("/");
+  const band = page.getByRole("region", { name: "Market quotes" });
+  const track = band.locator(".tape-track");
+  const offset = () => track.evaluate((element) => new DOMMatrix(getComputedStyle(element).transform).m41);
+  const state = () => track.evaluate((element) => getComputedStyle(element).animationPlayState);
+  await expect(band.getByRole("link", { name: /NVDA/ })).toHaveCount(1);
+  await expect(band.locator(".tape-set[inert]")).toHaveAttribute("aria-hidden", "true");
+  await page.mouse.move(5, 850);
+  const start = await offset();
+  await expect.poll(offset).toBeLessThan(start);
+  const box = await band.boundingBox();
+  await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+  await expect.poll(state).toBe("paused");
+  await page.mouse.move(5, 850);
+  await expect.poll(state).toBe("running");
+  await band.getByRole("link", { name: /NVDA/ }).focus();
+  await expect.poll(state).toBe("paused");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect.poll(() => track.evaluate((element) => getComputedStyle(element).animationName)).toBe("none");
+  await expect(band.locator(".tape-set[inert]")).toBeHidden();
+});
