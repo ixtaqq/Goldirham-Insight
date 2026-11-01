@@ -1,5 +1,17 @@
 # Development dependency advisory and remediation
 
+## Update on 1 November 2026
+
+Next runtime is now 16.4.3. Next 16.0.0 through 16.4.0 match two critical advisories,
+[GHSA-2464-fhr4-w9xw](https://github.com/advisories/GHSA-2464-fhr4-w9xw) and
+[GHSA-673q-mjm6-r5xr](https://github.com/advisories/GHSA-673q-mjm6-r5xr), and one high
+advisory, [GHSA-p3m5-59mp-jv5r](https://github.com/advisories/GHSA-p3m5-59mp-jv5r). No
+16.3.x patch exists. The app has no `use cache`, Server Actions or `dangerouslyAllowSVG`,
+so exploitability here was not demonstrated; the version match alone justified the patch.
+`npm audit --omit=dev` reports zero vulnerabilities. The full audit reports moderate
+`minimatch` entries in the ESLint toolchain, below CI's `--audit-level=high`. The ESLint
+configuration and plugin remain at 16.3.6 with the scoped adapter unchanged.
+
 ## Update on 9 October 2026
 
 Next runtime is now 16.3.8 and `source-map-js` is 1.2.2. The full audit reports
