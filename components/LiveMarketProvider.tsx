@@ -20,6 +20,8 @@ interface MarketState {
   error: boolean;
   /** last tick direction per symbol, for flash animations */
   dir: Record<string, "up" | "down" | "flat">;
+  /** When the latest quotes arrived, for showing their age. */
+  asOf: number | null;
   /** Registers symbols to poll while the caller is mounted; returns the release function. */
   subscribe: (symbols: readonly string[]) => () => void;
 }
@@ -29,6 +31,7 @@ const MarketContext = createContext<MarketState>({
   ready: false,
   error: false,
   dir: {},
+  asOf: null,
   subscribe: () => () => {},
 });
 
@@ -41,6 +44,7 @@ export function LiveMarketProvider({ children }: { children: ReactNode }) {
   const [dir, setDir] = useState<Record<string, "up" | "down" | "flat">>({});
   const [ready, setReady] = useState(false);
   const [error, setError] = useState(false);
+  const [asOf, setAsOf] = useState<number | null>(null);
   const prev = useRef<QuoteMap>({});
   const watched = useRef(new Map<string, number>());
   const onWatchedChange = useRef(() => {});
@@ -115,6 +119,7 @@ export function LiveMarketProvider({ children }: { children: ReactNode }) {
         prev.current = map;
         setQuotes(map);
         setDir(nextDir);
+        setAsOf(Date.now());
         setReady(true);
         setError(false);
       } catch {
@@ -166,7 +171,7 @@ export function LiveMarketProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <MarketContext.Provider value={{ quotes, ready, error, dir, subscribe }}>
+    <MarketContext.Provider value={{ quotes, ready, error, dir, asOf, subscribe }}>
       {children}
     </MarketContext.Provider>
   );

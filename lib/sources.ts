@@ -206,6 +206,10 @@ export interface StockQuote {
   updatedAt: number;
 }
 
+export function hasStockFeed(): boolean {
+  return Boolean(FINNHUB_KEY);
+}
+
 /** Live stock quote via Finnhub — only when a key is configured. */
 export async function fetchStockQuote(symbol: string): Promise<StockQuote | null> {
   if (!FINNHUB_KEY) return null;

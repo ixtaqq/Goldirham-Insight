@@ -28,6 +28,7 @@ export interface CardData {
   scores: Scores | null;
   catalog?: Asset["catalog"];
   review: ReviewStatus;
+  latestRevision?: { date: string; summary: string };
   accent: string;
 }
 
@@ -46,6 +47,7 @@ export function toCardData(a: Asset): CardData {
     scores: a.scores,
     catalog: a.catalog,
     review: toReviewStatus(a.research),
+    latestRevision: a.revisions?.[0] && { date: a.revisions[0].date, summary: a.revisions[0].summary },
     accent: a.accent ?? "#598bff",
   };
 }

@@ -2,16 +2,29 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { ArrowDown, ArrowUp, Search } from "lucide-react";
+import { ArrowDown, ArrowUp, Download, Search } from "lucide-react";
 import type { CardData } from "@/lib/card";
 import { CATEGORIES } from "@/lib/categories";
 import { composite, DEFAULT_VIEW, explorerHref, exploreAssets, FACTORS, inCategory, MAX_QUERY_LENGTH, MAX_WEIGHT, parseExplorerView, RANKINGS, type ExplorerView, type Weights } from "@/lib/explorer";
+import { explorerRows, toCsv, toJson } from "@/lib/export";
+import { useWatchlist } from "@/lib/watchlist";
 import { AssetCard } from "./AssetCard";
+import { useMarket } from "./LiveMarketProvider";
+import { ResearchNotices } from "./ResearchNotices";
 
 const DRAFT_SYNC_DELAY = 250;
 
 /** Values that change on every keystroke or slider step; the URL catches up after a pause. */
 type Draft = Pick<ExplorerView, "query" | "weights">;
+
+function download(name: string, type: string, text: string) {
+  const url = URL.createObjectURL(new Blob([text], { type }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = name;
+  link.click();
+  URL.revokeObjectURL(url);
+}
 
 // The homepage is prerendered, so the default desk is the static HTML until search params are read on the client.
 export function AssetExplorer({ assets }: { assets: CardData[] }) {
@@ -68,10 +81,13 @@ function ExplorerDesk({ assets, view, adjusted = false, onDraft = () => {}, onCh
   const [expandedFor, setExpandedFor] = useState<string | null>(null);
   const href = explorerHref(view);
   const showAll = expandedFor === href;
-  const filtered = exploreAssets(assets, view);
+  const { quotes, ready } = useMarket();
+  const { symbols: saved } = useWatchlist();
+  const filtered = exploreAssets(assets, view, { quotes, saved });
+  const rows = () => explorerRows(filtered, quotes);
   const term = view.query.trim();
   // A new ranking or filter re-deals the cards; typing and blend steps update them in place.
-  const dealKey = `${view.ranking}:${view.category}:${view.tier1}`;
+  const dealKey = `${view.ranking}:${view.category}:${view.tier1}:${view.live}:${view.saved}`;
   const [deal, setDeal] = useState({ key: dealKey, changed: false });
   if (deal.key !== dealKey) setDeal({ key: dealKey, changed: true });
 
@@ -86,12 +102,23 @@ function ExplorerDesk({ assets, view, adjusted = false, onDraft = () => {}, onCh
           <div className="chip-row">
             <div className="chips" role="group" aria-label="Filter by theme">{CATEGORIES.map((item) => <button key={item.slug} className="chip" data-denom={item.slug} aria-pressed={view.category === item.slug} onClick={() => onChange({ category: view.category === item.slug ? "all" : item.slug })}>{item.name}<span className="n">{assets.filter((asset) => inCategory(asset, item.slug)).length}</span></button>)}</div>
             <div className="chips" role="group" aria-label="Filter by tier"><button className="chip" aria-pressed={view.tier1} onClick={() => onChange({ tier1: !view.tier1 })}>Tier 1 only<span className="n">{assets.filter((asset) => asset.tier === 1).length}</span></button></div>
+            <div className="chips" role="group" aria-label="Filter by availability">
+              <button className="chip" aria-pressed={view.live} onClick={() => onChange({ live: !view.live })}>Live quotes only<span className="n">{exploreAssets(assets, { ...DEFAULT_VIEW, live: true }, { quotes }).length}</span></button>
+              <button className="chip" aria-pressed={view.saved} onClick={() => onChange({ saved: !view.saved })}>Saved<span className="n">{saved.length}</span></button>
+            </div>
           </div>
         </div>
         {view.ranking === "custom" && <BlendControl weights={view.weights} reviewed={assets.some((asset) => asset.review.status === "reviewed")} onWeights={(weights) => onDraft({ weights })} />}
+        <ResearchNotices assets={assets} />
         {adjusted && <p className="notice">Some settings in this link were not recognized, so their defaults are shown.</p>}
-        <p className="desk-results" role="status">{filtered.length} {filtered.length === 1 ? "asset" : "assets"}{term ? " matching “" + term + "”" : " to explore"}</p>
-        {filtered.length ? <div className="asset-grid" key={dealKey} data-dealt={deal.changed || undefined}>{filtered.slice(0, showAll ? filtered.length : 9).map((asset) => <AssetCard key={asset.symbol} data={asset} blend={view.ranking === "custom" && asset.scores ? composite(asset.scores, view.weights) : undefined} />)}</div> : <div className="catalog-empty"><Search size={28} aria-hidden="true" /><h3>No matching research.</h3><p>Try another company, ticker, or theme.</p><button className="btn btn-primary" onClick={() => onChange(DEFAULT_VIEW)}>Clear filters</button></div>}
+        <div className="desk-results-row">
+          <p className="desk-results" role="status">{filtered.length} {filtered.length === 1 ? "asset" : "assets"}{term ? " matching “" + term + "”" : " to explore"}</p>
+          {filtered.length > 0 && <div className="desk-export">
+            <button className="btn btn-quiet btn-sm" onClick={() => download("goldirham-research-view.csv", "text/csv", toCsv(rows()))}><Download size={14} aria-hidden="true" />Export CSV</button>
+            <button className="btn btn-quiet btn-sm" onClick={() => download("goldirham-research-view.json", "application/json", toJson(rows()))}><Download size={14} aria-hidden="true" />Export JSON</button>
+          </div>}
+        </div>
+        {filtered.length ? <div className="asset-grid" key={dealKey} data-dealt={deal.changed || undefined}>{filtered.slice(0, showAll ? filtered.length : 9).map((asset) => <AssetCard key={asset.symbol} data={asset} blend={view.ranking === "custom" && asset.scores ? composite(asset.scores, view.weights) : undefined} />)}</div> : <div className="catalog-empty"><Search size={28} aria-hidden="true" /><h3>No matching research.</h3><p>{view.saved && !saved.length ? "Nothing is saved in this browser yet. Use the bookmark on any card." : view.live && !ready ? "Waiting for quotes to arrive." : view.live ? "No asset here has a live quote right now." : "Try another company, ticker, or theme."}</p><button className="btn btn-primary" onClick={() => onChange(DEFAULT_VIEW)}>Clear filters</button></div>}
         {filtered.length > 9 && <div className="desk-more"><button className="btn btn-quiet" onClick={() => setExpandedFor(showAll ? null : href)} aria-expanded={showAll}>{showAll ? "Show fewer" : "Explore all " + filtered.length + " assets"}{showAll ? <ArrowUp size={16} aria-hidden="true" /> : <ArrowDown size={16} aria-hidden="true" />}</button></div>}
       </div>
   );

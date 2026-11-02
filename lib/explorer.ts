@@ -1,6 +1,6 @@
 import type { CardData } from "@/lib/card";
 import { CATEGORIES } from "@/lib/categories";
-import type { CategorySlug, Scores } from "@/lib/types";
+import type { CategorySlug, Quote, Scores } from "@/lib/types";
 
 export type Weights = Record<keyof Scores, number>;
 
@@ -28,6 +28,10 @@ export interface ExplorerView {
   category: CategorySlug | "all";
   ranking: RankingId;
   tier1: boolean;
+  /** Only assets whose current quote comes from a market feed. */
+  live: boolean;
+  /** Only assets saved to this browser's watchlist. */
+  saved: boolean;
   /** Integers from 0 to MAX_WEIGHT with a positive sum; used only by the custom ranking. */
   weights: Weights;
 }
@@ -37,6 +41,8 @@ export const DEFAULT_VIEW: ExplorerView = {
   category: "all",
   ranking: "featured",
   tier1: false,
+  live: false,
+  saved: false,
   weights: { upside: 3, safety: 3, aiExposure: 3 },
 };
 
@@ -80,6 +86,11 @@ export function parseExplorerView(params: URLSearchParams) {
     if (tier === "1") view.tier1 = true;
     else adjusted = true;
   }
+  for (const flag of ["live", "saved"] as const) {
+    const value = params.get(flag);
+    if (value === "1") view[flag] = true;
+    else if (value !== null) adjusted = true;
+  }
   const weights = params.get("w");
   if (weights !== null) {
     const parsed = view.ranking === "custom" ? parseWeights(weights) : null;
@@ -97,6 +108,8 @@ export function explorerHref(view: ExplorerView) {
   if (view.category !== "all") params.set("category", view.category);
   if (view.ranking !== "featured") params.set("rank", view.ranking);
   if (view.tier1) params.set("tier", "1");
+  if (view.live) params.set("live", "1");
+  if (view.saved) params.set("saved", "1");
   if (view.ranking === "custom") params.set("w", FACTORS.map((factor) => view.weights[factor.key]).join("-"));
   // URLSearchParams.size is missing in Safari 16.4 and Chrome 111, which Next 16 supports.
   const query = params.toString();
@@ -113,11 +126,17 @@ export function composite(scores: Scores, weights: Weights) {
 }
 
 /** Filters and ranks cards; ties keep the incoming (featured) order because Array.sort is stable. */
-export function exploreAssets(assets: readonly CardData[], view: ExplorerView) {
+export function exploreAssets(assets: readonly CardData[], view: ExplorerView, context: { quotes?: Record<string, Quote>; saved?: readonly string[] } = {}) {
   const term = view.query.trim().toLowerCase();
+  const isLive = (symbol: string) => {
+    const source = context.quotes?.[symbol]?.source;
+    return source !== undefined && source !== "simulated";
+  };
   const matches = assets.filter((asset) =>
     (view.category === "all" || inCategory(asset, view.category)) &&
     (!view.tier1 || asset.tier === 1) &&
+    (!view.live || isLive(asset.symbol)) &&
+    (!view.saved || Boolean(context.saved?.includes(asset.symbol))) &&
     (asset.name + " " + asset.symbol + " " + asset.theme).toLowerCase().includes(term)
   );
   const weights = rankingWeights(view);

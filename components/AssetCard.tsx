@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
 import type { CardData } from "@/lib/card";
 import { getCategory } from "@/lib/categories";
 import { formatPrice, sourceLabel } from "@/lib/utils";
@@ -10,6 +9,7 @@ import { AssetMark } from "./AssetMark";
 import { QuoteChange } from "./QuoteChange";
 import { ResearchStatus } from "./ResearchStatus";
 import { ScoreBars } from "./ScoreBars";
+import { WatchButton } from "./WatchButton";
 
 const CLASS_LABEL = { stock: "Stock", etf: "ETF", crypto: "Crypto" };
 
@@ -17,7 +17,9 @@ export function AssetCard({ data, blend }: { data: CardData; blend?: number }) {
   const quote = useQuote(data.symbol);
   const { error } = useMarket();
   const theme = getCategory(data.category)?.name;
+  // The save button sits beside the link, not inside it: a button nested in a link is invalid.
   return (
+    <div className="asset-card-shell">
     <Link href={"/asset/" + data.symbol} className="asset-card" data-denom={data.category}>
       <div className="card-head">
         <AssetMark symbol={data.symbol} />
@@ -25,7 +27,6 @@ export function AssetCard({ data, blend }: { data: CardData; blend?: number }) {
           <h3 className="card-name">{data.name}</h3>
           <p className="card-meta"><span className="ticker">{data.symbol}</span>{CLASS_LABEL[data.assetClass] !== theme && <span>{CLASS_LABEL[data.assetClass]}</span>}<span className="denom-label"><i />{theme}</span></p>
         </div>
-        <ArrowUpRight size={18} className="card-go" aria-hidden="true" />
       </div>
       <p className="card-thesis">{data.tagline}</p>
       <ScoreBars scores={data.scores} variant="triad" />
@@ -42,5 +43,7 @@ export function AssetCard({ data, blend }: { data: CardData; blend?: number }) {
         <span className="card-tier">{data.tier ? "Tier " + data.tier + " research" : "Research pending"}</span>
       </div>
     </Link>
+    <WatchButton symbol={data.symbol} className="card-watch" />
+    </div>
   );
 }

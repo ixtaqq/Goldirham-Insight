@@ -12,6 +12,7 @@ const LINKS = [
   { href: "/#live", label: "Live desk" },
   { href: "/#approach", label: "Framework" },
   { href: "/compare", label: "Compare assets" },
+  { href: "/status", label: "Feed status" },
 ];
 
 export function Navbar({ assets }: { assets: SearchAsset[] }) {
