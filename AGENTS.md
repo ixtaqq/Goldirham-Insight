@@ -43,6 +43,8 @@ TypeScript checks do not establish that the UI works.
 - Omit `Asset.research` until the reviewer, actual review date, supporting sources,
   and all three score rationales are known. Missing metadata must remain visibly
   unreviewed; never invent editorial attribution or citations.
+- Omit `Asset.revisions` until a real change has been recorded with its date, author,
+  summary, and sources. See `docs/research-tools.md`.
 - Market failure logs must contain only structured provider/operation/reason/status
   fields and rejected-record counts. Do not log raw errors, request URLs, credentials,
   or response bodies. See `docs/quality-and-provenance.md`.
