@@ -47,6 +47,12 @@ Goldirham Insight is an educational research and demonstration platform covering
 | **Asset logos** | Local company, fund, and crypto marks on cards, search results, asset pages, comparisons, and share previews, with source URLs recorded for every asset. |
 | **Share previews** | Generated link previews for the site, every asset, and every comparison. They show scores and review status, never prices. |
 | **Live desk** | A market quote band where observed prices flash when they move, a feed of the day's largest moves, a featured-asset specimen panel, a framework scorecard, and header search (press `/`) that opens any asset's research directly. |
+| **Watchlist** | Save assets in the browser and filter the desk to them. Nothing is sent anywhere, and there is no sync between devices. |
+| **Live quotes filter** | Show only assets whose current quote comes from a market feed. |
+| **Feed status** | [`/status`](https://goldirham-insight.vercel.app/status) lists each quote's source, age, and why it is simulated. A closed market's last price is not treated as a fault. |
+| **Blend sensitivity** | Comparisons show who leads across all 215 weightings of the three scores. |
+| **Export** | Download the current desk view or a comparison as CSV or JSON, with source labels and the disclaimer. |
+| **Research revisions and notices** | Asset pages show recorded revisions, and readers can opt in to a notice in this browser when saved research changes. No revisions are recorded yet. |
 
 ## Scoring model
 
@@ -187,6 +193,7 @@ docs/             Design notes, reviews, and operational guides
 | [Quality and provenance](docs/quality-and-provenance.md) | Editing research records, review metadata, and diagnosing fallbacks |
 | [Shareable research views](docs/shareable-views.md) | URL parameters, history behavior, and the custom blend |
 | [Share previews](docs/share-previews.md) | Preview image routes, caching, and metadata |
+| [Research tools](docs/research-tools.md) | Watchlist, filters, feed status, revisions, blend sensitivity, export, and notices |
 | [Asset comparison](docs/asset-comparison.md) | Comparison design and verification |
 | [Imported catalog reference](docs/catalog-2026-10-12.md) | Supplied category lists, ranks, market caps, and source notes |
 | [Dependency advisory](docs/security/dependency-advisory.md) | Dependency remediation and the remaining security limitation |
