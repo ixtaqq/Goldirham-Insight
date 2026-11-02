@@ -21,6 +21,8 @@ import { ArticleBody } from "@/components/ArticleBody";
 import { AssetCard } from "@/components/AssetCard";
 import { AssetMark } from "@/components/AssetMark";
 import { ResearchRecord } from "@/components/ResearchRecord";
+import { ResearchRevisions } from "@/components/ResearchRevisions";
+import { WatchButton } from "@/components/WatchButton";
 
 export function generateStaticParams() {
   return ASSETS.map((a) => ({ symbol: a.symbol }));
@@ -91,7 +93,7 @@ export default async function AssetPage(props: { params: Promise<{ symbol: strin
               </h1>
             </div>
             <p className="asset-lede">{asset.theme} — {asset.tagline}</p>
-            <div className="asset-links"><Link href={comparisonHref([asset.symbol])} className="text-link">Compare this asset</Link></div>
+            <div className="asset-links"><Link href={comparisonHref([asset.symbol])} className="text-link">Compare this asset</Link><WatchButton symbol={asset.symbol} showLabel /></div>
             {asset.catalog && <p className="asset-catalog">{asset.catalog.marketCap ? `Reference market cap: ${asset.catalog.marketCap} · 12 Oct 2026 · supplied list, not independently verified.` : "ETF theme list · not ranked by AUM; fund size and fees not assessed."}{asset.catalog.country ? ` Country: ${asset.catalog.country}.` : ""}</p>}
           </div>
           <div className="asset-quote">
@@ -111,6 +113,7 @@ export default async function AssetPage(props: { params: Promise<{ symbol: strin
         <div className="asset-body">
           <article className="thesis">
             <ResearchRecord review={asset.research} />
+            <ResearchRevisions revisions={asset.revisions} />
             <h2 className="thesis-title"><Waypoints size={20} aria-hidden="true" />{asset.scores ? "Investment thesis" : "Catalog reference"}</h2>
             <ArticleBody markdown={asset.article} />
           </article>

@@ -26,6 +26,16 @@ export interface ResearchReview {
   scoreRationale: Record<keyof Scores, string>;
 }
 
+/** A recorded change to a thesis or its scores. Never add one without its real date, author and sources. */
+export interface ResearchRevision {
+  /** Date of the actual change, YYYY-MM-DD. */
+  date: string;
+  revisedBy: string;
+  summary: string;
+  sources: [{ title: string; url: string }, ...{ title: string; url: string }[]];
+  scoreChanges?: Partial<Record<keyof Scores, { from: number; to: number }>>;
+}
+
 export interface Asset {
   /** Ticker or coin symbol, e.g. "CEG", "BTC" */
   symbol: string;
@@ -56,6 +66,8 @@ export interface Asset {
   article: string;
   /** Omit until a review and its supporting evidence have been recorded. */
   research?: ResearchReview;
+  /** Newest first. Omit until a real change has been recorded. */
+  revisions?: ResearchRevision[];
   /** Base price used to seed the live-simulated feed (USD) */
   basePrice: number;
   /** Rough realised vol used by the simulator (annualised, e.g. 0.45) */
@@ -73,12 +85,16 @@ export interface Category {
   accent: string;
 }
 
+/** Why a quote is simulated. Set only on simulated quotes. */
+export type QuoteFallback = "no-usd-feed" | "no-feed-key" | "feed-unavailable";
+
 export interface Quote {
   symbol: string;
   price: number;
   change: number;
   changePct: number;
   source: "coingecko" | "finnhub" | "simulated";
+  fallback?: QuoteFallback;
   currency: string;
   marketCap?: number;
   high?: number;

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ASSETS, getAsset } from "@/lib/assets";
 import { round, simulateQuote } from "@/lib/market";
-import { fetchCryptoQuotes, fetchStockQuote } from "@/lib/sources";
-import type { Asset, Quote } from "@/lib/types";
+import { fetchCryptoQuotes, fetchStockQuote, hasStockFeed } from "@/lib/sources";
+import type { Asset, Quote, QuoteFallback } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -46,7 +46,8 @@ export async function GET(req: NextRequest) {
         };
       }
       // Real stock from Finnhub (only if a key is configured)
-      if (a.assetClass !== "crypto" && /^[A-Z]+(?:-[A-Z])?$/.test(a.symbol)) {
+      const usListed = /^[A-Z]+(?:-[A-Z])?$/.test(a.symbol);
+      if (a.assetClass !== "crypto" && usListed) {
         const fh = await fetchStockQuote(a.symbol);
         if (fh) {
           return {
@@ -61,7 +62,8 @@ export async function GET(req: NextRequest) {
         }
       }
       // Deterministic live-simulated fallback
-      return simulateQuote(a.symbol, a.basePrice, a.vol);
+      const fallback: QuoteFallback = a.assetClass === "crypto" ? "feed-unavailable" : !usListed ? "no-usd-feed" : hasStockFeed() ? "feed-unavailable" : "no-feed-key";
+      return { ...simulateQuote(a.symbol, a.basePrice, a.vol), fallback };
     })
   );
 

@@ -5,7 +5,8 @@ import { AssetMark } from "@/components/AssetMark";
 import { ResearchRecord } from "@/components/ResearchRecord";
 import { ASSETS } from "@/lib/assets";
 import { getCategory } from "@/lib/categories";
-import { comparisonHref, comparisonPreviewHref, MAX_COMPARISON_ASSETS, resolveComparison } from "@/lib/compare";
+import { blendSensitivity, comparisonExportHref, comparisonHref, comparisonPreviewHref, MAX_COMPARISON_ASSETS, resolveComparison } from "@/lib/compare";
+import { MAX_WEIGHT } from "@/lib/explorer";
 import { SHARE_IMAGE_SIZE } from "@/lib/share-image";
 
 const DESCRIPTION = "Compare up to three assets by editorial scores, thesis, risks, and research review status.";
@@ -39,6 +40,7 @@ export default async function ComparePage({ searchParams }: {
 }) {
   const { assets, adjusted } = resolveComparison((await searchParams).symbols);
   const symbols = assets.map((asset) => asset.symbol);
+  const sensitivity = blendSensitivity(assets);
 
   return (
     <div className="container-x compare-page">
@@ -134,6 +136,29 @@ export default async function ComparePage({ searchParams }: {
               </tbody>
             </table>
           </div>
+          <div className="compare-export">
+            <a href={comparisonExportHref(symbols, "csv")} className="text-link" download>Export CSV</a>
+            <a href={comparisonExportHref(symbols, "json")} className="text-link" download>Export JSON</a>
+          </div>
+          {sensitivity ? (
+            <section className="sensitivity" aria-labelledby="sensitivity-heading">
+              <h3 id="sensitivity-heading">How the order changes with the weights</h3>
+              <p>Across all {sensitivity.total} whole-number weightings of the three scores from 0 to {MAX_WEIGHT}: {sensitivity.leaders.map((leader) => `${leader.symbol} leads in ${leader.wins}`).join(", ")}{sensitivity.ties ? `, and ${sensitivity.ties} tie` : ""}. Scores are editorial opinions, so this shows how much the order depends on what you value, not what will happen.</p>
+              <div className="compare-scroll" role="region" aria-label="Order under simple weightings" tabIndex={0}>
+                <table className="sensitivity-table"><caption className="sr-only">Order of these assets under simple weightings</caption>
+                  <thead><tr><th scope="col">Weighting</th>{sensitivity.leaders.map((leader, index) => <th scope="col" key={leader.symbol}>Rank {index + 1}</th>)}</tr></thead>
+                  <tbody>
+                    {sensitivity.blends.map((blend) => (
+                      <tr key={blend.label}>
+                        <th scope="row">{blend.label}</th>
+                        {blend.order.map((item) => <td key={item.symbol}><span className="ticker">{item.symbol}</span> {item.value.toFixed(1)}</td>)}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          ) : assets.length > 1 && <p className="compare-hint">The order under different weights needs at least two assets with scores.</p>}
         </section>
       )}
     </div>

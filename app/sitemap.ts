@@ -8,6 +8,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     "/",
     "/compare",
+    "/status",
     ...CATEGORIES.map((category) => `/category/${category.slug}`),
     ...ASSETS.map((asset) => `/asset/${asset.symbol}`),
   ].map((path) => ({ url: new URL(path, SITE_URL).href }));

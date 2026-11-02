@@ -25,7 +25,7 @@ test("select three assets, share, remove, navigate history, and clear", async ({
   }
   await page.getByRole("button", { name: "Compare assets", exact: true }).click();
   await expect(page).toHaveURL(comparisonUrl);
-  const table = page.getByRole("table");
+  const table = page.getByRole("table", { name: /^Asset research comparison/ });
   await expect(table.getByRole("columnheader")).toHaveCount(4);
   await expect(table.getByText("Not reviewed", { exact: true })).toHaveCount(3);
   await expect(table.getByRole("row", { name: /^Upside / })).toContainText("8.0 / 10");
@@ -50,12 +50,12 @@ test("select three assets, share, remove, navigate history, and clear", async ({
 test("shared URLs normalize invalid, duplicate, and excess choices visibly", async ({ page }) => {
   await page.goto("/compare?symbols=unknown&symbols=nvda&symbols=NVDA&symbols=btc,CEG,MSFT");
   await expect(page.getByRole("status").filter({ hasText: "Only the first three" })).toBeVisible();
-  await expect(page.getByRole("table").getByRole("columnheader")).toHaveCount(4);
+  await expect(page.getByRole("table", { name: /^Asset research comparison/ }).getByRole("columnheader")).toHaveCount(4);
   for (const [index, symbol] of ["NVDA", "BTC", "CEG"].entries()) {
     await expect(page.getByLabel(`Asset ${index + 1}`, { exact: true })).toHaveValue(symbol);
   }
   await page.goto("/compare?symbols=unknown");
-  await expect(page.getByRole("table")).toHaveCount(0);
+  await expect(page.getByRole("table", { name: /^Asset research comparison/ })).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "Start with an asset you know." })).toBeVisible();
 });
 
@@ -66,7 +66,7 @@ test("asset page opens a preselected comparison and final removal returns to emp
   await expect(page.getByText("Choose another asset above to compare it with NVDA.")).toBeVisible();
   await page.getByRole("link", { name: "Remove NVDA", exact: true }).click();
   await expect(page).toHaveURL("/compare");
-  await expect(page.getByRole("table")).toHaveCount(0);
+  await expect(page.getByRole("table", { name: /^Asset research comparison/ })).toHaveCount(0);
 });
 
 for (const width of [320, 768, 1001, 1440]) {
@@ -77,7 +77,7 @@ for (const width of [320, 768, 1001, 1440]) {
     await page.getByRole("link", { name: "Compare assets", exact: true }).filter({ visible: true }).click();
     await expect(page).toHaveURL("/compare");
     await page.goto(comparisonUrl);
-    await expect(page.getByRole("table").getByText("Not reviewed", { exact: true })).toHaveCount(3);
+    await expect(page.getByRole("table", { name: /^Asset research comparison/ }).getByText("Not reviewed", { exact: true })).toHaveCount(3);
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     const scroller = page.getByRole("region", { name: "Asset research comparison", exact: true });
     await scroller.focus();
@@ -90,7 +90,7 @@ for (const width of [320, 768, 1001, 1440]) {
       if (width === 320) {
         const visibleWidth = await scroller.evaluate((element) => element.clientWidth);
         const labelWidth = (await page.getByRole("rowheader", { name: "Review status", exact: true }).boundingBox())!.width;
-        const assetWidth = (await page.getByRole("table").getByRole("columnheader").nth(1).boundingBox())!.width;
+        const assetWidth = (await page.getByRole("table", { name: /^Asset research comparison/ }).getByRole("columnheader").nth(1).boundingBox())!.width;
         expect(assetWidth + labelWidth).toBeLessThanOrEqual(visibleWidth + 1);
       }
     }
@@ -113,10 +113,10 @@ test.describe("without JavaScript", () => {
     await page.getByLabel("Asset 1", { exact: true }).selectOption("NVDA");
     await page.getByLabel("Asset 2", { exact: true }).selectOption("BTC");
     await page.getByRole("button", { name: "Compare assets", exact: true }).click();
-    await expect(page.getByRole("table").getByRole("columnheader")).toHaveCount(3);
-    await expect(page.getByRole("table").getByText("Not reviewed", { exact: true })).toHaveCount(2);
+    await expect(page.getByRole("table", { name: /^Asset research comparison/ }).getByRole("columnheader")).toHaveCount(3);
+    await expect(page.getByRole("table", { name: /^Asset research comparison/ }).getByText("Not reviewed", { exact: true })).toHaveCount(2);
     await page.getByRole("link", { name: "Remove BTC", exact: true }).click();
     await expect(page).toHaveURL("/compare?symbols=NVDA");
-    await expect(page.getByRole("table").getByRole("columnheader")).toHaveCount(2);
+    await expect(page.getByRole("table", { name: /^Asset research comparison/ }).getByRole("columnheader")).toHaveCount(2);
   });
 });

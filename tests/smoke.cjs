@@ -93,8 +93,14 @@ test("production pages, review disclosures and market routes", { timeout: 60_000
     assert.equal(headers.get("referrer-policy"), "strict-origin-when-cross-origin", path);
   }
   const sitemap = await (await fetch(`${base}/sitemap.xml`)).text();
-  assert.equal(sitemap.match(/<loc>/g).length, ASSETS.length + CATEGORIES.length + 2);
+  assert.equal(sitemap.match(/<loc>/g).length, ASSETS.length + CATEGORIES.length + 3);
   assert.ok(sitemap.includes("<loc>https://goldirham-insight.vercel.app/asset/NVDA</loc>"));
+  assert.ok(sitemap.includes("<loc>https://goldirham-insight.vercel.app/status</loc>"));
+  assert.match(await (await fetch(`${base}/status`)).text(), /Feed status\./);
+  const comparisonExport = await fetch(`${base}/compare/export?symbols=NVDA&symbols=CEG`);
+  assert.equal(comparisonExport.status, 200);
+  assert.match(comparisonExport.headers.get("content-disposition"), /goldirham-comparison-NVDA-CEG\.csv/);
+  assert.match(await comparisonExport.text(), /not financial advice/);
   assert.match(await (await fetch(`${base}/robots.txt`)).text(), /Disallow: \/api\/\s+Sitemap: https:\/\/goldirham-insight\.vercel\.app\/sitemap\.xml/);
   assert.match(await (await fetch(base)).text(), /<link rel="canonical" href="https:\/\/goldirham-insight\.vercel\.app"\/>/);
   for (const asset of ASSETS) {
@@ -130,5 +136,5 @@ test("production pages, review disclosures and market routes", { timeout: 60_000
     assert.equal(chart.symbol, symbol);
     assert.ok(chart.points.length > 1 && chart.points.every((point) => point.value > 0), symbol);
   }
-  t.diagnostic(`${ASSETS.length + CATEGORIES.length + 2} pages including comparison, empty and selected comparison states, ${ASSETS.length} asset review disclosures, five chart ranges and quote deduplication passed.`);
+  t.diagnostic(`${ASSETS.length + CATEGORIES.length + 3} pages including feed status, comparison, empty and selected comparison states, ${ASSETS.length} asset review disclosures, five chart ranges and quote deduplication passed.`);
 });
