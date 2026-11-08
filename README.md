@@ -49,7 +49,7 @@ Goldirham Insight is an educational research and demonstration platform covering
 | **Live desk** | A market quote band where observed prices flash when they move, a feed of the day's largest moves, a featured-asset specimen panel, a framework scorecard, and header search (press `/`) that opens any asset's research directly. |
 | **Watchlist** | Save assets in the browser and filter the desk to them. Nothing is sent anywhere, and there is no sync between devices. |
 | **Live quotes filter** | Show only assets whose current quote comes from a market feed. |
-| **Feed status** | [`/status`](https://goldirham-insight.vercel.app/status) lists each quote's source, age, and why it is simulated. A closed market's last price is not treated as a fault. |
+| **Feed status** | [`/status`](https://goldirham-insight.vercel.app/status) lists each quote's source, age, and why it is simulated. A closed market's last price, including on scheduled NYSE holidays and 1:00 pm early closes, is not treated as a fault. |
 | **Blend sensitivity** | Comparisons show who leads across all 215 weightings of the three scores. |
 | **Export** | Download the current desk view or a comparison as CSV or JSON, with source labels and the disclaimer. |
 | **Research revisions and notices** | Asset pages show recorded revisions, and readers can opt in to a notice in this browser when saved research changes. No revisions are recorded yet. |

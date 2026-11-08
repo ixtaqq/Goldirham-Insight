@@ -24,11 +24,11 @@ A shared `saved=1` link shows the recipient's own watchlist, not the sender's.
 | State | Meaning |
 | --- | --- |
 | Current | Observed in the last 30 minutes |
-| Market closed | A stock quote outside the regular US session, 9:30 to 16:00 New York time. This is expected. |
+| Market closed | A stock quote outside the regular NYSE session, 9:30 to 16:00 New York time, or 13:00 on scheduled early closes, and on weekends and scheduled NYSE holidays. This is expected. |
 | Older than expected | A crypto quote older than 30 minutes, or a stock quote older than 30 minutes during the session |
 | Simulated | An illustration, with the reason no feed supplied it |
 
-Market holidays are not tracked, so a stock quote on a holiday reads "Older than expected. Possibly a holiday or a trading halt."
+Scheduled NYSE holidays and 1:00 pm early closes are computed from NYSE's observance rules. Unscheduled closures, such as a national day of mourning, are not known in advance, so a stock quote on one reads "Older than expected. Possibly a trading halt or an unscheduled closure."
 
 The quote API sets `fallback` on simulated quotes:
 
