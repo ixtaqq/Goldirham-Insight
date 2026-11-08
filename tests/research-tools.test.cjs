@@ -187,6 +187,45 @@ test("revision history invents nothing and shows recorded evidence", () => {
   for (const text of ["2026-10-01", "Test reviewer", "Raised safety", "Safety: 7.0 to 7.5", 'href="https://example.com/filing"']) assert.ok(html.includes(text), text);
 });
 
+test("the revisions feed lists recorded revisions newest first with their real details, escaped", () => {
+  const { revisionFeed } = load("app/revisions.xml/feed.ts");
+  const site = new URL("https://example.test");
+  const revision = (date, summary, sources = [{ title: "Filing", url: "https://example.com/filing?a=1&b=2" }]) => ({ date, revisedBy: "Test reviewer", summary, sources });
+  const xml = revisionFeed([
+    { symbol: "NVDA", name: "NVIDIA", revisions: [revision("2026-10-01", "Raised safety"), revision("2026-08-15", "First review")] },
+    { symbol: "CEG", name: "Constellation <Energy> & Co", revisions: [{ ...revision("2026-09-20", 'Cut "upside" <script>alert(1)</script>', [{ title: "A&B", url: "javascript:alert(1)" }]), revisedBy: "O'Hara & Lee" }] },
+    { symbol: "BTC", name: "Bitcoin" },
+  ], site);
+  assert.ok(xml.startsWith('<?xml version="1.0" encoding="utf-8"?>\n<rss version="2.0"'));
+  assert.deepEqual([...xml.matchAll(/<dc:date>([^<]+)<\/dc:date>/g)].map((match) => match[1]), ["2026-10-01", "2026-09-20", "2026-08-15"]);
+  assert.deepEqual([...xml.matchAll(/<link>([^<]+)<\/link>/g)].map((match) => match[1]), ["https://example.test/", "https://example.test/asset/NVDA", "https://example.test/asset/CEG", "https://example.test/asset/NVDA"]);
+  assert.equal(new Set([...xml.matchAll(/<guid isPermaLink="false">([^<]+)<\/guid>/g)].map((match) => match[1])).size, 3);
+  assert.ok(xml.includes("<title>NVIDIA (NVDA): Raised safety</title>"));
+  assert.ok(xml.includes("<dc:creator>Test reviewer</dc:creator>"));
+  assert.ok(xml.includes("<dc:creator>O&apos;Hara &amp; Lee</dc:creator>"));
+  assert.ok(xml.includes("<title>Constellation &lt;Energy&gt; &amp; Co (CEG): Cut &quot;upside&quot; &lt;script&gt;alert(1)&lt;/script&gt;</title>"));
+  assert.ok(xml.includes("&lt;a href=&quot;https://example.com/filing?a=1&amp;amp;b=2&quot;&gt;Filing&lt;/a&gt;"));
+  assert.ok(xml.includes("&lt;li&gt;A&amp;amp;B&lt;/li&gt;"));
+  assert.doesNotMatch(xml, /<script|javascript:|href=&quot;javascript/);
+  assert.doesNotMatch(xml, /pubDate|lastBuildDate|<updated>/);
+});
+
+test("the revisions feed is valid and dateless while nothing is recorded", async () => {
+  const { revisionFeed } = load("app/revisions.xml/feed.ts");
+  const empty = revisionFeed([{ symbol: "NVDA", name: "NVIDIA" }], new URL("https://example.test"));
+  assert.match(empty, /<channel>[\s\S]*<title>[^<]+<\/title>[\s\S]*<link>https:\/\/example\.test\/<\/link>[\s\S]*<description>[^<]+<\/description>[\s\S]*<\/channel>\s*<\/rss>\s*$/);
+  assert.ok(empty.includes('<atom:link href="https://example.test/revisions.xml" rel="self" type="application/rss+xml"/>'));
+  assert.doesNotMatch(empty, /<item>|\d{4}-\d{2}-\d{2}|pubDate|lastBuildDate/);
+  const route = load("app/revisions.xml/route.ts");
+  assert.equal(route.dynamic, "force-static");
+  const response = await route.GET();
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("content-type"), "application/rss+xml; charset=utf-8");
+  const xml = await response.text();
+  assert.ok(xml.includes("<link>https://goldirham-insight.vercel.app/</link>"));
+  assert.equal(xml.includes("<item>"), ASSETS.some((asset) => asset.revisions?.length));
+});
+
 test("any recorded revision has a real date, author, summary and source", () => {
   for (const asset of ASSETS) {
     for (const revision of asset.revisions ?? []) {

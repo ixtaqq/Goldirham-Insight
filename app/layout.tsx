@@ -6,6 +6,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ASSETS } from "@/lib/assets";
 import { SITE_URL } from "@/lib/site";
+import { REVISION_FEED_PATH } from "./revisions.xml/feed";
 
 const sans = localFont({
   src: "./fonts/manrope-latin-variable.woff2",
@@ -53,6 +54,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${sans.variable} ${mono.variable}`}>
+      {/* Not metadata.alternates: every page sets its own alternates.canonical, which replaces the layout's alternates. */}
+      <head><link rel="alternate" type="application/rss+xml" title="Goldirham Insight research revisions" href={REVISION_FEED_PATH} /></head>
       <body>
         <LiveMarketProvider>
           <a href="#main-content" className="skip-link">Skip to content</a>
