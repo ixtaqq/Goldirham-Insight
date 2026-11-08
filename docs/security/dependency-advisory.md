@@ -1,5 +1,23 @@
 # Development dependency advisory and remediation
 
+## Update on 8 November 2026
+
+Next runtime and `eslint-config-next` are now 16.4.5. `@next/eslint-plugin-next@16.4.5`
+still depends on `fast-glob` 3.3.1, and its only use is still
+`globSync(rootDir, { onlyDirectories: true })` in `get-root-dirs.js`, so the override moved
+to `@next/eslint-plugin-next@16.4.5` with the adapter unchanged. `npm ls fast-glob` resolves
+only to `tools/next-eslint-glob`, and the three adapter regression tests pass.
+`npm audit --omit=dev` reports zero vulnerabilities. The full audit still reports 8 moderate
+`minimatch` entries through `typescript-eslint` and ESLint 9, below CI's
+`--audit-level=high`; the lint upgrade did not change them.
+
+`lightweight-charts` moved to 5.2.1 (`addAreaSeries` became `addSeries(AreaSeries, …)`) and
+`lucide-react` to 1.68.0 (every imported icon still exists). TypeScript stays at 5: 7.x
+ships without the JavaScript API that `tests/load-ts.cjs` and the Next build type check use.
+
+npm 10 drops the `libc` fields from lockfile entries when it rewrites the lockfile. They were
+restored from the previous lockfile so Linux installs keep choosing the glibc or musl binary.
+
 ## Update on 1 November 2026
 
 Next runtime is now 16.4.3. Next 16.0.0 through 16.4.0 match two critical advisories,
