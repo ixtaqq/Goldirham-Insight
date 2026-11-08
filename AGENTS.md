@@ -13,7 +13,7 @@ strict TypeScript, Tailwind CSS 4, and lightweight-charts 4.
 - Follow existing double quotes, semicolons, and the `@/*` root import alias.
 - Tailwind 4 loads the existing theme via `@config` in `app/globals.css`.
   Keep element resets in `@layer base` so they do not override utility classes.
-- The Next ESLint glob adapter is scoped to plugin 16.3.6. Recheck it when updating
+- The Next ESLint glob adapter is scoped to plugin 16.4.5. Recheck it when updating
   Next lint tooling; see `docs/security/dependency-advisory.md`.
 - Read the relevant installed Next.js docs under `node_modules/next/dist/docs/`
   before changing framework behavior.
