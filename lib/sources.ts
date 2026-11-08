@@ -18,6 +18,11 @@ const REQUEST_TIMEOUT_MS = 5000;
 const WINDOW_MS = 60_000;
 const MAX_PENDING = 32;
 const MAX_CACHE = 128;
+// The 145 Finnhub-eligible catalog stocks take five 30-request minutes to rotate. Fifteen minutes leaves
+// room for single-asset pages spending part of the budget, and stays under the 30-minute age at which an
+// in-session stock quote reads as older than expected.
+const STOCK_RETENTION_MS = 15 * 60_000;
+const MAX_RETAINED_STOCKS = 256;
 
 type CacheEntry = { expiresAt: number; data: unknown };
 const cache = new Map<string, CacheEntry>();
@@ -206,8 +211,39 @@ export interface StockQuote {
   updatedAt: number;
 }
 
+// Last successful Finnhub quote per symbol, in the order observed.
+const retainedStocks = new Map<string, { quote: StockQuote; observedAt: number }>();
+
+function retainStock(symbol: string, quote: StockQuote) {
+  const now = Date.now();
+  retainedStocks.delete(symbol);
+  retainedStocks.set(symbol, { quote, observedAt: now });
+  for (const [oldest, entry] of retainedStocks) {
+    if (retainedStocks.size <= MAX_RETAINED_STOCKS && now - entry.observedAt <= STOCK_RETENTION_MS) break;
+    retainedStocks.delete(oldest);
+  }
+}
+
+function retainedStock(symbol: string): StockQuote | null {
+  const entry = retainedStocks.get(symbol);
+  return entry && Date.now() - entry.observedAt <= STOCK_RETENTION_MS ? entry.quote : null;
+}
+
 export function hasStockFeed(): boolean {
   return Boolean(FINNHUB_KEY);
+}
+
+/**
+ * Stock quotes for many symbols. Symbols never observed, then the longest unobserved, get the request
+ * budget first; a symbol the budget or provider cannot refresh keeps its last observed quote for
+ * STOCK_RETENTION_MS.
+ */
+export async function fetchStockQuotes(symbols: string[]): Promise<Record<string, StockQuote>> {
+  const ordered = [...new Set(symbols)].sort(
+    (a, b) => (retainedStocks.get(a)?.observedAt ?? 0) - (retainedStocks.get(b)?.observedAt ?? 0)
+  );
+  const quotes = await Promise.all(ordered.map(fetchStockQuote));
+  return Object.fromEntries(ordered.flatMap((symbol, i) => (quotes[i] ? [[symbol, quotes[i]]] : [])));
 }
 
 /** Live stock quote via Finnhub — only when a key is configured. */
@@ -229,8 +265,10 @@ export async function fetchStockQuote(symbol: string): Promise<StockQuote | null
         !Number.isFinite(j.d) || !Number.isFinite(j.dp) ||
         !Number.isSafeInteger(j.t) || !isQuoteTimestamp(j.t * 1000)
       ) throw new ProviderResponseError("invalid-response");
-      return { price: j.c, change: j.d, changePct: round(j.dp, 2), updatedAt: j.t * 1000 };
-    });
+      const quote = { price: j.c, change: j.d, changePct: round(j.dp, 2), updatedAt: j.t * 1000 };
+      retainStock(symbol, quote);
+      return quote;
+    }) ?? retainedStock(symbol);
   } catch {
     return null;
   }

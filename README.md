@@ -115,6 +115,8 @@ New catalog entries use a generic **$100 demo seed** when live data is unavailab
 
 Provider responses are validated before caching, and cache misses share one in-flight request. Cache hits do not use the attempt budget. Denied attempts return labeled simulation and are not cached as failures. These caps apply per process, not across server instances.
 
+All pages share one CoinGecko batch for the 51 crypto assets. With a Finnhub key, the 145 eligible stocks rotate through the 30-per-minute budget, the ones observed longest ago first, and each keeps its last observed quote with its real observation time for up to 15 minutes. The whole catalog is live within about five minutes.
+
 Failure logs contain only structured provider, operation, reason, and status fields. They never include raw errors, request URLs, credentials, or response bodies. To summarize exported logs, run `npm run market:health -- logs.ndjson`.
 
 ## Tech stack

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ASSETS, getAsset } from "@/lib/assets";
 import { round, simulateQuote } from "@/lib/market";
-import { fetchCryptoQuotes, fetchStockQuote, hasStockFeed } from "@/lib/sources";
+import { fetchCryptoQuotes, fetchStockQuotes, hasStockFeed } from "@/lib/sources";
 import type { Asset, Quote, QuoteFallback } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -26,45 +26,42 @@ export async function GET(req: NextRequest) {
     .filter((a): a is Asset => Boolean(a));
 
   const cg = assets.some((a) => a.coingeckoId) ? await fetchCryptoQuotes(CRYPTO_IDS) : {};
+  const isUsListed = (a: Asset) => a.assetClass !== "crypto" && /^[A-Z]+(?:-[A-Z])?$/.test(a.symbol);
+  const stocks = await fetchStockQuotes(assets.filter(isUsListed).map((a) => a.symbol));
 
-  const quotes: Quote[] = await Promise.all(
-    assets.map(async (a): Promise<Quote> => {
-      // Real crypto from CoinGecko
-      if (a.coingeckoId && cg && cg[a.coingeckoId]) {
-        const c = cg[a.coingeckoId];
-        const prevClose = c.price / (1 + c.changePct / 100);
-        return {
-          symbol: a.symbol,
-          price: round(c.price),
-          change: round(c.price - prevClose),
-          changePct: c.changePct,
-          source: "coingecko",
-          currency: "USD",
-          marketCap: c.marketCap,
-          updatedAt: c.updatedAt,
-        };
-      }
-      // Real stock from Finnhub (only if a key is configured)
-      const usListed = /^[A-Z]+(?:-[A-Z])?$/.test(a.symbol);
-      if (a.assetClass !== "crypto" && usListed) {
-        const fh = await fetchStockQuote(a.symbol);
-        if (fh) {
-          return {
-            symbol: a.symbol,
-            price: round(fh.price),
-            change: round(fh.change),
-            changePct: fh.changePct,
-            source: "finnhub",
-            currency: "USD",
-            updatedAt: fh.updatedAt,
-          };
-        }
-      }
-      // Deterministic live-simulated fallback
-      const fallback: QuoteFallback = a.assetClass === "crypto" ? "feed-unavailable" : !usListed ? "no-usd-feed" : hasStockFeed() ? "feed-unavailable" : "no-feed-key";
-      return { ...simulateQuote(a.symbol, a.basePrice, a.vol), fallback };
-    })
-  );
+  const quotes: Quote[] = assets.map((a): Quote => {
+    // Real crypto from CoinGecko
+    if (a.coingeckoId && cg && cg[a.coingeckoId]) {
+      const c = cg[a.coingeckoId];
+      const prevClose = c.price / (1 + c.changePct / 100);
+      return {
+        symbol: a.symbol,
+        price: round(c.price),
+        change: round(c.price - prevClose),
+        changePct: c.changePct,
+        source: "coingecko",
+        currency: "USD",
+        marketCap: c.marketCap,
+        updatedAt: c.updatedAt,
+      };
+    }
+    // Real stock from Finnhub (only if a key is configured)
+    const fh = stocks[a.symbol];
+    if (fh) {
+      return {
+        symbol: a.symbol,
+        price: round(fh.price),
+        change: round(fh.change),
+        changePct: fh.changePct,
+        source: "finnhub",
+        currency: "USD",
+        updatedAt: fh.updatedAt,
+      };
+    }
+    // Deterministic live-simulated fallback
+    const fallback: QuoteFallback = a.assetClass === "crypto" ? "feed-unavailable" : !isUsListed(a) ? "no-usd-feed" : hasStockFeed() ? "feed-unavailable" : "no-feed-key";
+    return { ...simulateQuote(a.symbol, a.basePrice, a.vol), fallback };
+  });
 
   return NextResponse.json(
     { quotes, ts: Date.now() },

@@ -168,6 +168,16 @@ entries are pruned on access, and capacity eviction removes the least recently
 read entry. Successful quotes cache for 60 seconds; charts cache for 30 seconds.
 Failed quote requests retain the existing 10–12 second retry delay.
 
+The 145 Finnhub-eligible catalog stocks need more than one minute's budget, so
+the quotes route rotates them. Stocks with no observed quote go first, then the
+ones observed longest ago. A stock that is skipped this minute or whose Finnhub
+request fails keeps its last observed quote, with the provider's own observation
+time, for up to 15 minutes. A full rotation takes five minutes, so the extra time
+covers budget spent by single-asset pages. Fifteen minutes also stays under the
+30-minute age at which an in-session stock quote reads as older than expected.
+After that the stock returns to the labelled simulation. At most 256 retained
+quotes are kept, and entries older than 15 minutes are dropped.
+
 These are conservative application policies, not provider subscription quotas.
 Multiple server instances each have their own budget. A denied request returns
 the existing labeled simulation and does not create a cached failure. Admission
