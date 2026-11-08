@@ -126,7 +126,7 @@ Failure logs contain only structured provider, operation, reason, and status fie
 | Framework | [Next.js 16](https://nextjs.org/) App Router, React 19 |
 | Language | TypeScript (strict) |
 | Styling | Tailwind CSS 4 via PostCSS; design tokens and the light theme in `app/globals.css` (see [DESIGN.md](DESIGN.md)) |
-| Charts | TradingView Lightweight Charts 4 |
+| Charts | TradingView Lightweight Charts 5 |
 | Icons | Lucide |
 | Share images | `next/og` `ImageResponse` |
 | Testing | Node test runner, Playwright (Chromium) |
