@@ -183,7 +183,7 @@ Multiple server instances each have their own budget. A denied request returns
 the existing labeled simulation and does not create a cached failure. Admission
 denials emit `reason=rate-limit` at most once per provider per minute. Those
 warnings are sampled events, so their count is not the total number of denials.
-The quotes route rejects a `symbols` query longer than 1024 characters with HTTP
+The quotes route rejects a `symbols` query longer than 4096 characters with HTTP
 400 before contacting providers.
 
 ## Summarize exported fallback logs
