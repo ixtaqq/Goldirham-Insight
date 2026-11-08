@@ -109,6 +109,21 @@ test("an exhausted crypto budget still serves the route's labeled simulated fall
   assert.equal(calls, 5);
 });
 
+test("crypto quotes for different pages share one CoinGecko request instead of one per page", async () => {
+  let calls = 0;
+  const { api, advance } = setup(async (url) => {
+    calls++;
+    const ids = new URL(url).searchParams.get("ids").split(",");
+    return Response.json(Object.fromEntries(ids.map((id) => [id, crypto])));
+  }, "app/api/quotes/route.ts");
+  for (const symbol of ["BTC", "ETH", "SOL", "XRP", "DOGE", "ADA"]) {
+    const { quotes } = await (await api.GET(new NextRequest(`http://localhost/api/quotes?symbols=${symbol}`))).json();
+    assert.equal(quotes[0].source, "coingecko", symbol);
+    advance(5_000);
+  }
+  assert.equal(calls, 1);
+});
+
 test("oversized symbol inputs return an actionable error without contacting providers", async () => {
   const { api } = setup(async () => { throw new Error("Unexpected fetch"); }, "app/api/quotes/route.ts");
   const response = await api.GET(new NextRequest(`http://localhost/api/quotes?symbols=${"A".repeat(4097)}`));
