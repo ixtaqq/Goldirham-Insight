@@ -1,7 +1,7 @@
 # Goldirham
 
 Investment research demo built with Next.js 16 App Router, React 19,
-strict TypeScript, Tailwind CSS 4, and lightweight-charts 4.
+strict TypeScript, Tailwind CSS 4, and lightweight-charts 5.
 
 ## Layout and conventions
 

@@ -16,7 +16,7 @@
     "typecheck": "tsc --noEmit --incremental false"
   },
   "dependencies": {
-    "lightweight-charts": "^4.2.1",
+    "lightweight-charts": "^5.2.1",
     "lucide-react": "^0.453.0",
     "next": "16.4.5",
     "react": "19.2.8",

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
+  AreaSeries,
   createChart,
   ColorType,
   type IChartApi,
@@ -102,7 +103,7 @@ export function LiveChart({ symbol }: { symbol: string }) {
       handleScale: { mouseWheel: false },
     });
 
-    const series = chart.addAreaSeries({
+    const series = chart.addSeries(AreaSeries, {
       lineWidth: 2,
       priceLineVisible: false,
       lastValueVisible: true,
