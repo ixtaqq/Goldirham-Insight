@@ -15,7 +15,7 @@ The bookmark on each card and asset page saves that asset to this browser's `loc
 
 A shared `saved=1` link shows the recipient's own watchlist, not the sender's.
 
-"Live quotes only" can only show what the feeds supply. The homepage requests every asset, and Finnhub is capped at 30 calls per minute per server process, so with a key the desk shows about 81 live quotes: 51 crypto and 30 stocks. Asset pages request only their own few assets. "Today's largest moves" already ranks observed quotes only, so it has no toggle.
+"Live quotes only" can only show what the feeds supply. The homepage requests every asset, and Finnhub is capped at 30 calls per minute per server process, so with a key the stocks rotate through that budget, the ones observed longest ago first. Each keeps its last observed quote for up to 15 minutes between refreshes, so all 145 eligible stocks and 51 crypto assets are live within about five minutes. Asset pages request only their own few assets. "Today's largest moves" already ranks observed quotes only, so it has no toggle.
 
 ## Feed status
 

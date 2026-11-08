@@ -11,8 +11,102 @@ const history = { prices: [[timestamp * 1000, 100], [(timestamp + 60) * 1000, 10
 function setup(fetch, entry = "lib/sources.ts") {
   let now = timestamp * 1000;
   class Clock extends Date { static now() { return now; } }
-  return { api: load(entry, { fetch, clock: Clock, env: { FINNHUB_API_KEY: "fixture-only" } }), advance: (ms) => { now += ms; } };
+  return { api: load(entry, { fetch, clock: Clock, env: { FINNHUB_API_KEY: "fixture-only" } }), advance: (ms) => { now += ms; }, now: () => now };
 }
+
+async function getQuotes(api, query = "") {
+  return (await (await api.GET(new NextRequest(`http://localhost/api/quotes${query}`))).json()).quotes;
+}
+
+// Finnhub reports each quote as observed one second before it is fetched, so a served quote's
+// updatedAt shows which fetch it came from.
+function quoteProvider(now, { fails = () => false } = {}) {
+  const finnhubFetches = [];
+  const fetch = async (url) => {
+    if (!url.includes("finnhub")) {
+      const ids = new URL(url).searchParams.get("ids").split(",");
+      return Response.json(Object.fromEntries(ids.map((id) => [id, crypto])));
+    }
+    const symbol = new URL(url).searchParams.get("symbol");
+    finnhubFetches.push({ symbol, at: now() });
+    if (fails()) return new Response(null, { status: 500 });
+    return Response.json({ ...stock, t: Math.floor(now() / 1000) - 1 });
+  };
+  return { fetch, finnhubFetches };
+}
+
+function maxFetchesInAnyMinute(fetches) {
+  return Math.max(0, ...fetches.map(({ at }) => fetches.filter((other) => other.at >= at && other.at < at + 60_000).length));
+}
+
+function lastObservedAt(fetches, symbol) {
+  const last = fetches.findLast((fetch) => fetch.symbol === symbol);
+  return (Math.floor(last.at / 1000) - 1) * 1000;
+}
+
+test("full-catalog polls rotate Finnhub coverage and keep observed stocks live between turns", async () => {
+  let provider;
+  const { api, advance, now } = setup((url) => provider.fetch(url), "app/api/quotes/route.ts");
+  provider = quoteProvider(now);
+  const first = await getQuotes(api);
+  const eligible = first.filter((quote) => quote.source !== "coingecko" && quote.fallback !== "no-usd-feed").map((quote) => quote.symbol);
+  assert.equal(eligible.length, 145);
+  const seen = new Set();
+  let quotes = first;
+  for (let poll = 0; poll < 20; poll++) {
+    if (poll > 0) {
+      advance(61_000);
+      quotes = await getQuotes(api);
+    }
+    const live = quotes.filter((quote) => quote.source === "finnhub");
+    for (const quote of live) {
+      seen.add(quote.symbol);
+      assert.equal(quote.updatedAt, lastObservedAt(provider.finnhubFetches, quote.symbol), quote.symbol);
+    }
+    if (poll >= 4) {
+      assert.equal(seen.size, 145, `poll ${poll}`);
+      assert.deepEqual(live.map((quote) => quote.symbol).sort(), [...eligible].sort(), `poll ${poll}`);
+    }
+  }
+  assert.ok(maxFetchesInAnyMinute(provider.finnhubFetches) <= 30);
+});
+
+test("six-second client polling stays within the Finnhub budget and covers the catalog", async () => {
+  let provider;
+  const { api, advance, now } = setup((url) => provider.fetch(url), "app/api/quotes/route.ts");
+  provider = quoteProvider(now);
+  let quotes;
+  for (let poll = 0; poll < 100; poll++) {
+    quotes = await getQuotes(api);
+    advance(6_000);
+  }
+  assert.equal(quotes.filter((quote) => quote.source === "finnhub").length, 145);
+  assert.ok(maxFetchesInAnyMinute(provider.finnhubFetches) <= 30);
+});
+
+test("a few symbols on a cold cache are fetched live", async () => {
+  let provider;
+  const { api, now } = setup((url) => provider.fetch(url), "app/api/quotes/route.ts");
+  provider = quoteProvider(now);
+  const quotes = await getQuotes(api, "?symbols=NVDA,AAPL");
+  assert.deepEqual(quotes.map((quote) => [quote.symbol, quote.source]), [["NVDA", "finnhub"], ["AAPL", "finnhub"]]);
+});
+
+test("an observed stock survives provider failures for 15 minutes, then falls back to labelled simulation", async () => {
+  let provider;
+  let failing = false;
+  const { api, advance, now } = setup((url) => provider.fetch(url), "app/api/quotes/route.ts");
+  provider = quoteProvider(now, { fails: () => failing });
+  const observed = (await getQuotes(api, "?symbols=NVDA"))[0];
+  assert.equal(observed.source, "finnhub");
+  failing = true;
+  advance(15 * 60_000);
+  assert.deepEqual((await getQuotes(api, "?symbols=NVDA"))[0], observed);
+  advance(1);
+  const expired = (await getQuotes(api, "?symbols=NVDA"))[0];
+  assert.equal(expired.source, "simulated");
+  assert.equal(expired.fallback, "feed-unavailable");
+});
 
 test("CoinGecko quotes and charts share a rolling budget and recover without caching denials", async () => {
   let calls = 0;
