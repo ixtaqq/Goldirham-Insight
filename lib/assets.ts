@@ -1333,20 +1333,6 @@ export function getAssetsByCategory(slug: CategorySlug): Asset[] {
   );
 }
 
-export function allSymbols(): string[] {
-  return ASSETS.map((a) => a.symbol);
-}
-
-export function tickerSymbols(): string[] {
-  // A curated marquee order
-  const order = [
-    "BTC", "NVDA", "CEG", "ETH", "MSFT", "VST", "SOL", "AVGO",
-    "GOOGL", "AMD", "META", "TSM", "QQQ", "AMZN", "NEE", "PLTR",
-    "AAPL", "SMH", "MU", "AES", "TSLA", "LINK", "NI", "RENDER",
-  ];
-  return order.filter((s) => getAsset(s));
-}
-
 export function getRelated(asset: Asset, limit = 3): Asset[] {
   return ASSETS.filter(
     (a) => a.symbol !== asset.symbol && a.category === asset.category
