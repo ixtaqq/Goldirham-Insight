@@ -6,6 +6,14 @@ Seven reader tools added in November 2026. None needs a database, a login, or a 
 
 The bookmark on each card and asset page saves that asset to this browser's `localStorage` under `goldirham:watchlist`. Nothing leaves the browser, so saved assets do not follow a reader to another device, and clearing site data removes them. If storage is blocked, saving still works until the page reloads.
 
+To move saved assets to another device, use **Export watchlist** on the homepage desk. It downloads `goldirham-watchlist.json`, built in the browser:
+
+```json
+{ "format": "goldirham-watchlist", "version": 1, "symbols": ["NVDA", "BTC"] }
+```
+
+**Import watchlist** on the other device reads that file locally and merges it: catalog symbols that are not saved yet are added, and nothing already saved is removed. The file is treated as untrusted. Anything over 64 KB, anything that is not JSON, and any other shape is rejected without changing the list. Within a valid file, symbols that are already saved, listed twice, not in the catalog, or not strings are skipped, and the desk says how many were added and why the rest were skipped. Nothing from the file is rendered except those counts. The file is the only copy that leaves the browser; import also works when storage is blocked, until the page reloads.
+
 ## Desk filters
 
 | Parameter | Value | Shows |
