@@ -97,6 +97,13 @@ test("production pages, review disclosures and market routes", { timeout: 60_000
   assert.ok(sitemap.includes("<loc>https://goldirham-insight.vercel.app/asset/NVDA</loc>"));
   assert.ok(sitemap.includes("<loc>https://goldirham-insight.vercel.app/status</loc>"));
   assert.match(await (await fetch(`${base}/status`)).text(), /Feed status\./);
+  const revisionFeed = await fetch(`${base}/revisions.xml`);
+  assert.equal(revisionFeed.status, 200);
+  assert.equal(revisionFeed.headers.get("content-type"), "application/rss+xml; charset=utf-8");
+  const revisionXml = await revisionFeed.text();
+  assert.match(revisionXml, /^<\?xml version="1\.0" encoding="utf-8"\?>\n<rss version="2\.0"/);
+  assert.equal(revisionXml.includes("<item>"), ASSETS.some((asset) => asset.revisions?.length));
+  assert.match(await (await fetch(`${base}/asset/NVDA`)).text(), /<link rel="alternate" type="application\/rss\+xml" title="Goldirham Insight research revisions" href="\/revisions\.xml"\/>/);
   const comparisonExport = await fetch(`${base}/compare/export?symbols=NVDA&symbols=CEG`);
   assert.equal(comparisonExport.status, 200);
   assert.match(comparisonExport.headers.get("content-disposition"), /goldirham-comparison-NVDA-CEG\.csv/);

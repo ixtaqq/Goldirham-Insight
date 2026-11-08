@@ -52,7 +52,7 @@ Goldirham Insight is an educational research and demonstration platform covering
 | **Feed status** | [`/status`](https://goldirham-insight.vercel.app/status) lists each quote's source, age, and why it is simulated. A closed market's last price, including on scheduled NYSE holidays and 1:00 pm early closes, is not treated as a fault. |
 | **Blend sensitivity** | Comparisons show who leads across all 215 weightings of the three scores. |
 | **Export** | Download the current desk view or a comparison as CSV or JSON, with source labels and the disclaimer. |
-| **Research revisions and notices** | Asset pages show recorded revisions, and readers can opt in to a notice in this browser when saved research changes. No revisions are recorded yet. |
+| **Research revisions and notices** | Asset pages show recorded revisions, an RSS feed at [`/revisions.xml`](https://goldirham-insight.vercel.app/revisions.xml) lists them across the catalog, and readers can opt in to a notice in this browser when saved research changes. No revisions are recorded yet, so the feed has no entries. |
 
 ## Scoring model
 

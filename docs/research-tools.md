@@ -50,6 +50,10 @@ The quote API sets `fallback` on simulated quotes:
 
 Asset pages show a revision history from `Asset.revisions`, newest first. Each entry needs a real date, author, summary and at least one source, with optional score changes. No revisions are recorded yet, so every page says so. Never add one without its real details; `AGENTS.md` has the same rule for review records.
 
+`/revisions.xml` is an RSS 2.0 feed of every recorded revision across the catalog, newest first. Each item links to the asset page and carries the revision's summary, author (`dc:creator`), date (`dc:date`) and source links. Every page advertises it with `<link rel="alternate" type="application/rss+xml">`. The feed is generated at build time, so a new revision appears after the next deploy.
+
+It is RSS rather than Atom because Atom requires a feed-level `<updated>` time. With no revisions recorded there is no honest value for it, and the build time would misstate when the research changed (the same reason `sitemap.xml` has no `lastModified`). RSS needs no channel date. Revisions record a day, not a time, so items use Dublin Core `dc:date`, which accepts a bare `YYYY-MM-DD`, instead of an RSS `pubDate`, which would need an invented time of day. While nothing is recorded the feed is valid and has no items.
+
 ## Blend sensitivity
 
 With at least two scored assets, `/compare` counts who leads across all 215 whole-number weightings of the three scores from 0 to 5, and shows the order under equal, upside-only, safety-only and AI-only weights. It describes editorial opinions, not forecasts. Assets without scores are left out of the count.
