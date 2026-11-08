@@ -8,6 +8,9 @@ export const dynamic = "force-dynamic";
 
 // The homepage requests every catalog symbol; the full list is about 1,200 characters.
 const MAX_SYMBOLS_LENGTH = 4096;
+// Every page asks CoinGecko for the same batch, so one cached request per minute serves all of them
+// instead of each page's subset spending its own share of the provider budget.
+const CRYPTO_IDS = ASSETS.flatMap((asset) => (asset.coingeckoId ? [asset.coingeckoId] : []));
 
 export async function GET(req: NextRequest) {
   const param = req.nextUrl.searchParams.get("symbols");
@@ -22,11 +25,7 @@ export async function GET(req: NextRequest) {
     .map((s) => getAsset(s))
     .filter((a): a is Asset => Boolean(a));
 
-  // One batched CoinGecko call for all crypto.
-  const cryptoIds = assets
-    .filter((a) => a.coingeckoId)
-    .map((a) => a.coingeckoId as string);
-  const cg = cryptoIds.length ? await fetchCryptoQuotes(cryptoIds) : {};
+  const cg = assets.some((a) => a.coingeckoId) ? await fetchCryptoQuotes(CRYPTO_IDS) : {};
 
   const quotes: Quote[] = await Promise.all(
     assets.map(async (a): Promise<Quote> => {
