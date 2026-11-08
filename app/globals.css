@@ -723,3 +723,10 @@
   .btn, .asset-card, .strip-card, .feed-go, .btn svg, .asset-card::before, .score-bar i, .ratio .track i { transition-property: color, background-color, border-color, box-shadow, opacity; }
   .btn:hover svg, .btn:active, .asset-card:hover, .asset-card:active, .strip-card:hover, a.feed-row:hover .feed-go { transform: none; }
 }
+
+@layer components {
+  .watchlist-transfer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; margin-bottom: 14px; padding: 12px 14px; border: 1px solid var(--rule); border-radius: var(--radius-md); }
+  .watchlist-transfer > div:first-child { flex: 1 1 32ch; min-width: 0; max-width: 64ch; color: var(--ink-3); font-size: var(--text-meta); }
+  .watchlist-transfer-status { color: var(--ink); font-weight: 650; }
+  .watchlist-transfer-status:not(:empty) { margin-top: 6px; }
+}

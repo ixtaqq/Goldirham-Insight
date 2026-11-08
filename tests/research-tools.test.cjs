@@ -5,7 +5,7 @@ const { renderToStaticMarkup } = require("react-dom/server");
 const { NextRequest } = require("next/server");
 const load = require("./load-ts.cjs");
 
-const { parseNoticeSettings, parseWatchlist, pendingNotices, toggleSymbol } = load("lib/watchlist.ts");
+const { exportWatchlist, importMessage, importWatchlist, parseNoticeSettings, parseWatchlist, pendingNotices, toggleSymbol, WATCHLIST_FILE_LIMIT } = load("lib/watchlist.ts");
 const { describeFreshness, formatAge, isUsMarketHours, summarizeFeed } = load("lib/feed-status.ts");
 const { DEFAULT_VIEW, explorerHref, exploreAssets, parseExplorerView } = load("lib/explorer.ts");
 const { blendSensitivity } = load("lib/compare.ts");
@@ -23,6 +23,45 @@ test("the stored watchlist ignores malformed values and duplicates", () => {
   assert.deepEqual(parseWatchlist('["NVDA", 4, "", "NVDA", "BTC"]'), ["NVDA", "BTC"]);
   assert.deepEqual(toggleSymbol(["NVDA"], "BTC"), ["NVDA", "BTC"]);
   assert.deepEqual(toggleSymbol(["NVDA", "BTC"], "NVDA"), ["BTC"]);
+});
+
+test("an exported watchlist imports into another browser by merging, never replacing", () => {
+  const known = new Set(ASSETS.map((asset) => asset.symbol));
+  const file = exportWatchlist(["NVDA", "BTC", "ABBN.SW"]);
+  const result = importWatchlist(file, ["CEG", "BTC"], known);
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.symbols, ["CEG", "BTC", "NVDA", "ABBN.SW"]);
+  assert.deepEqual([result.added, result.alreadySaved], [2, 1]);
+  assert.equal(importMessage(result), "Added 2 saved assets. Skipped 1: 1 already saved.");
+  const empty = importWatchlist(file, [], known);
+  assert.deepEqual(empty.symbols, ["NVDA", "BTC", "ABBN.SW"]);
+  assert.equal(importMessage(empty), "Added 3 saved assets.");
+});
+
+test("a watchlist file is untrusted: oversized, unreadable or foreign files change nothing", () => {
+  const known = new Set(ASSETS.map((asset) => asset.symbol));
+  const valid = (symbols) => JSON.stringify({ format: "goldirham-watchlist", version: 1, symbols });
+  const reason = (text) => importWatchlist(text, ["CEG"], known).reason;
+  assert.equal(reason(valid(["NVDA"]) + " ".repeat(WATCHLIST_FILE_LIMIT)), "too-large");
+  for (const text of ["", "not json", "{\"symbols\":[", "<script>alert(1)</script>"]) assert.equal(reason(text), "not-json", text);
+  for (const text of ["null", "3", '["NVDA"]', '{"symbols":["NVDA"]}', '{"format":"goldirham-watchlist","version":2,"symbols":["NVDA"]}', '{"format":"goldirham-watchlist","version":1,"symbols":"NVDA"}', '{"format":"other","version":1,"symbols":["NVDA"]}']) {
+    assert.equal(reason(text), "wrong-shape", text);
+  }
+  assert.equal(importMessage({ ok: false, reason: "too-large" }), "That file is larger than any watchlist export (64 KB), so nothing was imported.");
+  assert.equal(importMessage({ ok: false, reason: "not-json" }), "That file could not be read as a watchlist export, so nothing was imported.");
+  assert.equal(importMessage({ ok: false, reason: "wrong-shape" }), "That file is not a Goldirham watchlist export, so nothing was imported.");
+
+  const mixed = importWatchlist(valid(["NVDA", "NVDA", "nvda", "NOPE", "<img src=x>", 4, "", null, { symbol: "BTC" }, "CEG", "__proto__", "BTC"]), ["CEG"], known);
+  assert.deepEqual(mixed.symbols, ["CEG", "NVDA", "BTC"]);
+  assert.deepEqual([mixed.added, mixed.alreadySaved, mixed.repeated, mixed.unknown, mixed.invalid], [2, 1, 1, 4, 4]);
+  assert.equal(importMessage(mixed), "Added 2 saved assets. Skipped 10: 1 already saved, 1 listed twice, 4 not in the catalog, 4 not a symbol.");
+  const nothing = importWatchlist(valid([]), ["CEG"], known);
+  assert.deepEqual(nothing.symbols, ["CEG"]);
+  assert.equal(importMessage(nothing), "The file lists no saved assets, so nothing changed.");
+  assert.equal(importMessage(importWatchlist(valid(["CEG"]), ["CEG"], known)), "Added 0 saved assets. Skipped 1: 1 already saved.");
+  assert.equal(importMessage(importWatchlist(valid(["NVDA"]), [], known)), "Added 1 saved asset.");
+  const crafted = importWatchlist(valid([...Array(1201).fill("NVDA"), ...Array.from({ length: 2400 }, (_, index) => "TICKER" + index)]), [], known);
+  assert.equal(importMessage(crafted), "Added 1 saved asset. Skipped 3,600: 1,200 listed twice, 2,400 not in the catalog.");
 });
 
 test("research notices are opt-in, start from a baseline and stay dismissed", () => {

@@ -1,13 +1,13 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { ArrowDown, ArrowUp, Download, Search } from "lucide-react";
+import { ArrowDown, ArrowUp, Download, Search, Upload } from "lucide-react";
 import type { CardData } from "@/lib/card";
 import { CATEGORIES } from "@/lib/categories";
 import { composite, DEFAULT_VIEW, explorerHref, exploreAssets, FACTORS, inCategory, MAX_QUERY_LENGTH, MAX_WEIGHT, parseExplorerView, RANKINGS, type ExplorerView, type Weights } from "@/lib/explorer";
 import { explorerRows, toCsv, toJson } from "@/lib/export";
-import { useWatchlist } from "@/lib/watchlist";
+import { exportWatchlist, importMessage, useWatchlist, WATCHLIST_FILE_LIMIT } from "@/lib/watchlist";
 import { AssetCard } from "./AssetCard";
 import { useMarket } from "./LiveMarketProvider";
 import { ResearchNotices } from "./ResearchNotices";
@@ -109,6 +109,7 @@ function ExplorerDesk({ assets, view, adjusted = false, onDraft = () => {}, onCh
           </div>
         </div>
         {view.ranking === "custom" && <BlendControl weights={view.weights} reviewed={assets.some((asset) => asset.review.status === "reviewed")} onWeights={(weights) => onDraft({ weights })} />}
+        <WatchlistTransfer assets={assets} />
         <ResearchNotices assets={assets} />
         {adjusted && <p className="notice">Some settings in this link were not recognized, so their defaults are shown.</p>}
         <div className="desk-results-row">
@@ -121,6 +122,41 @@ function ExplorerDesk({ assets, view, adjusted = false, onDraft = () => {}, onCh
         {filtered.length ? <div className="asset-grid" key={dealKey} data-dealt={deal.changed || undefined}>{filtered.slice(0, showAll ? filtered.length : 9).map((asset) => <AssetCard key={asset.symbol} data={asset} blend={view.ranking === "custom" && asset.scores ? composite(asset.scores, view.weights) : undefined} />)}</div> : <div className="catalog-empty"><Search size={28} aria-hidden="true" /><h3>No matching research.</h3><p>{view.saved && !saved.length ? "Nothing is saved in this browser yet. Use the bookmark on any card." : view.live && !ready ? "Waiting for quotes to arrive." : view.live ? "No asset here has a live quote right now." : "Try another company, ticker, or theme."}</p><button className="btn btn-primary" onClick={() => onChange(DEFAULT_VIEW)}>Clear filters</button></div>}
         {filtered.length > 9 && <div className="desk-more"><button className="btn btn-quiet" onClick={() => setExpandedFor(showAll ? null : href)} aria-expanded={showAll}>{showAll ? "Show fewer" : "Explore all " + filtered.length + " assets"}{showAll ? <ArrowUp size={16} aria-hidden="true" /> : <ArrowDown size={16} aria-hidden="true" />}</button></div>}
       </div>
+  );
+}
+
+// The file is read as text and only ever parsed as JSON; nothing in it is rendered except the counts in the message.
+function WatchlistTransfer({ assets }: { assets: CardData[] }) {
+  const { symbols, importText } = useWatchlist();
+  const [message, setMessage] = useState("");
+  const input = useRef<HTMLInputElement>(null);
+  const choose = (file: File) => {
+    setMessage("");
+    if (file.size > WATCHLIST_FILE_LIMIT) {
+      setMessage(importMessage({ ok: false, reason: "too-large" }));
+      return;
+    }
+    file.text().then(
+      (text) => setMessage(importMessage(importText(text, new Set(assets.map((asset) => asset.symbol))))),
+      () => setMessage(importMessage({ ok: false, reason: "not-json" })),
+    );
+  };
+  return (
+    <div className="watchlist-transfer" role="group" aria-label="Move saved assets">
+      <div>
+        <p>Saved assets are kept in this browser and never sent anywhere. To use them on another device, export a file and import it there; importing adds to what is saved and removes nothing. That file is the only copy that leaves this browser.</p>
+        <p className="watchlist-transfer-status" aria-live="polite">{message}</p>
+      </div>
+      <div className="desk-export">
+        {symbols.length > 0 && <button className="btn btn-quiet btn-sm" onClick={() => download("goldirham-watchlist.json", "application/json", exportWatchlist(symbols))}><Download size={14} aria-hidden="true" />Export watchlist</button>}
+        <button className="btn btn-quiet btn-sm" onClick={() => input.current?.click()}><Upload size={14} aria-hidden="true" />Import watchlist</button>
+        <input ref={input} type="file" accept=".json,application/json" hidden aria-label="Watchlist file to import" onChange={(event) => {
+          const file = event.target.files?.[0];
+          event.target.value = "";
+          if (file) choose(file);
+        }} />
+      </div>
+    </div>
   );
 }
 

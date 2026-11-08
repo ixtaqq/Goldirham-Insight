@@ -92,6 +92,47 @@ test("research notices appear only with saved assets, are opt-in and stay chosen
   await expect(desk(page).getByText("Research changes only, never price moves.")).toBeVisible();
 });
 
+test("an exported watchlist imports into a cleared browser and merges with what is saved", async ({ page }) => {
+  await page.goto("/");
+  const transfer = desk(page).getByRole("group", { name: "Move saved assets" });
+  await expect(transfer).toContainText("That file is the only copy that leaves this browser.");
+  await expect(transfer.getByRole("button", { name: "Export watchlist" })).toHaveCount(0);
+  for (const symbol of ["NVDA", "BTC"]) await desk(page).getByRole("button", { name: `Save ${symbol}`, exact: true }).click();
+  const [download] = await Promise.all([page.waitForEvent("download"), transfer.getByRole("button", { name: "Export watchlist" }).click()]);
+  expect(download.suggestedFilename()).toBe("goldirham-watchlist.json");
+  const file = await download.path();
+  expect(JSON.parse(readFileSync(file, "utf8")).symbols).toEqual(["NVDA", "BTC"]);
+
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+  await expect(desk(page).getByRole("button", { name: /^Saved/ })).toContainText("0");
+  await desk(page).getByRole("button", { name: "Save CEG", exact: true }).click();
+  await transfer.getByRole("button", { name: "Import watchlist" }).focus();
+  const [chooser] = await Promise.all([page.waitForEvent("filechooser"), page.keyboard.press("Enter")]);
+  await chooser.setFiles(file);
+  await expect(transfer.locator("[aria-live]")).toHaveText("Added 2 saved assets.");
+  await expect(desk(page).getByRole("button", { name: /^Saved/ })).toContainText("3");
+  await page.reload();
+  await expect(desk(page).getByRole("button", { name: /^Saved/ })).toContainText("3");
+
+  const title = await page.title();
+  await transfer.getByLabel("Watchlist file to import").setInputFiles({ name: "notes.json", mimeType: "application/json", buffer: Buffer.from('<img src=x onerror="document.title=1">') });
+  await expect(transfer.locator("[aria-live]")).toHaveText("That file could not be read as a watchlist export, so nothing was imported.");
+  await expect(desk(page).getByRole("button", { name: /^Saved/ })).toContainText("3");
+  expect(await page.title()).toBe(title);
+});
+
+test("a watchlist file imports when browser storage is blocked", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(window, "localStorage", { get() { throw new Error("blocked"); } });
+  });
+  await page.goto("/");
+  const transfer = desk(page).getByRole("group", { name: "Move saved assets" });
+  await transfer.getByLabel("Watchlist file to import").setInputFiles({ name: "goldirham-watchlist.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify({ format: "goldirham-watchlist", version: 1, symbols: ["NVDA", "NOPE"] })) });
+  await expect(transfer.locator("[aria-live]")).toHaveText("Added 1 saved asset. Skipped 1: 1 not in the catalog.");
+  await expect(desk(page).getByRole("button", { name: "Save NVDA", exact: true })).toHaveAttribute("aria-pressed", "true");
+});
+
 test("blocked browser storage keeps saving for the page view", async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(window, "localStorage", { get() { throw new Error("blocked"); } });
