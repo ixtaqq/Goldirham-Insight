@@ -27,11 +27,12 @@ function download(name: string, type: string, text: string) {
 }
 
 // The homepage is prerendered, so the default desk is the static HTML until search params are read on the client.
+// That placeholder is replaced by the linked desk, so its controls stay disabled rather than accept input that would be lost.
 export function AssetExplorer({ assets }: { assets: CardData[] }) {
   useEffect(() => {
     if (window.location.hash === "#markets") document.getElementById("markets")?.scrollIntoView();
   }, []);
-  return <section id="markets" className="research-section" aria-labelledby="research-heading"><Suspense fallback={<ExplorerDesk assets={assets} view={DEFAULT_VIEW} />}><LinkedExplorer assets={assets} /></Suspense></section>;
+  return <section id="markets" className="research-section" aria-labelledby="research-heading"><Suspense fallback={<fieldset className="desk-pending" disabled><ExplorerDesk assets={assets} view={DEFAULT_VIEW} /></fieldset>}><LinkedExplorer assets={assets} /></Suspense></section>;
 }
 
 function LinkedExplorer({ assets }: { assets: CardData[] }) {
