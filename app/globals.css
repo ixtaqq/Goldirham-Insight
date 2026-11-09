@@ -729,4 +729,5 @@
   .watchlist-transfer > div:first-child { flex: 1 1 32ch; min-width: 0; max-width: 64ch; color: var(--ink-3); font-size: var(--text-meta); }
   .watchlist-transfer-status { color: var(--ink); font-weight: 650; }
   .watchlist-transfer-status:not(:empty) { margin-top: 6px; }
+  .desk-pending { min-inline-size: 0; margin: 0; padding: 0; border: 0; }
 }

@@ -88,6 +88,15 @@ test("choices keep text typed just before them and repeated choices add no histo
   await expect(control(page, "Rank research", "Featured")).toHaveAttribute("aria-pressed", "true");
 });
 
+test("text typed right after load on a slow CPU is kept", async ({ page }) => {
+  await (await page.context().newCDPSession(page)).send("Emulation.setCPUThrottlingRate", { rate: 6 });
+  await page.goto("/");
+  const search = desk(page).getByRole("searchbox", { name: "Filter the desk" });
+  await search.fill("nvidia");
+  await expect(search).toHaveValue("nvidia");
+  await expect(page).toHaveURL("/?q=nvidia#markets");
+});
+
 test("search text stops at the link limit without a notice", async ({ page }) => {
   await page.goto("/");
   const search = desk(page).getByRole("searchbox", { name: "Filter the desk" });

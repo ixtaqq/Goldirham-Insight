@@ -116,10 +116,21 @@ test("an exported watchlist imports into a cleared browser and merges with what 
   await expect(desk(page).getByRole("button", { name: /^Saved/ })).toContainText("3");
 
   const title = await page.title();
-  await transfer.getByLabel("Watchlist file to import").setInputFiles({ name: "notes.json", mimeType: "application/json", buffer: Buffer.from('<img src=x onerror="document.title=1">') });
+  const [notesChooser] = await Promise.all([page.waitForEvent("filechooser"), transfer.getByRole("button", { name: "Import watchlist" }).click()]);
+  await notesChooser.setFiles({ name: "notes.json", mimeType: "application/json", buffer: Buffer.from('<img src=x onerror="document.title=1">') });
   await expect(transfer.locator("[aria-live]")).toHaveText("That file could not be read as a watchlist export, so nothing was imported.");
   await expect(desk(page).getByRole("button", { name: /^Saved/ })).toContainText("3");
   expect(await page.title()).toBe(title);
+});
+
+test("a watchlist imported right after load on a slow CPU reports what it added", async ({ page }) => {
+  await (await page.context().newCDPSession(page)).send("Emulation.setCPUThrottlingRate", { rate: 6 });
+  await page.goto("/");
+  const transfer = desk(page).getByRole("group", { name: "Move saved assets" });
+  const [chooser] = await Promise.all([page.waitForEvent("filechooser"), transfer.getByRole("button", { name: "Import watchlist" }).click()]);
+  await chooser.setFiles({ name: "goldirham-watchlist.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify({ format: "goldirham-watchlist", version: 1, symbols: ["NVDA"] })) });
+  await expect(transfer.locator("[aria-live]")).toHaveText("Added 1 saved asset.");
+  await expect(desk(page).getByRole("button", { name: "Save NVDA", exact: true })).toHaveAttribute("aria-pressed", "true");
 });
 
 test("a watchlist file imports when browser storage is blocked", async ({ page }) => {
@@ -128,7 +139,8 @@ test("a watchlist file imports when browser storage is blocked", async ({ page }
   });
   await page.goto("/");
   const transfer = desk(page).getByRole("group", { name: "Move saved assets" });
-  await transfer.getByLabel("Watchlist file to import").setInputFiles({ name: "goldirham-watchlist.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify({ format: "goldirham-watchlist", version: 1, symbols: ["NVDA", "NOPE"] })) });
+  const [chooser] = await Promise.all([page.waitForEvent("filechooser"), transfer.getByRole("button", { name: "Import watchlist" }).click()]);
+  await chooser.setFiles({ name: "goldirham-watchlist.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify({ format: "goldirham-watchlist", version: 1, symbols: ["NVDA", "NOPE"] })) });
   await expect(transfer.locator("[aria-live]")).toHaveText("Added 1 saved asset. Skipped 1: 1 not in the catalog.");
   await expect(desk(page).getByRole("button", { name: "Save NVDA", exact: true })).toHaveAttribute("aria-pressed", "true");
 });
