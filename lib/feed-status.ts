@@ -64,18 +64,25 @@ function nyseEarlyCloses(year: number): number[] {
   return [nthWeekday(year, 11, 4, 4) + DAY_MS, ...[calendarDate(year, 7, 3), calendarDate(year, 12, 24)].filter(mondayToThursday)];
 }
 
+const OPEN_SECONDS = 9.5 * 3600;
+
 /**
- * Regular NYSE session in New York time, including scheduled holidays and early closes. Unscheduled
- * closures are not known here, so they read as "older", never as broken.
+ * Time since the regular NYSE session opened in New York, or null outside it. Scheduled holidays and early
+ * closes count as closed; unscheduled closures are not known here, so they read as "older", never as broken.
  */
-export function isUsMarketHours(now: number): boolean {
-  const parts = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(now);
+function msSinceUsOpen(now: number): number | null {
+  const parts = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23" }).formatToParts(now);
   const part = (type: string) => Number(parts.find((item) => item.type === type)?.value);
   const year = part("year");
   const date = calendarDate(year, part("month"), part("day"));
-  if (weekday(date) === 0 || weekday(date) === 6 || nyseHolidays(year).includes(date)) return false;
-  const minutes = part("hour") * 60 + part("minute");
-  return minutes >= 9 * 60 + 30 && minutes < (nyseEarlyCloses(year).includes(date) ? 13 : 16) * 60;
+  if (weekday(date) === 0 || weekday(date) === 6 || nyseHolidays(year).includes(date)) return null;
+  const seconds = part("hour") * 3600 + part("minute") * 60 + part("second");
+  const close = (nyseEarlyCloses(year).includes(date) ? 13 : 16) * 3600;
+  return seconds >= OPEN_SECONDS && seconds < close ? (seconds - OPEN_SECONDS) * 1000 : null;
+}
+
+export function isUsMarketHours(now: number): boolean {
+  return msSinceUsOpen(now) !== null;
 }
 
 export function formatAge(ms: number): string {
@@ -92,7 +99,10 @@ export function describeFreshness(quote: Pick<Quote, "source" | "updatedAt">, no
   if (quote.source === "simulated") return { tone: "simulated", label: "Illustration, not an observed price" };
   const fresh = now - quote.updatedAt <= CURRENT_MS;
   if (quote.source === "coingecko") return fresh ? { tone: "current", label: "Current" } : { tone: "older", label: "Older than expected for a 24-hour market" };
-  if (!isUsMarketHours(now)) return { tone: "closed", label: "Market closed. Last price from the provider." };
+  const sinceOpen = msSinceUsOpen(now);
+  if (sinceOpen === null) return { tone: "closed", label: "Market closed. Last price from the provider." };
+  // Until the session's first trade reaches the feed, the previous close is the expected last price.
+  if (quote.updatedAt < now - sinceOpen && sinceOpen < CURRENT_MS) return { tone: "closed", label: "Market just opened. Last price is the previous close." };
   return fresh ? { tone: "current", label: "Current" } : { tone: "older", label: "Older than expected. Possibly a trading halt or an unscheduled closure." };
 }
 

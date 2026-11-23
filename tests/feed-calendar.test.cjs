@@ -44,3 +44,20 @@ test("a stock quote on a holiday reads as market closed instead of older than ex
   const freshness = describeFreshness({ source: "finnhub", updatedAt: lastClose }, midday("2026-11-26"));
   assert.equal(freshness.tone, "closed");
 });
+
+test("the previous close is expected, not a possible halt, until the session has run 30 minutes", () => {
+  const fridayClose = Date.parse("2026-11-20T16:00-05:00");
+  for (const now of ["2026-11-23T09:30:00-05:00", "2026-11-23T09:31-05:00", "2026-11-23T09:59:59-05:00"]) {
+    assert.equal(describeFreshness({ source: "finnhub", updatedAt: fridayClose }, Date.parse(now)).tone, "closed", now);
+  }
+  assert.equal(describeFreshness({ source: "finnhub", updatedAt: fridayClose }, Date.parse("2026-11-23T10:00-05:00")).tone, "older");
+  // The day after Thanksgiving opens on Wednesday's close.
+  const wednesdayClose = Date.parse("2026-11-25T16:00-05:00");
+  assert.equal(describeFreshness({ source: "finnhub", updatedAt: wednesdayClose }, Date.parse("2026-11-27T09:35-05:00")).tone, "closed");
+});
+
+test("a quote from this session goes older after 30 minutes without a trade, even near the open", () => {
+  const firstTrade = Date.parse("2026-11-23T09:30:10-05:00");
+  assert.equal(describeFreshness({ source: "finnhub", updatedAt: firstTrade }, Date.parse("2026-11-23T09:45-05:00")).tone, "current");
+  assert.equal(describeFreshness({ source: "finnhub", updatedAt: firstTrade }, Date.parse("2026-11-23T10:01-05:00")).tone, "older");
+});

@@ -238,6 +238,19 @@ for (const failure of ["http", "empty"] as const) {
   });
 }
 
+test("a simulated chart is shown as percent change and an observed chart in dollars", async ({ page }) => {
+  await page.route("**/api/chart?**", (route) => {
+    const range = new URL(route.request().url()).searchParams.get("range");
+    return route.fulfill({ json: { symbol: "BTC", range, source: range === "1D" ? "coingecko" : "simulated", points: POINTS } });
+  });
+  await page.goto("/asset/BTC");
+  await expect(page.getByRole("img", { name: "BTC 3M price history (simulated), shown as percent change", exact: true })).toBeVisible();
+  await expect(page.getByText("Shown as percent change from the first point, so it implies no price.")).toBeVisible();
+  await page.getByRole("group", { name: "Chart time range" }).getByRole("button", { name: "1D", exact: true }).click();
+  await expect(page.getByRole("img", { name: "BTC 1D price history", exact: true })).toBeVisible();
+  await expect(page.getByText("Shown as percent change from the first point")).toHaveCount(0);
+});
+
 test("rapid chart ranges ignore an older delayed response", async ({ page }) => {
   let release: (() => void) | undefined;
   const delayed = new Promise<void>((resolve) => { release = resolve; });
@@ -363,6 +376,7 @@ test("largest moves rank observed quotes and leave simulated prices out", async 
   await expect(feed.nth(0)).toHaveAttribute("href", "/asset/BTC");
   await expect(feed.nth(1)).toHaveAttribute("href", "/asset/CEG");
   await expect(page.locator("#live").getByText("1 advancing")).toBeAttached();
+  await expect(page.locator("#live").getByText("Ranked across 2 observed quotes of 234 assets.")).toBeVisible();
   observed = false;
   await page.reload();
   await expect(page.locator("#live").getByText("No observed quotes to rank. Simulated prices are left out.")).toBeVisible();

@@ -47,8 +47,7 @@ export const RANGE_CONFIG: Record<ChartRange, { points: number; step: number; cg
 };
 
 /**
- * Build a deterministic price path that ENDS exactly at `basePrice`,
- * so every timeframe reconciles with the live quote on the right edge.
+ * Build a deterministic price path that ends exactly at `basePrice`.
  */
 export function simulateSeries(
   symbol: string,

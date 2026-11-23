@@ -25,6 +25,7 @@ export function MarketPulse({ assets }: { assets: CardData[] }) {
           <div>
             <h2 id="live-heading" className="section-title">Today&apos;s largest moves</h2>
             <p className="section-lede">The biggest daily changes among observed quotes. Simulated prices are left out of the ranking.</p>
+            <p className="section-lede" aria-hidden={available.length ? undefined : true} style={available.length ? undefined : { visibility: "hidden" }}>Ranked across {available.length} observed {available.length === 1 ? "quote" : "quotes"} of {assets.length} assets.</p>
           </div>
           <div className="ratio" aria-hidden={available.length ? undefined : true} style={available.length ? undefined : { visibility: "hidden" }}><span className="text-up">{advancing} advancing</span><span className="track"><i style={{ width: (available.length ? advancing / available.length * 100 : 0) + "%" }} /></span><span className="text-down">{available.length - advancing} declining</span></div>
         </div>

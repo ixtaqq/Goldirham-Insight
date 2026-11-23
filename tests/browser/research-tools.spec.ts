@@ -172,6 +172,16 @@ test("feed status shows sources, ages and why quotes are simulated", async ({ pa
   await expect(page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Feed status" })).toHaveAttribute("aria-current", "page");
 });
 
+test("feed status reads the previous close as expected just after the open, not as a halt", async ({ page }) => {
+  const fridayClose = Date.parse("2026-11-20T16:00-05:00");
+  await page.clock.install({ time: new Date("2026-11-23T09:35-05:00") });
+  await page.route("**/api/quotes?**", (route) => route.fulfill({ json: { quotes: [{ ...quote("NVDA", "finnhub"), updatedAt: fridayClose }] } }));
+  await page.goto("/status");
+  const nvda = page.getByRole("region", { name: "Quote status for each asset" }).locator("tbody tr").filter({ hasText: "NVDA" });
+  await expect(nvda).toContainText("Market just opened. Last price is the previous close.");
+  await expect(nvda).not.toContainText("trading halt");
+});
+
 test("feed status reports a failed quote request instead of an empty table", async ({ page }) => {
   await page.route("**/api/quotes?**", (route) => route.fulfill({ status: 503, json: { error: "Fixture unavailable" } }));
   await page.goto("/status");
