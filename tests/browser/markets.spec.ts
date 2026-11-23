@@ -376,6 +376,7 @@ test("largest moves rank observed quotes and leave simulated prices out", async 
   await expect(feed.nth(0)).toHaveAttribute("href", "/asset/BTC");
   await expect(feed.nth(1)).toHaveAttribute("href", "/asset/CEG");
   await expect(page.locator("#live").getByText("1 advancing")).toBeAttached();
+  await expect(page.locator("#live").getByText("Ranked across 2 observed quotes of 234 assets.")).toBeVisible();
   observed = false;
   await page.reload();
   await expect(page.locator("#live").getByText("No observed quotes to rank. Simulated prices are left out.")).toBeVisible();
