@@ -5,6 +5,7 @@ import {
   AreaSeries,
   createChart,
   ColorType,
+  PriceScaleMode,
   type IChartApi,
   type ISeriesApi,
   type UTCTimestamp,
@@ -155,8 +156,10 @@ export function LiveChart({ symbol }: { symbol: string }) {
         }
         seriesRef.current.setData(pts);
         chartRef.current.timeScale().fitContent();
+        // A simulated path ends at a static seed, so a dollar axis would contradict the observed quote above it.
         chartRef.current.applyOptions({
           timeScale: { timeVisible: range === "1D" || range === "1W" },
+          rightPriceScale: { mode: d.source === "simulated" ? PriceScaleMode.Percentage : PriceScaleMode.Normal },
         });
         setResult({ key: requestKey, status: "ready", source: d.source });
       })
@@ -208,7 +211,7 @@ export function LiveChart({ symbol }: { symbol: string }) {
           className={cn("chart-canvas", current?.status !== "ready" && "is-hidden")}
           data-source={current?.status === "ready" ? current.source : undefined}
           role="img"
-          aria-label={`${symbol} ${range} price history${current?.source === "simulated" ? " (simulated)" : ""}`}
+          aria-label={`${symbol} ${range} price history${current?.source === "simulated" ? " (simulated), shown as percent change" : ""}`}
         />
         {loading && <div className="chart-skeleton" aria-hidden="true" />}
         {current && current.status !== "ready" && (
@@ -226,7 +229,7 @@ export function LiveChart({ symbol }: { symbol: string }) {
       </div>
       {current?.source === "simulated" && (
         <p className="chart-note">
-          Illustrative data, not actual historical prices.
+          Illustrative data, not actual historical prices. Shown as percent change from the first point, so it implies no price.
         </p>
       )}
     </div>
