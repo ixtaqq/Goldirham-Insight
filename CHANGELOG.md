@@ -2,6 +2,12 @@
 
 Notable changes to Goldirham Insight. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.0.2] - 2026-11-24
+
+### Fixed
+
+- Stock quotes no longer fall back to simulation because Finnhub rejects requests with HTTP 429. Finnhub allows 30 calls a second per account, and each server instance used to send up to 30 quote requests at once when it started. Each instance now starts at most five a second. Right after a server starts, the first poll shows 5 live stock quotes instead of 30, and all 145 are live within about four and a half minutes.
+
 ## [1.0.1] - 2026-11-23
 
 ### Fixed
@@ -17,5 +23,6 @@ Notable changes to Goldirham Insight. The format follows [Keep a Changelog](http
 
 First tagged release: the version in production before 1.0.1, at commit `54effd8`.
 
+[1.0.2]: https://github.com/ixtaqq/Goldirham-Insight/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/ixtaqq/Goldirham-Insight/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/ixtaqq/Goldirham-Insight/releases/tag/v1.0.0
