@@ -161,7 +161,11 @@ operational backend and traffic budget before adding more providers.
 ## Provider admission and cache limits
 
 `lib/sources.ts` limits each process to five CoinGecko attempts and 30 Finnhub
-attempts in a rolling 60-second window. CoinGecko quotes and charts share a budget.
+attempts in a rolling 60-second window, and to five attempts per provider in any
+rolling second. Finnhub rejects more than 30 calls a second per account with HTTP
+429, so a cold full-catalog poll now starts five Finnhub requests and leaves the
+rest of the minute's budget to the next polls, instead of sending 30 at once.
+CoinGecko quotes and charts share a budget.
 Cache hits and callers sharing pending requests do not consume another attempt.
 The process retains at most 128 cache entries and 32 pending requests. Expired
 entries are pruned on access, and capacity eviction removes the least recently

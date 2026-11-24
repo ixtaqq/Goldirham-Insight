@@ -28,10 +28,12 @@ type CacheEntry = { expiresAt: number; data: unknown };
 const cache = new Map<string, CacheEntry>();
 const pending = new Map<string, Promise<unknown>>();
 type Provider = "coingecko" | "finnhub";
-type AdmissionWindow = { limit: number; admittedAt: number[]; reportedAt: number | null };
+type AdmissionWindow = { limit: number; perSecond: number; admittedAt: number[]; reportedAt: number | null };
+// Finnhub also rejects more than 30 calls a second per account, so each instance starts at most five a second
+// and a cold full-catalog poll spreads its minute's budget over the next polls instead of one burst.
 const admissions: Record<Provider, AdmissionWindow> = {
-  coingecko: { limit: 5, admittedAt: [], reportedAt: null },
-  finnhub: { limit: 30, admittedAt: [], reportedAt: null },
+  coingecko: { limit: 5, perSecond: 5, admittedAt: [], reportedAt: null },
+  finnhub: { limit: 30, perSecond: 5, admittedAt: [], reportedAt: null },
 };
 
 class ProviderResponseError extends Error {
@@ -71,7 +73,8 @@ async function cached<T>(key: string, ttlMs: number, failureTtlMs: number, fn: (
   const provider = key.startsWith("fh:") ? "finnhub" : "coingecko";
   const window = admissions[provider];
   window.admittedAt = window.admittedAt.filter((at) => now - at < WINDOW_MS);
-  if (pending.size >= MAX_PENDING || window.admittedAt.length >= window.limit) {
+  const thisSecond = window.admittedAt.filter((at) => now - at < 1000).length;
+  if (pending.size >= MAX_PENDING || window.admittedAt.length >= window.limit || thisSecond >= window.perSecond) {
     if (window.reportedAt === null || now - window.reportedAt >= WINDOW_MS) {
       reportFailure(key, new ProviderResponseError("rate-limit"));
       window.reportedAt = now;
