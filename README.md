@@ -111,6 +111,7 @@ New catalog entries use a generic **$100 demo seed** when live data is unavailab
 | Failed quote retry | 10 seconds (stocks), 12 seconds (crypto) |
 | Failed chart retry | 30 seconds |
 | Provider attempts per rolling minute | 5 CoinGecko, 30 Finnhub |
+| Provider attempts per rolling second | 5 (Finnhub rejects more than 30 a second per account) |
 | Pending requests / cache entries | 32 / 128 |
 
 Provider responses are validated before caching, and cache misses share one in-flight request. Cache hits do not use the attempt budget. Denied attempts return labeled simulation and are not cached as failures. These caps apply per process, not across server instances.

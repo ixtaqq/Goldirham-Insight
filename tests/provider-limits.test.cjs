@@ -39,6 +39,10 @@ function maxFetchesInAnyMinute(fetches) {
   return Math.max(0, ...fetches.map(({ at }) => fetches.filter((other) => other.at >= at && other.at < at + 60_000).length));
 }
 
+function maxFetchesInAnySecond(fetches) {
+  return Math.max(0, ...fetches.map(({ at }) => fetches.filter((other) => other.at >= at && other.at < at + 1000).length));
+}
+
 function lastObservedAt(fetches, symbol) {
   const last = fetches.findLast((fetch) => fetch.symbol === symbol);
   return (Math.floor(last.at / 1000) - 1) * 1000;
@@ -53,9 +57,10 @@ test("full-catalog polls rotate Finnhub coverage and keep observed stocks live b
   assert.equal(eligible.length, 145);
   const seen = new Set();
   let quotes = first;
-  for (let poll = 0; poll < 20; poll++) {
+  // Twenty minutes of the client's six-second polls.
+  for (let poll = 0; poll < 200; poll++) {
     if (poll > 0) {
-      advance(61_000);
+      advance(6_000);
       quotes = await getQuotes(api);
     }
     const live = quotes.filter((quote) => quote.source === "finnhub");
@@ -63,7 +68,7 @@ test("full-catalog polls rotate Finnhub coverage and keep observed stocks live b
       seen.add(quote.symbol);
       assert.equal(quote.updatedAt, lastObservedAt(provider.finnhubFetches, quote.symbol), quote.symbol);
     }
-    if (poll >= 4) {
+    if (poll >= 50) {
       assert.equal(seen.size, 145, `poll ${poll}`);
       assert.deepEqual(live.map((quote) => quote.symbol).sort(), [...eligible].sort(), `poll ${poll}`);
     }
@@ -82,6 +87,18 @@ test("six-second client polling stays within the Finnhub budget and covers the c
   }
   assert.equal(quotes.filter((quote) => quote.source === "finnhub").length, 145);
   assert.ok(maxFetchesInAnyMinute(provider.finnhubFetches) <= 30);
+});
+
+test("a cold full-catalog poll starts at most five Finnhub requests a second and still spends the minute's budget", async () => {
+  let provider;
+  const { api, advance, now } = setup((url) => provider.fetch(url), "app/api/quotes/route.ts");
+  provider = quoteProvider(now);
+  for (let poll = 0; poll < 10; poll++) {
+    await getQuotes(api);
+    advance(6_000);
+  }
+  assert.ok(maxFetchesInAnySecond(provider.finnhubFetches) <= 5, `burst of ${maxFetchesInAnySecond(provider.finnhubFetches)}`);
+  assert.equal(provider.finnhubFetches.length, 30);
 });
 
 test("a few symbols on a cold cache are fetched live", async () => {
@@ -157,14 +174,20 @@ test("a wholly rejected crypto batch retries after the failure delay", async () 
   assert.equal(calls, 2);
 });
 
-test("distinct concurrent stock misses cannot exceed admission and expire on a rolling window", async () => {
+test("distinct stock misses are admitted five a second and thirty a minute, on rolling windows", async () => {
   let calls = 0;
   const { api, advance } = setup(async () => { calls++; return Response.json(stock); });
-  const result = await Promise.all(Array.from({ length: 40 }, (_, i) => api.fetchStockQuote(`STOCK${i}`)));
-  assert.equal(result.filter((quote) => quote?.price === 100).length, 30);
-  assert.equal(result.filter((quote) => quote === null).length, 10);
+  const burst = await Promise.all(Array.from({ length: 40 }, (_, i) => api.fetchStockQuote(`STOCK${i}`)));
+  assert.equal(burst.filter((quote) => quote?.price === 100).length, 5);
+  assert.equal(burst.filter((quote) => quote === null).length, 35);
+  for (let second = 1; second < 6; second++) {
+    advance(1_000);
+    await Promise.all(Array.from({ length: 5 }, (_, i) => api.fetchStockQuote(`S${second}-${i}`)));
+  }
   assert.equal(calls, 30);
-  advance(59_999);
+  advance(1_000);
+  assert.equal(await api.fetchStockQuote("NEW"), null);
+  advance(53_999);
   assert.equal(await api.fetchStockQuote("NEW"), null);
   advance(1);
   assert.equal((await api.fetchStockQuote("NEW")).price, 100);
@@ -176,7 +199,11 @@ test("global pending capacity releases after completion without forgetting admit
   let release;
   const gate = new Promise((resolve) => { release = resolve; });
   const { api, advance } = setup(async () => { calls++; await gate; return Response.json(stock); });
-  const old = Array.from({ length: 30 }, (_, i) => api.fetchStockQuote(`OLD${i}`));
+  const old = [];
+  for (let second = 0; second < 6; second++) {
+    if (second) advance(1_000);
+    for (let i = 0; i < 5; i++) old.push(api.fetchStockQuote(`OLD${second}-${i}`));
+  }
   advance(60_001);
   const next = [api.fetchStockQuote("NEW1"), api.fetchStockQuote("NEW2")];
   assert.equal(await api.fetchStockQuote("DENIED"), null);
